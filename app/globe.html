@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worldly Globe Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000011;
+            font-family: Arial, sans-serif;
+        }
+        #globe-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            z-index: 1000;
+        }
+        .error {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff0000;
+            font-size: 18px;
+            z-index: 1000;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="globe-container"></div>
+    <div class="loading" id="loading">Loading globe...</div>
+
+    <!-- globe.gl from CDN -->
+    <script src="https://unpkg.com/globe.gl"></script>
+
+    <script>
+        let globeInstance = null;
+        const loadingEl = document.getElementById('loading');
+        
+        // Function to show error
+        function showError(message) {
+            loadingEl.className = 'error';
+            loadingEl.textContent = message;
+        }
+
+        // Function to hide loading
+        function hideLoading() {
+            loadingEl.style.display = 'none';
+        }
+
+        // Check if Globe is available
+        if (typeof Globe === 'undefined') {
+            showError('Failed to load globe.gl library. Please check your internet connection.');
+        } else {
+            // Fetch data from FastAPI backend
+            fetch('http://localhost:8000/api/world_hexed_polygons')
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`HTTP error! status: ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    console.log('Fetched hex data:', data);
+                    
+                    if (!Array.isArray(data)) {
+                        throw new Error('Invalid data format received');
+                    }
+
+                    // Initialize the globe
+                    globeInstance = Globe()
+                        (document.getElementById('globe-container'))
+                        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+                        .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+                        .hexBinPointsData(data)
+                        .hexBinPointWeight('value')
+                        .hexBinResolution(4)
+                        .hexBinMerge(true)
+                        .hexTopColor(d => d.sumWeight > 0 ? '#ff0000' : '#0000ff')
+                        .hexSideColor(d => d.sumWeight > 0 ? '#ff0000' : '#0000ff')
+                        .hexBinPointLat('lat')
+                        .hexBinPointLng('lng')
+                        .showAtmosphere(true)
+                        .atmosphereColor('#ffffff')
+                        .atmosphereAltitude(0.15);
+
+                    // Set initial camera position
+                    globeInstance.pointOfView({ lat: 0, lng: 0, altitude: 2.5 });
+
+                    // Hide loading message after a short delay
+                    setTimeout(hideLoading, 500);
+                })
+                .catch(err => {
+                    console.error('Error loading globe:', err);
+                    showError(`Error: ${err.message}. Make sure the API is running on http://localhost:8000`);
+                });
+        }
+    </script>
+</body>
+</html>
