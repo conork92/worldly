@@ -6,7 +6,6 @@ This project includes a hexed polygons globe visualization using react-globe.gl 
 
 - `main-globe.py` - FastAPI backend with endpoints for globe data
 - `globe.html` - React-based globe visualization (requires react-globe.gl)
-- `globe-simple.html` - Simple globe visualization using globe.gl (recommended for quick setup)
 
 ## Quick Start
 
@@ -21,17 +20,8 @@ The server will run on `http://localhost:8000`
 
 ### 2. View the Globe
 
-**Option A: Simple Version (Recommended)**
-- Open `http://localhost:8000/globe-simple` in your browser
-- Uses the base `globe.gl` library which works directly with CDN
-
-**Option B: React Version**
 - Open `http://localhost:8000/globe` in your browser
 - Uses `react-globe.gl` (may require proper build setup)
-
-**Option C: Direct File**
-- Open `globe-simple.html` directly in your browser
-- Make sure the FastAPI server is running on `http://localhost:8000`
 
 ## API Endpoints
 
@@ -71,4 +61,3 @@ You can modify the `/api/world_hexed_polygons` endpoint in `main-globe.py` to pu
 - [react-globe.gl GitHub](https://github.com/vasturiano/react-globe.gl)
 - [globe.gl Documentation](https://globe.gl/)
 - [Hexed Polygons Example](https://github.com/vasturiano/react-globe.gl#hexed-country-polygons)
-
