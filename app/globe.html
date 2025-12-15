@@ -212,6 +212,123 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
+        /* Book Assignment Panel */
+        .book-assignment {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            background: rgba(20, 20, 40, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            min-width: 320px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .book-assignment h3 {
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 8px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .form-group select:hover {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+
+        .form-group select:focus {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-group select option {
+            background: rgba(20, 20, 40, 0.95);
+            color: white;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .message.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            color: #4caf50;
+            display: block;
+        }
+
+        .message.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #f44336;
+            display: block;
+        }
+
         .stat-item {
             margin-bottom: 15px;
             padding-bottom: 15px;
@@ -365,7 +482,7 @@
         <div class="top-right-nav">
             <a class="nav-btn" href="/api/albums" target="_blank" rel="noopener">Albums</a>
             <a class="nav-btn" href="/api/artists" target="_blank" rel="noopener">Artists</a>
-            <a class="nav-btn" href="/api/books" target="_blank" rel="noopener">Books</a>
+            <a class="nav-btn" href="/books">Books</a>
         </div>
     </div>
 
@@ -422,6 +539,26 @@
             <div class="stat-label">Max Value</div>
             <div class="stat-value" id="max-value">0</div>
         </div>
+    </div>
+
+    <div class="book-assignment">
+        <h3>Assign Country to Book</h3>
+        <form id="book-assignment-form">
+            <div class="form-group">
+                <label for="book-select">Select Book</label>
+                <select id="book-select" required>
+                    <option value="">Loading books...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="country-select">Select Country</label>
+                <select id="country-select" required>
+                    <option value="">Loading countries...</option>
+                </select>
+            </div>
+            <button type="submit" class="submit-btn" id="submit-btn" disabled>Submit</button>
+            <div class="message" id="message"></div>
+        </form>
     </div>
 
     <div class="loading" id="loading">
@@ -679,6 +816,154 @@
         window.addEventListener('beforeunload', () => {
             if (rotationInterval) clearInterval(rotationInterval);
         });
+
+        // Book Assignment Form Functionality
+        const bookSelect = document.getElementById('book-select');
+        const countrySelect = document.getElementById('country-select');
+        const submitBtn = document.getElementById('submit-btn');
+        const messageDiv = document.getElementById('message');
+        const form = document.getElementById('book-assignment-form');
+        let books = [];
+        let countries = [];
+
+        // Load books that need country assignment
+        function loadBooks() {
+            fetch('http://localhost:8000/api/books/needs-country')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        bookSelect.innerHTML = '<option value="">Error loading books</option>';
+                        return;
+                    }
+                    books = Array.isArray(data) ? data : [];
+                    bookSelect.innerHTML = '<option value="">Select a book...</option>';
+                    if (books.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No books need country assignment';
+                        option.disabled = true;
+                        bookSelect.appendChild(option);
+                    } else {
+                        books.forEach(book => {
+                            const option = document.createElement('option');
+                            option.value = book.id;
+                            const title = book.title || 'Untitled';
+                            const author = book.author || 'Unknown';
+                            option.textContent = `${title} by ${author}`;
+                            bookSelect.appendChild(option);
+                        });
+                    }
+                    updateSubmitButton();
+                })
+                .catch(err => {
+                    console.error('Error loading books:', err);
+                    bookSelect.innerHTML = '<option value="">Error loading books</option>';
+                });
+        }
+
+        // Load countries
+        function loadCountries() {
+            fetch('http://localhost:8000/api/countries')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        countrySelect.innerHTML = '<option value="">Error loading countries</option>';
+                        return;
+                    }
+                    countries = data;
+                    countrySelect.innerHTML = '<option value="">Select a country...</option>';
+                    countries.sort((a, b) => a.name.localeCompare(b.name)).forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country.iso_code_3;
+                        option.textContent = `${country.name} (${country.iso_code_3})`;
+                        option.dataset.countryName = country.name;
+                        countrySelect.appendChild(option);
+                    });
+                    updateSubmitButton();
+                })
+                .catch(err => {
+                    console.error('Error loading countries:', err);
+                    countrySelect.innerHTML = '<option value="">Error loading countries</option>';
+                });
+        }
+
+        // Update submit button state
+        function updateSubmitButton() {
+            const bookSelected = bookSelect.value !== '';
+            const countrySelected = countrySelect.value !== '';
+            submitBtn.disabled = !(bookSelected && countrySelected);
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            setTimeout(() => {
+                messageDiv.className = 'message';
+            }, 5000);
+        }
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const bookId = bookSelect.value;
+            const isoCode3 = countrySelect.value;
+            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            const countryName = selectedOption.dataset.countryName;
+
+            if (!bookId || !isoCode3) {
+                showMessage('Please select both a book and a country', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/books/${bookId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        country: countryName,
+                        iso_code_3: isoCode3
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to update book');
+                }
+
+                showMessage(`Successfully assigned ${countryName} to book!`, 'success');
+                
+                // Remove the book from the list and reload
+                setTimeout(() => {
+                    loadBooks();
+                    bookSelect.value = '';
+                    countrySelect.value = '';
+                    updateSubmitButton();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error updating book:', error);
+                showMessage(`Error: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+
+        // Update submit button when selections change
+        bookSelect.addEventListener('change', updateSubmitButton);
+        countrySelect.addEventListener('change', updateSubmitButton);
+
+        // Load data on page load
+        loadBooks();
+        loadCountries();
     </script>
 </body>
 </html>

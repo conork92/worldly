@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from pathlib import Path
 from supa import supabase
 
@@ -87,10 +88,55 @@ def get_artists():
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch artists"}
 
+@app.get("/books")
+def get_books_page():
+    """Serve the books HTML page"""
+    books_path = Path(__file__).parent / "books.html"
+    return FileResponse(books_path)
+
 @app.get("/api/books")
 def get_books():
     try:
-        result = supabase.table("worldly_books").select("*").execute()
+        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").execute()
         return result.data if result.data else []
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch books"}
+
+@app.get("/api/books/needs-country")
+def get_books_needs_country():
+    """Get books that need country assignment (empty country or iso_code_3)"""
+    try:
+        # Get all books with date_read, then filter in Python for empty country/iso_code_3
+        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").execute()
+        if result.data:
+            # Filter for books with empty country or iso_code_3
+            filtered = [
+                book for book in result.data 
+                if not book.get("country") or not book.get("iso_code_3")
+            ]
+            return filtered
+        return []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch books needing country"}
+
+class BookUpdate(BaseModel):
+    country: str
+    iso_code_3: str
+
+@app.patch("/api/books/{book_id}")
+def update_book_country(book_id: int, update: BookUpdate):
+    """Update a book's country and ISO code"""
+    try:
+        result = supabase.table("worldly_good_reads_books").update({
+            "country": update.country,
+            "iso_code_3": update.iso_code_3
+        }).eq("id", book_id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Book not found")
+        
+        return {"success": True, "data": result.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update book: {str(e)}")
