@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Books - Conor's Worldly</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 40px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .title {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: rgba(102, 126, 234, 0.35);
+            border-color: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 20px 25px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            flex: 1;
+            min-width: 180px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Filters */
+        .filters {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .filter-group select:hover,
+        .filter-group input:hover {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .filter-group select option {
+            background: rgba(20, 20, 40, 0.95);
+            color: white;
+        }
+
+        /* Books Grid */
+        .books-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .books-grid.updating {
+            opacity: 0.7;
+        }
+
+        .book-card {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            opacity: 1;
+            transform: scale(1);
+            animation: fadeInCard 0.4s ease-out;
+        }
+
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .book-card.hiding {
+            opacity: 0;
+            transform: scale(0.95) translateY(-10px);
+            pointer-events: none;
+        }
+
+        .book-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .book-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .book-card:hover::before {
+            opacity: 1;
+        }
+
+        .book-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: white;
+            line-height: 1.3;
+        }
+
+        .book-author {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 15px;
+        }
+
+        .book-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .meta-label {
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .meta-value {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 6px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .country-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            font-size: 11px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .country-badge.empty {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* Loading & Error States */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 2px;
+        }
+
+        .error {
+            background: rgba(20, 20, 40, 0.95);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 68, 68, 0.5);
+            text-align: center;
+            max-width: 500px;
+            margin: 40px auto;
+        }
+
+        .error-text {
+            color: #ff4444;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .title {
+                font-size: 28px;
+            }
+
+            .books-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <div class="title">My Books</div>
+            <div class="subtitle">All the books I've read</div>
+        </div>
+        <a href="/globe" class="nav-btn">Back to Globe</a>
+    </div>
+
+    <div class="stats-bar" id="stats-bar">
+        <div class="stat-card">
+            <div class="stat-label">Total Books</div>
+            <div class="stat-value" id="total-books">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">With Rating</div>
+            <div class="stat-value" id="rated-books">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">With Country</div>
+            <div class="stat-value" id="country-books">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Avg Rating</div>
+            <div class="stat-value" id="avg-rating">0.0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Showing</div>
+            <div class="stat-value" id="showing-count">0</div>
+        </div>
+    </div>
+
+    <div class="filters" id="filters">
+        <div class="filter-group">
+            <label for="sort-select">Sort by:</label>
+            <select id="sort-select">
+                <option value="date_read_desc">Date Read (Newest)</option>
+                <option value="date_read_asc">Date Read (Oldest)</option>
+                <option value="title_asc">Title (A-Z)</option>
+                <option value="title_desc">Title (Z-A)</option>
+                <option value="rating_desc">Rating (High to Low)</option>
+                <option value="rating_asc">Rating (Low to High)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filter-country">Filter by Country:</label>
+            <select id="filter-country">
+                <option value="">All Countries</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="filter-year">Filter by Year:</label>
+            <select id="filter-year">
+                <option value="">All Years</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="search-input">Search:</label>
+            <input type="text" id="search-input" placeholder="Title or author...">
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">LOADING BOOKS</div>
+    </div>
+
+    <div class="books-grid" id="books-grid"></div>
+
+    <script>
+        let allBooks = [];
+        let filteredBooks = [];
+
+        // Load books from API
+        async function loadBooks() {
+            try {
+                const response = await fetch('http://localhost:8000/api/books');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+
+                allBooks = Array.isArray(data) ? data : [];
+                filteredBooks = [...allBooks];
+                
+                updateStats();
+                populateCountryFilter();
+                populateYearFilter();
+                renderBooks();
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading books:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="error">
+                        <div class="error-text">${error.message}<br><br>Make sure the API is running on http://localhost:8000</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = allBooks.length;
+            const rated = allBooks.filter(b => b.rating).length;
+            const withCountry = allBooks.filter(b => b.country && b.iso_code_3).length;
+            const ratings = allBooks.filter(b => b.rating).map(b => b.rating);
+            const avgRating = ratings.length > 0 
+                ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+                : '0.0';
+
+            document.getElementById('total-books').textContent = total;
+            document.getElementById('rated-books').textContent = rated;
+            document.getElementById('country-books').textContent = withCountry;
+            document.getElementById('avg-rating').textContent = avgRating;
+        }
+
+        // Populate country filter
+        function populateCountryFilter() {
+            const countries = [...new Set(allBooks
+                .filter(b => b.country && b.iso_code_3)
+                .map(b => b.country)
+                .sort())];
+            
+            const select = document.getElementById('filter-country');
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country;
+                option.textContent = country;
+                select.appendChild(option);
+            });
+        }
+
+        // Populate year filter
+        function populateYearFilter() {
+            const years = [...new Set(allBooks
+                .filter(b => b.date_read)
+                .map(b => {
+                    const date = new Date(b.date_read);
+                    return date.getFullYear();
+                })
+                .filter(year => !isNaN(year))
+                .sort((a, b) => b - a))]; // Sort descending (newest first)
+            
+            const select = document.getElementById('filter-year');
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                select.appendChild(option);
+            });
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'Not set';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // Render books with smooth transitions
+        function renderBooks() {
+            const grid = document.getElementById('books-grid');
+            
+            // Update showing count
+            document.getElementById('showing-count').textContent = filteredBooks.length;
+            
+            if (filteredBooks.length === 0) {
+                grid.innerHTML = '<div class="empty-state">No books found matching your filters.</div>';
+                return;
+            }
+
+            // Add updating class for visual feedback
+            grid.classList.add('updating');
+            
+            // Small delay to allow transition
+            setTimeout(() => {
+                grid.innerHTML = filteredBooks.map((book, index) => {
+                const rating = book.rating ? `<span class="rating">⭐ ${book.rating}</span>` : '';
+                const country = book.country && book.iso_code_3 
+                    ? `<span class="country-badge">${book.country}</span>`
+                    : '<span class="country-badge empty">No Country</span>';
+                
+                    return `
+                        <div class="book-card" style="animation-delay: ${index * 0.03}s">
+                            <div class="book-title">${escapeHtml(book.title || 'Untitled')}</div>
+                            <div class="book-author">by ${escapeHtml(book.author || 'Unknown Author')}</div>
+                            ${rating ? `<div style="margin-bottom: 10px;">${rating}</div>` : ''}
+                            <div class="book-meta">
+                                <div class="meta-item">
+                                    <span class="meta-label">Read:</span>
+                                    <span class="meta-value">${formatDate(book.date_read)}</span>
+                                </div>
+                                ${book.pages ? `
+                                    <div class="meta-item">
+                                        <span class="meta-label">Pages:</span>
+                                        <span class="meta-value">${book.pages}</span>
+                                    </div>
+                                ` : ''}
+                                ${book.format ? `
+                                    <div class="meta-item">
+                                        <span class="meta-label">Format:</span>
+                                        <span class="meta-value">${book.format}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div style="margin-top: 12px;">
+                                ${country}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                grid.classList.remove('updating');
+            }, 50);
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Filter and sort books
+        function filterAndSort() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const countryFilter = document.getElementById('filter-country').value;
+            const yearFilter = document.getElementById('filter-year').value;
+            const sortBy = document.getElementById('sort-select').value;
+
+            // Filter books
+            filteredBooks = allBooks.filter(book => {
+                const matchesSearch = !searchTerm || 
+                    (book.title && book.title.toLowerCase().includes(searchTerm)) ||
+                    (book.author && book.author.toLowerCase().includes(searchTerm));
+                
+                const matchesCountry = !countryFilter || book.country === countryFilter;
+                
+                let matchesYear = true;
+                if (yearFilter && book.date_read) {
+                    const bookYear = new Date(book.date_read).getFullYear();
+                    matchesYear = bookYear.toString() === yearFilter;
+                }
+                
+                return matchesSearch && matchesCountry && matchesYear;
+            });
+
+            // Sort
+            filteredBooks.sort((a, b) => {
+                switch(sortBy) {
+                    case 'date_read_desc':
+                        return new Date(b.date_read || 0) - new Date(a.date_read || 0);
+                    case 'date_read_asc':
+                        return new Date(a.date_read || 0) - new Date(b.date_read || 0);
+                    case 'title_asc':
+                        return (a.title || '').localeCompare(b.title || '');
+                    case 'title_desc':
+                        return (b.title || '').localeCompare(a.title || '');
+                    case 'rating_desc':
+                        return (b.rating || 0) - (a.rating || 0);
+                    case 'rating_asc':
+                        return (a.rating || 0) - (b.rating || 0);
+                    default:
+                        return 0;
+                }
+            });
+
+            // Render with smooth transition
+            renderBooks();
+        }
+
+        // Event listeners with debouncing for search
+        let searchTimeout;
+        document.getElementById('sort-select').addEventListener('change', filterAndSort);
+        document.getElementById('filter-country').addEventListener('change', filterAndSort);
+        document.getElementById('filter-year').addEventListener('change', filterAndSort);
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(filterAndSort, 300); // Debounce search for 300ms
+        });
+
+        // Load books on page load
+        loadBooks();
+    </script>
+</body>
+</html>
+
