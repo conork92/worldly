@@ -3,110 +3,682 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worldly Globe Visualization</title>
+    <title>Conor's Worldly Globe</title>
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background: #000011;
-            font-family: Arial, sans-serif;
+            box-sizing: border-box;
         }
+
+        body {
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+
         #globe-container {
             width: 100vw;
             height: 100vh;
+            position: relative;
         }
+
+        /* Header UI */
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 30px 40px;
+            background: linear-gradient(180deg, rgba(0,0,20,0.8) 0%, rgba(0,0,20,0) 100%);
+            z-index: 100;
+            pointer-events: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .title {
+            font-size: 32px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 5px;
+            pointer-events: auto;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1px;
+            pointer-events: auto;
+        }
+
+        /* Top-right nav buttons */
+        .top-right-nav {
+            display: flex;
+            gap: 8px;
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            pointer-events: auto;
+            z-index: 101;
+        }
+
+        .top-right-nav .nav-btn {
+            padding: 8px 16px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            text-decoration: none;
+            outline: none;
+        }
+
+        .top-right-nav .nav-btn:hover {
+            background: rgba(102, 126, 234, 0.35);
+            border-color: #667eea;
+            color: white;
+        }
+
+        /* Control Panel */
+        .controls {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            min-width: 280px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 8px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        .slider-container {
+            margin-top: 10px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-value {
+            display: inline-block;
+            margin-left: 10px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Stats Panel */
+        .stats {
+            position: absolute;
+            top: 120px;
+            right: 40px;
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            min-width: 240px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .stat-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Loading & Error States */
         .loading {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
-            font-size: 18px;
+            text-align: center;
             z-index: 1000;
         }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.2);
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 2px;
+        }
+
         .error {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: #ff0000;
-            font-size: 18px;
-            z-index: 1000;
+            background: rgba(20, 20, 40, 0.95);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 68, 68, 0.5);
             text-align: center;
-            padding: 20px;
+            max-width: 500px;
+            z-index: 1000;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .error-text {
+            color: #ff4444;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(20, 20, 40, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        .tooltip.visible {
+            display: block;
+        }
+
+        .tooltip-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+
+        .tooltip-content {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+            .title {
+                font-size: 24px;
+            }
+            .controls, .stats {
+                position: relative;
+                bottom: auto;
+                top: auto;
+                left: auto;
+                right: auto;
+                margin: 20px;
+                width: calc(100% - 40px);
+            }
+            .top-right-nav {
+                position: static;
+                top: auto;
+                right: auto;
+                margin-left: auto;
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="globe-container"></div>
-    <div class="loading" id="loading">Loading globe...</div>
+    <div class="header">
+        <div>
+            <div class="title">Conor's Worldly Globe</div>
+            <div class="subtitle">Interactive 3D Globe with Real-time Data</div>
+        </div>
+        <!-- Top right nav buttons -->
+        <div class="top-right-nav">
+            <a class="nav-btn" href="/api/albums" target="_blank" rel="noopener">Albums</a>
+            <a class="nav-btn" href="/api/artists" target="_blank" rel="noopener">Artists</a>
+            <a class="nav-btn" href="/api/books" target="_blank" rel="noopener">Books</a>
+        </div>
+    </div>
 
-    <!-- globe.gl from CDN -->
-    <script src="https://unpkg.com/globe.gl"></script>
+    <div id="globe-container"></div>
+    
+    <div class="controls">
+        <div class="control-group">
+            <span class="control-label">Visualization Mode</span>
+            <div class="button-group">
+                <button class="btn active" onclick="setMode('hexagons')">Hexagons</button>
+                <button class="btn" onclick="setMode('points')">Points</button>
+                <button class="btn" onclick="setMode('arcs')">Arcs</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Color Scheme</span>
+            <div class="button-group">
+                <button class="btn active" onclick="setColorScheme('gradient')">Gradient</button>
+                <button class="btn" onclick="setColorScheme('heat')">Heat</button>
+                <button class="btn" onclick="setColorScheme('cool')">Cool</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">
+                Altitude Scale
+                <span class="slider-value" id="altitude-value">1.0x</span>
+            </span>
+            <div class="slider-container">
+                <input type="range" id="altitude-slider" min="0.1" max="3" step="0.1" value="1" oninput="updateAltitude(this.value)">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <span class="control-label">Actions</span>
+            <div class="button-group">
+                <button class="btn" onclick="resetView()">Reset View</button>
+                <button class="btn" onclick="toggleRotation()">Auto Rotate</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-item">
+            <div class="stat-label">Data Points</div>
+            <div class="stat-value" id="data-count">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Active Hexagons</div>
+            <div class="stat-value" id="hex-count">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Max Value</div>
+            <div class="stat-value" id="max-value">0</div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">LOADING GLOBE</div>
+    </div>
+
+    <div class="tooltip" id="tooltip">
+        <div class="tooltip-title" id="tooltip-title"></div>
+        <div class="tooltip-content" id="tooltip-content"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.31.0/dist/globe.gl.min.js"></script>
 
     <script>
         let globeInstance = null;
+        let rawData = [];
+        let currentMode = 'hexagons';
+        let currentColorScheme = 'gradient';
+        let altitudeScale = 1.0;
+        let isRotating = false;
+        let rotationInterval = null;
+
         const loadingEl = document.getElementById('loading');
-        
-        // Function to show error
+        const tooltip = document.getElementById('tooltip');
+
+        // Color schemes
+        const colorSchemes = {
+            gradient: {
+                top: d => {
+                    const intensity = d.sumWeight / Math.max(...rawData.map(p => p.value || 1));
+                    return `rgba(${102 + intensity * 100}, ${126 - intensity * 80}, ${234 + intensity * 21}, 0.9)`;
+                },
+                side: d => {
+                    const intensity = d.sumWeight / Math.max(...rawData.map(p => p.value || 1));
+                    return `rgba(${102 + intensity * 100}, ${126 - intensity * 80}, ${234 + intensity * 21}, 0.7)`;
+                }
+            },
+            heat: {
+                top: d => {
+                    const intensity = d.sumWeight / Math.max(...rawData.map(p => p.value || 1));
+                    return `rgba(${255}, ${100 - intensity * 100}, ${0}, 0.9)`;
+                },
+                side: d => {
+                    const intensity = d.sumWeight / Math.max(...rawData.map(p => p.value || 1));
+                    return `rgba(${255}, ${100 - intensity * 100}, ${0}, 0.7)`;
+                }
+            },
+            cool: {
+                top: d => {
+                    const intensity = d.sumWeight / Math.max(...rawData.map(p => p.value || 1));
+                    return `rgba(${0}, ${200 - intensity * 100}, ${255}, 0.9)`;
+                },
+                side: d => {
+                    const intensity = d.sumWeight / Math.max(...rawData.map(p => p.value || 1));
+                    return `rgba(${0}, ${200 - intensity * 100}, ${255}, 0.7)`;
+                }
+            }
+        };
+
         function showError(message) {
-            loadingEl.className = 'error';
-            loadingEl.textContent = message;
+            loadingEl.innerHTML = `
+                <div class="error">
+                    <div class="error-icon">⚠️</div>
+                    <div class="error-text">${message}</div>
+                </div>
+            `;
         }
 
-        // Function to hide loading
         function hideLoading() {
             loadingEl.style.display = 'none';
         }
 
-        // Check if Globe is available
+        function updateStats() {
+            document.getElementById('data-count').textContent = rawData.length;
+            const maxVal = Math.max(...rawData.map(p => p.value || 0));
+            document.getElementById('max-value').textContent = maxVal.toFixed(2);
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.controls .control-group:first-child .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (!globeInstance) return;
+
+            // Hide all layers first
+            globeInstance.hexBinPointsData([]);
+            globeInstance.pointsData([]);
+            globeInstance.arcsData([]);
+
+            switch(mode) {
+                case 'hexagons':
+                    globeInstance.hexBinPointsData(rawData);
+                    break;
+                case 'points':
+                    globeInstance.pointsData(rawData)
+                        .pointAltitude(d => (d.value || 0) * 0.01 * altitudeScale)
+                        .pointRadius(0.3)
+                        .pointColor(d => {
+                            const intensity = d.value / Math.max(...rawData.map(p => p.value || 1));
+                            return currentColorScheme === 'gradient' ? `rgba(${102 + intensity * 100}, ${126 - intensity * 80}, ${234 + intensity * 21}, 1)` :
+                                   currentColorScheme === 'heat' ? `rgba(255, ${100 - intensity * 100}, 0, 1)` :
+                                   `rgba(0, ${200 - intensity * 100}, 255, 1)`;
+                        });
+                    break;
+                case 'arcs':
+                    // Create sample arcs between random points
+                    const arcs = [];
+                    for (let i = 0; i < Math.min(50, rawData.length - 1); i++) {
+                        const start = rawData[i];
+                        const end = rawData[Math.floor(Math.random() * rawData.length)];
+                        arcs.push({
+                            startLat: start.lat,
+                            startLng: start.lng,
+                            endLat: end.lat,
+                            endLng: end.lng
+                        });
+                    }
+                    globeInstance.arcsData(arcs)
+                        .arcColor(() => currentColorScheme === 'gradient' ? ['#667eea', '#764ba2'] :
+                                       currentColorScheme === 'heat' ? ['#ff6600', '#ff0000'] :
+                                       ['#00c8ff', '#0066ff'])
+                        .arcStroke(0.5)
+                        .arcDashLength(0.4)
+                        .arcDashGap(0.2)
+                        .arcDashAnimateTime(2000);
+                    break;
+            }
+        }
+
+        function setColorScheme(scheme) {
+            currentColorScheme = scheme;
+            document.querySelectorAll('.controls .control-group:nth-child(2) .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            if (!globeInstance) return;
+
+            const colors = colorSchemes[scheme];
+            globeInstance
+                .hexTopColor(colors.top)
+                .hexSideColor(colors.side);
+            
+            // Reapply mode to update colors
+            setMode(currentMode);
+        }
+
+        function updateAltitude(value) {
+            altitudeScale = parseFloat(value);
+            document.getElementById('altitude-value').textContent = value + 'x';
+            
+            if (!globeInstance) return;
+            
+            globeInstance.hexAltitude(d => d.sumWeight * 0.01 * altitudeScale);
+        }
+
+        function resetView() {
+            if (!globeInstance) return;
+            globeInstance.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
+        }
+
+        function toggleRotation() {
+            isRotating = !isRotating;
+            event.target.classList.toggle('active');
+            
+            if (isRotating) {
+                rotationInterval = setInterval(() => {
+                    if (globeInstance) {
+                        const pov = globeInstance.pointOfView();
+                        globeInstance.pointOfView({ lng: pov.lng + 0.3, lat: pov.lat });
+                    }
+                }, 50);
+            } else {
+                clearInterval(rotationInterval);
+            }
+        }
+
+        // Initialize globe
         if (typeof Globe === 'undefined') {
             showError('Failed to load globe.gl library. Please check your internet connection.');
         } else {
-            // Fetch data from FastAPI backend
             fetch('http://localhost:8000/api/world_hexed_polygons')
                 .then(res => {
-                    if (!res.ok) {
-                        throw new Error(`HTTP error! status: ${res.status}`);
-                    }
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     return res.json();
                 })
                 .then(data => {
-                    console.log('Fetched hex data:', data);
+                    console.log('Fetched data:', data);
                     
-                    if (!Array.isArray(data)) {
-                        throw new Error('Invalid data format received');
-                    }
+                    if (!Array.isArray(data)) throw new Error('Invalid data format');
 
-                    // Initialize the globe
+                    rawData = data;
+                    updateStats();
+
                     globeInstance = Globe()
                         (document.getElementById('globe-container'))
-                        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-                        .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-                        .hexBinPointsData(data)
+                        .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-night.jpg')
+                        .backgroundImageUrl('https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/night-sky.png')
+                        .hexBinPointsData(rawData)
                         .hexBinPointWeight('value')
                         .hexBinResolution(4)
                         .hexBinMerge(true)
-                        .hexTopColor(d => d.sumWeight > 0 ? '#ff0000' : '#0000ff')
-                        .hexSideColor(d => d.sumWeight > 0 ? '#ff0000' : '#0000ff')
+                        .hexTopColor(colorSchemes.gradient.top)
+                        .hexSideColor(colorSchemes.gradient.side)
+                        .hexAltitude(d => d.sumWeight * 0.01)
                         .hexBinPointLat('lat')
                         .hexBinPointLng('lng')
                         .showAtmosphere(true)
-                        .atmosphereColor('#ffffff')
-                        .atmosphereAltitude(0.15);
+                        .atmosphereColor('#667eea')
+                        .atmosphereAltitude(0.2)
+                        .onHexHover(hex => {
+                            if (hex) {
+                                tooltip.classList.add('visible');
+                                document.getElementById('tooltip-title').textContent = `Cluster Data`;
+                                document.getElementById('tooltip-content').textContent = 
+                                    `Points: ${hex.points.length}\nTotal Value: ${hex.sumWeight.toFixed(2)}`;
+                            } else {
+                                tooltip.classList.remove('visible');
+                            }
+                        })
+                        .hexLabel('')
+                        .width(window.innerWidth)
+                        .height(window.innerHeight);
 
-                    // Set initial camera position
-                    globeInstance.pointOfView({ lat: 0, lng: 0, altitude: 2.5 });
+                    // Set initial view
+                    globeInstance.pointOfView({ lat: 20, lng: 0, altitude: 2.5 });
 
-                    // Hide loading message after a short delay
-                    setTimeout(hideLoading, 500);
+                    // Handle window resize
+                    window.addEventListener('resize', () => {
+                        if (globeInstance) {
+                            globeInstance.width(window.innerWidth);
+                            globeInstance.height(window.innerHeight);
+                        }
+                    });
+
+                    // Track mouse for tooltip
+                    document.addEventListener('mousemove', e => {
+                        tooltip.style.left = e.clientX + 15 + 'px';
+                        tooltip.style.top = e.clientY + 15 + 'px';
+                    });
+
+                    hideLoading();
                 })
                 .catch(err => {
                     console.error('Error loading globe:', err);
-                    showError(`Error: ${err.message}. Make sure the API is running on http://localhost:8000`);
+                    showError(`${err.message}<br><br>Make sure the API is running on http://localhost:8000`);
                 });
         }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (rotationInterval) clearInterval(rotationInterval);
+        });
     </script>
 </body>
 </html>

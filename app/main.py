@@ -64,7 +64,33 @@ def get_world_hexed_polygons():
             {"lat": 19.43, "lng": -99.13, "value": 6},
             {"lat": -22.91, "lng": -43.17, "value": 11},
             {"lat": 28.61, "lng": 77.21, "value": 13},
+            {"lat": 6.5244, "lng": 3.3792, "value": 8},
         ]
         return hex_data
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch world hexed polygons data"}
+
+
+@app.get("/api/albums")
+def get_albums():
+    try:
+        result = supabase.table("worldly_albums").select("*").execute()
+        return result.data if result.data else []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch albums"}
+
+@app.get("/api/artists")
+def get_artists():
+    try:
+        result = supabase.table("worldly_artists").select("*").execute()
+        return result.data if result.data else []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch artists"}
+
+@app.get("/api/books")
+def get_books():
+    try:
+        result = supabase.table("worldly_books").select("*").execute()
+        return result.data if result.data else []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch books"}
