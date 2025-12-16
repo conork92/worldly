@@ -4,12 +4,14 @@
         "quote": "The souls of both were knit together without sewing",
         "author": "Rumi",
         "category": "philosophical_wisdom",
+        "type": "poem",
         "theme": "connection"
       },
       {
         "quote": "We should never cease to learn",
         "author": "Carlo Ancelotti",
         "category": "philosophical_wisdom",
+        "type":"book",
         "theme": "learning"
       },
       {
@@ -452,6 +454,49 @@
         "source": "Night Sky with Exit Wounds, p68",
         "category": "ocean_vuong",
         "theme": "war_beauty"
-      }
+      },
+      {
+        "quote": "But books are different. I often look for books that are like medicine, that fit my situation and my thoughts, and I read them over and over again until the pages are tattered, underlining everything and still the book will have something to give me. Books never tire of me. And in time they present a solution, quietly waiting until I am fully healed. That's one of the nicest things about books.",
+        "author": "Baek Se-hee",
+        "source": "I Want to Die But I Want to Eat Tteokpokki",
+        "category": "baek_se-hee",
+        "theme": "books_healing"
+      },
+      {
+        "quote": "What you're trying to say is that it's easier for you to hide in your own darkness, than emerge cloaked in your own vulnerability. Not better, but easier. However the longer you hold it in, the more likely you are to suffocate.\nAt some point, you must breathe.",
+        "author": "Caleb Azumah Nelson",
+        "source": "Open Water",
+        "category": "caleb_azumah_nelson",
+        "theme": "vulnerability_breathing" },
+
+      {
+        "quote": "What is better than believing you are heading towards love?",
+        "author": "Caleb Azumah Nelson",
+        "source": "Open Water",
+        "category": "caleb_azumah_nelson",
+        "theme": "love_anticipation",
+        "html": "<div class=\"quoteText\">\n  &ldquo;What is better than believing you are heading towards love?&rdquo;\n  <br />\n  &#8213;\n  <span class=\"authorOrTitle\">\n    Caleb Azumah Nelson,\n  </span>\n  <span id=\"quote_book_link_53414230\">\n    <a class=\"authorOrTitle\" href=\"/work/quotes/82730501\">Open Water</a>\n  </span>\n</div>"
+      },
+      {
+        "quote": "There was an inevitability about the road towards each other which encouraged meandering along the route.",
+        "author": "Zadie Smith",
+        "source": "NW",
+        "category": "zadie_smith",
+        "theme": "connection_inevitability"
+        },
+        {
+          "quote": "don't aim at success. The more you aim at it and make it a target, the more you are going to miss it. For success, like happiness, cannot be pursued; it must ensue, and it only does so as the unintended side effect of one's personal dedication to a cause greater than oneself or as the by-product of one's surrender to a person other than oneself. Happiness must happen, and the same holds for success: you have to let it happen by not caring about it. I want you to listen to what your conscience commands you to do and go on to carry it out to the best of your knowledge. Then you will live to see that in the long-run—in the long-run, I say!—success will follow you precisely because you had forgotten to think about it",
+          "author": "Viktor E. Frankl",
+          "source": "Man's Search for Meaning",
+          "category": "philosophical_wisdom",
+          "theme": "connection_inevitability"
+          },
+          {
+            "quote": "I don't like people who like me because I'm a Negro; neither do I like people who find in the same accident grounds for contempt. I love America more than any other country in the world, and, exactly for this reason, I insist on the right to criticize her perpetually. I think all theories are suspect, that the finest principles may have to be modified, or may even be pulverized by the demands of life, and that one must find, therefore, one's own moral center and move through the world hoping that this center will guide one aright. I consider that I have many responsibilities, but none greater than this: to last, as Hemingway says, and get my work done.<br />I want to be an honest man and a good writer.",
+            "author": "James Baldwin",
+            "source": "Notes of a Native Son",
+            "category": "philosophical_wisdom",
+            "theme": "connection_inevitability"
+          }
     ]
   }
