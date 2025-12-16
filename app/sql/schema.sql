@@ -215,22 +215,28 @@ CREATE TABLE public.worldly_film_ratings (
 -- Table: worldly_quotes
 CREATE TABLE public.worldly_quotes (
     id SERIAL PRIMARY KEY,
-    quote_text TEXT NOT NULL,
+    quote TEXT NOT NULL,
     author VARCHAR(255),
     source VARCHAR(255),
-    language VARCHAR(50),
+    type VARCHAR(100),
+    page VARCHAR(100),
     country VARCHAR(100),
-    iso_code_2 VARCHAR(10),
     iso_code_3 VARCHAR(10),
-    context TEXT,
     year INTEGER,
     category VARCHAR(100),
-    theme VARCHAR(100),
-    extra_data JSONB, -- Allows for additional/unmapped fields from the JSON file
+    tags TEXT[],  -- make tags a list/array of text
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+
+Source - where it's from (book title, speech, article, etc.)
+Date added - when you saved it
+
+Useful optional columns:
+
+Category/Tags - for filtering (e.g., "motivation", "wisdom", "humor")
+Date of quote - when it was originally said/written
 
 
 -- Create function to update updated_at timestamp
