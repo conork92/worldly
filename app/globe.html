@@ -744,18 +744,45 @@
         if (typeof Globe === 'undefined') {
             showError('Failed to load globe.gl library. Please check your internet connection.');
         } else {
-            fetch('http://localhost:8000/api/world_hexed_polygons')
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return res.json();
-                })
-                .then(data => {
-                    console.log('Fetched data:', data);
+            // Load both hex data and countries data in parallel
+            Promise.all([
+                fetch('http://localhost:8000/api/world_hexed_polygons').then(res => res.json()),
+                fetch('http://localhost:8000/api/countries/with-data').then(res => res.json()),
+                fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then(res => res.json())
+            ])
+                .then(([hexData, countriesData, worldGeoJson]) => {
+                    console.log('Fetched data:', hexData);
+                    console.log('Fetched countries:', countriesData);
                     
-                    if (!Array.isArray(data)) throw new Error('Invalid data format');
+                    if (!Array.isArray(hexData)) throw new Error('Invalid hex data format');
+                    if (!Array.isArray(countriesData)) throw new Error('Invalid countries data format');
 
-                    rawData = data;
+                    rawData = hexData;
                     updateStats();
+
+                    // Create a map of ISO codes to country data
+                    const countriesMap = {};
+                    countriesData.forEach(country => {
+                        if (country.iso_code_3) {
+                            countriesMap[country.iso_code_3] = country;
+                        }
+                    });
+
+                    // Process GeoJSON to add country data info
+                    const polygonsData = worldGeoJson.features.map(feature => {
+                        const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
+                        const countryInfo = countriesMap[iso3];
+                        
+                        return {
+                            ...feature,
+                            properties: {
+                                ...feature.properties,
+                                hasData: countryInfo ? countryInfo.has_data : false,
+                                dataTypes: countryInfo ? countryInfo.data_types : [],
+                                countryName: countryInfo ? countryInfo.name : feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown'
+                            }
+                        };
+                    });
 
                     globeInstance = Globe()
                         (document.getElementById('globe-container'))
@@ -770,6 +797,56 @@
                         .hexAltitude(d => d.sumWeight * 0.01)
                         .hexBinPointLat('lat')
                         .hexBinPointLng('lng')
+                        .polygonsData(polygonsData)
+                        .polygonAltitude(0.01)
+                        .polygonCapColor(d => {
+                            if (d.properties.hasData) {
+                                return 'rgba(102, 126, 234, 0.4)'; // Purple overlay for countries with data
+                            }
+                            return 'rgba(255, 255, 255, 0.05)'; // Very subtle overlay for countries without data
+                        })
+                        .polygonSideColor(d => {
+                            if (d.properties.hasData) {
+                                return 'rgba(102, 126, 234, 0.2)';
+                            }
+                            return 'rgba(255, 255, 255, 0.02)';
+                        })
+                        .polygonStrokeColor(() => 'rgba(102, 126, 234, 0.3)')
+                        .polygonLabel(d => {
+                            if (d.properties.hasData) {
+                                const dataTypes = d.properties.dataTypes || [];
+                                return `
+                                    <div style="padding: 10px;">
+                                        <div style="font-weight: 600; margin-bottom: 5px; color: #667eea;">${d.properties.countryName}</div>
+                                        <div style="font-size: 11px; color: rgba(255,255,255,0.8);">
+                                            Data: ${dataTypes.join(', ') || 'Available'}
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                            return `
+                                <div style="padding: 10px;">
+                                    <div style="font-weight: 600; margin-bottom: 5px;">${d.properties.countryName}</div>
+                                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">No data</div>
+                                </div>
+                            `;
+                        })
+                        .onPolygonHover(polygon => {
+                            if (polygon) {
+                                tooltip.classList.add('visible');
+                                const props = polygon.properties;
+                                document.getElementById('tooltip-title').textContent = props.countryName || 'Unknown Country';
+                                if (props.hasData) {
+                                    const dataTypes = props.dataTypes || [];
+                                    document.getElementById('tooltip-content').textContent = 
+                                        `Has data: ${dataTypes.join(', ') || 'Yes'}`;
+                                } else {
+                                    document.getElementById('tooltip-content').textContent = 'No data available';
+                                }
+                            } else {
+                                tooltip.classList.remove('visible');
+                            }
+                        })
                         .showAtmosphere(true)
                         .atmosphereColor('#667eea')
                         .atmosphereAltitude(0.2)

@@ -45,6 +45,58 @@ def get_countries():
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch countries"}
 
+@app.get("/api/countries/with-data")
+def get_countries_with_data():
+    """Get countries that have associated data (books, albums, artists)"""
+    try:
+        # Get all countries
+        countries_result = supabase.table("worldly_countries").select("*").execute()
+        if not countries_result.data:
+            return []
+        
+        # Get books with countries
+        books_result = supabase.table("worldly_good_reads_books").select("iso_code_3, country").filter("date_read", "not.is", "null").execute()
+        books_countries = set()
+        if books_result.data:
+            books_countries = set([b.get("iso_code_3") for b in books_result.data if b.get("iso_code_3")])
+        
+        # Get albums with countries
+        albums_result = supabase.table("worldly_albums").select("iso_code_3, country").execute()
+        albums_countries = set()
+        if albums_result.data:
+            albums_countries = set([a.get("iso_code_3") for a in albums_result.data if a.get("iso_code_3")])
+        
+        # Get artists with countries
+        artists_result = supabase.table("worldly_artists").select("iso_code_3, country").execute()
+        artists_countries = set()
+        if artists_result.data:
+            artists_countries = set([a.get("iso_code_3") for a in artists_result.data if a.get("iso_code_3")])
+        
+        # Combine all countries with data
+        all_countries_with_data = books_countries | albums_countries | artists_countries
+        
+        # Mark countries that have data
+        countries_with_data = []
+        for country in countries_result.data:
+            has_data = country.get("iso_code_3") in all_countries_with_data
+            country_info = {
+                **country,
+                "has_data": has_data,
+                "data_types": []
+            }
+            if country.get("iso_code_3") in books_countries:
+                country_info["data_types"].append("books")
+            if country.get("iso_code_3") in albums_countries:
+                country_info["data_types"].append("albums")
+            if country.get("iso_code_3") in artists_countries:
+                country_info["data_types"].append("artists")
+            
+            countries_with_data.append(country_info)
+        
+        return countries_with_data
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch countries with data"}
+
 @app.get("/api/world_hexed_polygons")
 def get_world_hexed_polygons():
     """

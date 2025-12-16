@@ -1,0 +1,457 @@
+{
+    "quotes": [
+      {
+        "quote": "The souls of both were knit together without sewing",
+        "author": "Rumi",
+        "category": "philosophical_wisdom",
+        "theme": "connection"
+      },
+      {
+        "quote": "We should never cease to learn",
+        "author": "Carlo Ancelotti",
+        "category": "philosophical_wisdom",
+        "theme": "learning"
+      },
+      {
+        "quote": "Until you can make the unconscious conscious it will rule your life and you'll call it fate",
+        "author": "Carl Jung",
+        "category": "philosophical_wisdom",
+        "theme": "self-awareness"
+      },
+      {
+        "quote": "Verbs are greater than nouns at describing people",
+        "author": "Unknown",
+        "category": "philosophical_wisdom",
+        "theme": "language_identity"
+      },
+      {
+        "quote": "If you don't take a step you can't put a foot wrong",
+        "author": "Conor Kennedy",
+        "category": "philosophical_wisdom",
+        "theme": "action"
+      },
+      {
+        "quote": "If you don't stand for something you'll fall for anything",
+        "author": "Lenny Henry",
+        "category": "philosophical_wisdom",
+        "theme": "principles"
+      },
+      {
+        "quote": "Until the lion learns to write the narrative will always favour the hunter",
+        "author": "Unknown (African proverb)",
+        "category": "philosophical_wisdom",
+        "theme": "perspective"
+      },
+      {
+        "quote": "The social needs of a community should inform it's economic agenda",
+        "author": "George the Poet",
+        "category": "social_justice",
+        "theme": "economics"
+      },
+      {
+        "quote": "There is no greater mistake then trying to make charity do the work of justice",
+        "author": "William Desert Tuckeron",
+        "category": "social_justice",
+        "theme": "justice_vs_charity"
+      },
+      {
+        "quote": "In a Time of Universal Deceit — Telling the Truth Is a Revolutionary Act",
+        "author": "George Orwell / Musa Messi",
+        "category": "social_justice",
+        "theme": "truth"
+      },
+      {
+        "quote": "People hate because if people had to stop hating they'd have to deal with pain",
+        "author": "James Baldwin",
+        "category": "social_justice",
+        "theme": "hatred_pain"
+      },
+      {
+        "quote": "To achieve equality you don't change mindsets you change process",
+        "author": "Sarah Gordon, CEO impact investing",
+        "category": "social_justice",
+        "theme": "equality"
+      },
+      {
+        "quote": "I think it's deeply important to be ashamed of your countries history otherwise what progress can we strive for",
+        "author": "CK",
+        "category": "social_justice",
+        "theme": "historical_accountability"
+      },
+      {
+        "quote": "The function of an artist is to make people like life better than before",
+        "author": "Unknown",
+        "category": "music_and_art",
+        "theme": "art_purpose"
+      },
+      {
+        "quote": "The only proof he needed for the existence of God was music",
+        "author": "Kurt Vonnegut",
+        "source": "A Man Without a Country, p66",
+        "category": "music_and_art",
+        "theme": "music_spirituality"
+      },
+      {
+        "quote": "Without music the melancoly silence is deafening",
+        "author": "CK",
+        "category": "music_and_art",
+        "theme": "music_necessity"
+      },
+      {
+        "quote": "It's the quest to get open and free",
+        "author": "Rap Ferreira",
+        "category": "music_and_art",
+        "theme": "freedom"
+      },
+      {
+        "quote": "Give it to whoever or whatever you thought was god",
+        "author": "Wiki",
+        "category": "music_and_art",
+        "theme": "devotion"
+      },
+      {
+        "quote": "Books are different. I often look for books that are like medicine, that fit my situation and my thoughts, and I read them over and over again until the pages are tattered, underlining everything and still the book will have something to give me. Books never tire of me.",
+        "author": "Baek Se-hee",
+        "source": "I Want to Die But I Want to Eat Tteokpokki",
+        "category": "books_and_reading",
+        "theme": "healing_through_reading"
+      },
+      {
+        "quote": "If he'd read a different book at a different time in his life he'd be a different man",
+        "author": "Luther",
+        "category": "books_and_reading",
+        "theme": "books_transformation"
+      },
+      {
+        "quote": "My philosophy is that you need, year-on-year, new voices, new profiles, just to stimulate the group. Just to keep the group competitive, to keep the group's daily training at its maximum",
+        "author": "Unknown English coach",
+        "source": "Wings of Change - Karan Tejwani p117",
+        "category": "sports_and_competition",
+        "theme": "team_management"
+      },
+      {
+        "quote": "My type of loyalty probably doesn't exist any more. Maybe the dinosaur I became was the last symbol of times that have changed.",
+        "author": "Arsène Wenger",
+        "category": "sports_and_competition",
+        "theme": "loyalty_change"
+      },
+      {
+        "quote": "That war only made billionaire out of millionaires. Today's war is making triollionairs out of billionaire. Now that's what I call progress",
+        "author": "Kurt Vonnegut",
+        "source": "A Man Without a Country, p67",
+        "category": "kurt_vonnegut_collection",
+        "theme": "war_profiteering"
+      },
+      {
+        "quote": "The blues can't drive depression clear out of a house, but can drive it into the corners of any room where it's being playing",
+        "author": "Kurt Vonnegut",
+        "source": "A Man Without a Country, p67-8",
+        "category": "kurt_vonnegut_collection",
+        "theme": "blues_depression"
+      },
+      {
+        "quote": "I keep hoping the damn things will kill me, a fire at one end a fool at the other",
+        "author": "Kurt Vonnegut",
+        "source": "A Man Without a Country, p41",
+        "category": "kurt_vonnegut_collection",
+        "theme": "smoking"
+      },
+      {
+        "quote": "We have squandered our planets resources, including air and water, as though there was no tomorrow, so now there isn't going to be",
+        "author": "Kurt Vonnegut",
+        "source": "A Man Without a Country, p45",
+        "category": "kurt_vonnegut_collection",
+        "theme": "environmental_destruction"
+      },
+      {
+        "quote": "By quarreling among themselves, only succeeded in hiding their ignorance from one another",
+        "author": "Leo Tolstoy",
+        "source": "A Confession",
+        "category": "tolstoy_existential",
+        "theme": "ignorance"
+      },
+      {
+        "quote": "I felt like what I had been standing on had collapsed and that I had nothing else under my feet, what I had lived on no longer existed and there was nothing left",
+        "author": "Leo Tolstoy",
+        "source": "A Confession, chapter 4",
+        "category": "tolstoy_existential",
+        "theme": "existential_crisis"
+      },
+      {
+        "quote": "I feel bad for people who don't drink. When they wake up in the morning, that's as good as they're going to feel all day",
+        "author": "Frank Sinatra",
+        "category": "alcohol_humor",
+        "theme": "drinking_humor"
+      },
+      {
+        "quote": "Always do sober what you said you'd do drunk. That will teach you to keep your mouth shut",
+        "author": "Ernest Hemingway",
+        "category": "alcohol_humor",
+        "theme": "drinking_wisdom"
+      },
+      {
+        "quote": "I cook with wine, sometimes I even add it to the food",
+        "author": "W.C. Fields",
+        "category": "alcohol_humor",
+        "theme": "cooking_drinking"
+      },
+      {
+        "quote": "Beer is proof that God loves us and wants us to be happy",
+        "author": "Benjamin Franklin",
+        "category": "alcohol_humor",
+        "theme": "beer_theology"
+      },
+      {
+        "quote": "Here's to alcohol, the cause of, and solution to, all life's problems",
+        "author": "The Simpsons",
+        "category": "alcohol_humor",
+        "theme": "alcohol_paradox"
+      },
+      {
+        "quote": "Do you drink? Of course, I just said I was a writer",
+        "author": "Stephen King",
+        "category": "alcohol_humor",
+        "theme": "writers_drinking"
+      },
+      {
+        "quote": "You can learn a lot about a woman by getting smashed with her",
+        "author": "Tom Waits",
+        "category": "alcohol_humor",
+        "theme": "drinking_relationships"
+      },
+      {
+        "quote": "Candy is dandy, but liquor is quicker",
+        "author": "Ogden Nash",
+        "source": "Hard Lines",
+        "category": "alcohol_humor",
+        "theme": "seduction"
+      },
+      {
+        "quote": "There's nothing worse then the lies we don't truly live in",
+        "author": "CK",
+        "category": "personal_reflections_ck",
+        "theme": "authenticity"
+      },
+      {
+        "quote": "There's nothing like her company to elucidate life",
+        "author": "CK",
+        "category": "personal_reflections_ck",
+        "theme": "companionship"
+      },
+      {
+        "quote": "Morality exists between the margins of what you know you should do and what you want to do",
+        "author": "CK",
+        "category": "personal_reflections_ck",
+        "theme": "morality"
+      },
+      {
+        "quote": "The thing I hate most in life is cynacyism. You work really hard and are kind, amazing things will happen",
+        "author": "Conan O'Brien",
+        "category": "miscellaneous_wisdom",
+        "theme": "optimism"
+      },
+      {
+        "quote": "In a world like this all we have is our ability to emphasise",
+        "author": "Michael McCreary",
+        "category": "miscellaneous_wisdom",
+        "theme": "empathy"
+      },
+      {
+        "quote": "If you don't have debate and discussion you can not form an opinion",
+        "author": "Skin (Skunk Anansie)",
+        "category": "miscellaneous_wisdom",
+        "theme": "debate"
+      },
+      {
+        "quote": "We are not all having the same debate at the same time, its very arrogant to tear people down for not being there yet",
+        "author": "Skin (Skunk Anansie)",
+        "category": "miscellaneous_wisdom",
+        "theme": "patience"
+      },
+      {
+        "quote": "Blame is a person seeking missile",
+        "author": "Michael Bavidge",
+        "source": "Mad or Bad, p49",
+        "category": "miscellaneous_wisdom",
+        "theme": "blame"
+      },
+      {
+        "quote": "Sometimes tethers are beyond repair",
+        "author": "Conor",
+        "category": "miscellaneous_wisdom",
+        "theme": "relationships"
+      },
+      {
+        "quote": "That's either a myth or the truth",
+        "author": "Jackson Bailey",
+        "category": "miscellaneous_wisdom",
+        "theme": "ambiguity"
+      },
+      {
+        "quote": "Too many grownups tend to put themselves into little rooms with windows that don't open",
+        "author": "Madeleine L'Engle",
+        "category": "miscellaneous_wisdom",
+        "theme": "limitation"
+      },
+      {
+        "quote": "If dogs could talk, perhaps we would find it as hard to get along with them as we do people",
+        "author": "Karel Capek",
+        "category": "miscellaneous_wisdom",
+        "theme": "communication"
+      },
+      {
+        "quote": "I don't play video games the same way I don't try crack",
+        "author": "Zoe Balotta",
+        "category": "miscellaneous_wisdom",
+        "theme": "addiction_avoidance"
+      },
+      {
+        "quote": "When jazz first came out, the older cats thought it was too wild and wouldn't last. When rap came out, the older heads said it wasn't gonna last. Being caught in the past is the most frightening thing I could possibly imagine",
+        "author": "Shabazz Palaces frontman (Butler)",
+        "category": "rap_and_hip_hop",
+        "theme": "musical_evolution"
+      },
+      {
+        "quote": "I wish I had the cash to make my vices problems",
+        "author": "Saint Melaa",
+        "category": "rap_and_hip_hop",
+        "theme": "wealth_vice"
+      },
+      {
+        "quote": "Exile is no place for a person, or your compassion",
+        "author": "Rap Ferreira",
+        "source": "Decorum",
+        "category": "rap_and_hip_hop",
+        "theme": "exile_compassion"
+      },
+      {
+        "quote": "Over time, injury becomes a state of mind for the sidelined footballer. The first thing you lose is the capacity to be hopeful",
+        "author": "McGrath",
+        "source": "Cultured Left Foot - Musa Okwonga p42",
+        "category": "injury_and_sports",
+        "theme": "injury_psychology"
+      },
+      {
+        "quote": "If everybody did not die the earth would be all covered over and I, as I, could not have come to be",
+        "author": "Gertrude Stein",
+        "source": "Referenced by Claudia Rankine p12",
+        "category": "gertrude_stein_death",
+        "theme": "death_necessity"
+      },
+      {
+        "quote": "How can you wake up with someone you don't love and not be slightly fazed by it",
+        "author": "Arctic Monkeys",
+        "category": "arctic_monkeys",
+        "theme": "casual_relationships"
+      },
+      {
+        "quote": "Whiteness is a phenomenon unthinkable in a context where white does not equal power at some structural level",
+        "author": "Charles Mills",
+        "category": "race_and_power",
+        "theme": "structural_racism"
+      },
+      {
+        "quote": "A master is made by his whip",
+        "author": "Monster Florence",
+        "category": "race_and_power",
+        "theme": "oppression"
+      },
+      {
+        "quote": "The long and the short if it is that the master makes himself a slave to his slave by needing that domination to define him",
+        "author": "Akala",
+        "source": "p104",
+        "category": "race_and_power",
+        "theme": "power_dependency"
+      },
+      {
+        "quote": "As long as whiteness is a metaphor for power, blackness must of course function as a metaphor for powerlessness, and as long as money whitens, poverty must blacken",
+        "author": "Akala",
+        "source": "p111",
+        "category": "race_and_power",
+        "theme": "race_class_intersection"
+      },
+      {
+        "quote": "White supremacists, as much as they don't want to admit it, make themselves slaves to black excellence when they allow its existence to unbalance their entire sense of self",
+        "author": "Akala",
+        "category": "race_and_power",
+        "theme": "supremacy_paradox"
+      },
+      {
+        "quote": "Power concedes nothing without demand or motive, and the abolitionist movement needs to be viewed much like the anti-war movements of today",
+        "author": "Akala",
+        "source": "p136",
+        "category": "race_and_power",
+        "theme": "social_movements"
+      },
+      {
+        "quote": "Too scared of hope to hope, too experienced to experience, too close to dead is what I think",
+        "author": "Claudia Rankine",
+        "source": "Don't Let Me Be Lonely, p23",
+        "category": "claudia_rankine",
+        "theme": "hopelessness"
+      },
+      {
+        "quote": "My dark skin saved my dad from child services but no one saved me",
+        "author": "Derek Owusu",
+        "source": "That Reminds Me",
+        "category": "derek_owusu",
+        "theme": "childhood_trauma"
+      },
+      {
+        "quote": "As a child, I wished the colours of his kente would soak into him and give me a father whose personality was luminous; instead he'd pass on darkness to my eyes",
+        "author": "Derek Owusu",
+        "source": "That Reminds Me",
+        "category": "derek_owusu",
+        "theme": "father_son"
+      },
+      {
+        "quote": "She needs a man and I'm a boy; she wants to make love and I want to be in love",
+        "author": "Derek Owusu",
+        "source": "That Reminds Me",
+        "category": "derek_owusu",
+        "theme": "intimacy_disconnect"
+      },
+      {
+        "quote": "Who taught you to hate yourself?",
+        "author": "Derek Owusu's therapist",
+        "source": "That Reminds Me",
+        "category": "derek_owusu",
+        "theme": "self_hatred"
+      },
+      {
+        "quote": "The small amount of emotion in her voice was loud enough to scare me away. I couldn't burden my therapist or know I had the power to - so, therapist, I unburden you",
+        "author": "Derek Owusu",
+        "source": "That Reminds Me",
+        "category": "derek_owusu",
+        "theme": "therapy_vulnerability"
+      },
+      {
+        "quote": "There are some people that you shouldn't see cry",
+        "author": "Derek Owusu",
+        "source": "That Reminds Me",
+        "category": "derek_owusu",
+        "theme": "emotional_walls"
+      },
+      {
+        "quote": "They think they're going to lose already; let's not disappoint them",
+        "author": "Ray Parlour",
+        "source": "Invincibles - Amy Lawrence, p129",
+        "category": "sports_and_competition",
+        "theme": "confidence"
+      },
+      {
+        "quote": "From men, I learnt to praise the thickness of walls. From women I learned to praise",
+        "author": "Ocean Vuong",
+        "source": "Night Sky with Exit Wounds, p56",
+        "category": "ocean_vuong",
+        "theme": "gender_lessons"
+      },
+      {
+        "quote": "Some grenades explode with a vision of white flowers",
+        "author": "Ocean Vuong",
+        "source": "Night Sky with Exit Wounds, p68",
+        "category": "ocean_vuong",
+        "theme": "war_beauty"
+      }
+    ]
+  }

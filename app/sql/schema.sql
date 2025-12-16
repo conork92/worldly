@@ -1,11 +1,8 @@
 -- Create the worldly schema
-CREATE SCHEMA IF NOT EXISTS worldly;
 
--- Set search path to use worldly schema
-SET search_path TO worldly;
 
 -- COUNTRIES table
-CREATE OR REPLACE TABLE worldly.countries (
+CREATE TABLE public.worldly_countries (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     iso_code_2 CHAR(2) NOT NULL UNIQUE,
@@ -19,7 +16,7 @@ CREATE OR REPLACE TABLE worldly.countries (
 
 
 -- USERS table
-CREATE TABLE worldly.users (
+CREATE TABLE public.worldly_users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -30,7 +27,7 @@ CREATE TABLE worldly.users (
 
 
 -- ARTISTS table
-CREATE TABLE worldly.artists (
+CREATE TABLE public.worldly_artists (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,                    -- artist (CSV: artist)
     bea_artist_link VARCHAR(255),                  -- from CSV: e.g., /thechart.php?a=123251
@@ -48,7 +45,7 @@ CREATE TABLE worldly.artists (
 -- ALBUMS table
 -- Worldly Albums Table - optimized for source CSV import and future data use
 
-CREATE TABLE worldly.albums (
+CREATE TABLE public.worldly_albums (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     bea_album_rank VARCHAR(24),                -- from CSV: e.g., "112,508th"
@@ -68,7 +65,7 @@ CREATE TABLE worldly.albums (
 
 
 -- AUTHORS table
-CREATE TABLE worldly.authors (
+CREATE TABLE public.worldly_authors (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     country_id INTEGER NOT NULL,
@@ -78,14 +75,14 @@ CREATE TABLE worldly.authors (
     biography TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (country_id) REFERENCES worldly.countries(id) ON DELETE RESTRICT,
+    FOREIGN KEY (country_id) REFERENCES public.worldly_countries(id) ON DELETE RESTRICT,
     CONSTRAINT chk_birth_year CHECK (birth_year >= 1000 AND birth_year <= 2100),
     CONSTRAINT chk_death_year CHECK (death_year >= 1000 AND death_year <= 2100),
     CONSTRAINT chk_birth_before_death CHECK (death_year IS NULL OR death_year >= birth_year)
 );
 
 -- BOOKS table
-CREATE TABLE worldly.books (
+CREATE TABLE public.worldly_books (
     id SERIAL PRIMARY KEY,
     title VARCHAR(500) NOT NULL,
     author_id INTEGER NOT NULL,
@@ -96,7 +93,7 @@ CREATE TABLE worldly.books (
     rating_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (author_id) REFERENCES worldly.authors(id) ON DELETE CASCADE,
+    FOREIGN KEY (author_id) REFERENCES public.worldly_authors(id) ON DELETE CASCADE,
     CONSTRAINT chk_book_rating CHECK (avg_rating >= 0 AND avg_rating <= 10),
     CONSTRAINT chk_book_rating_count CHECK (rating_count >= 0),
     CONSTRAINT chk_publication_year CHECK (publication_year >= 1000 AND publication_year <= 2100)
@@ -104,7 +101,7 @@ CREATE TABLE worldly.books (
 
 
 -- DIRECTORS table
-CREATE TABLE worldly.directors (
+CREATE TABLE public.worldly_directors (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     country_id INTEGER NOT NULL,
@@ -114,14 +111,14 @@ CREATE TABLE worldly.directors (
     biography TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (country_id) REFERENCES worldly.countries(id) ON DELETE RESTRICT,
+    FOREIGN KEY (country_id) REFERENCES public.worldly_countries(id) ON DELETE RESTRICT,
     CONSTRAINT chk_director_birth_year CHECK (birth_year >= 1000 AND birth_year <= 2100),
     CONSTRAINT chk_director_death_year CHECK (death_year >= 1000 AND death_year <= 2100),
     CONSTRAINT chk_director_birth_before_death CHECK (death_year IS NULL OR death_year >= birth_year)
 );
 
 -- FILMS table
-CREATE TABLE worldly.films (
+CREATE TABLE public.worldly_films (
     id SERIAL PRIMARY KEY,
     title VARCHAR(500) NOT NULL,
     director_id INTEGER NOT NULL,
@@ -134,8 +131,8 @@ CREATE TABLE worldly.films (
     rating_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (director_id) REFERENCES worldly.directors(id) ON DELETE CASCADE,
-    FOREIGN KEY (country_id) REFERENCES worldly.countries(id) ON DELETE RESTRICT,
+    FOREIGN KEY (director_id) REFERENCES public.worldly_directors(id) ON DELETE CASCADE,
+    FOREIGN KEY (country_id) REFERENCES public.worldly_countries(id) ON DELETE RESTRICT,
     CONSTRAINT chk_film_rating CHECK (avg_rating >= 0 AND avg_rating <= 10),
     CONSTRAINT chk_film_rating_count CHECK (rating_count >= 0),
     CONSTRAINT chk_film_release_year CHECK (release_year >= 1000 AND release_year <= 2100),
@@ -143,7 +140,7 @@ CREATE TABLE worldly.films (
 );
 
 -- ALBUM_RATINGS table
-CREATE TABLE worldly.album_ratings (
+CREATE TABLE public.worldly_album_ratings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     album_id INTEGER NOT NULL,
@@ -151,14 +148,14 @@ CREATE TABLE worldly.album_ratings (
     review TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES worldly.users(id) ON DELETE CASCADE,
-    FOREIGN KEY (album_id) REFERENCES worldly.albums(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES public.worldly_users(id) ON DELETE CASCADE,
+    FOREIGN KEY (album_id) REFERENCES public.worldly_albums(id) ON DELETE CASCADE,
     CONSTRAINT chk_album_user_rating CHECK (rating >= 0 AND rating <= 10),
     CONSTRAINT unique_user_album UNIQUE (user_id, album_id)
 );
 
 -- BOOK_RATINGS table
-CREATE TABLE worldly.book_ratings (
+CREATE TABLE public.worldly_book_ratings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     book_id INTEGER NOT NULL,
@@ -166,8 +163,8 @@ CREATE TABLE worldly.book_ratings (
     review TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES worldly.users(id) ON DELETE CASCADE,
-    FOREIGN KEY (book_id) REFERENCES worldly.books(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES public.worldly_users(id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES public.worldly_books(id) ON DELETE CASCADE,
     CONSTRAINT chk_book_user_rating CHECK (rating >= 0 AND rating <= 10),
     CONSTRAINT unique_user_book UNIQUE (user_id, book_id)
 );
@@ -176,7 +173,7 @@ CREATE TABLE worldly.book_ratings (
 -- Table to store best ever albums by country, as per best_ever_albums_country.csv
 -- Make schema more flexible: allow more nullable fields, allow for additional/unknown columns, and relax some NOT NULL constraints.
 -- Use JSONB for flexible or unmapped columns if import source changes.
-CREATE TABLE worldly.best_ever_albums_country (
+CREATE TABLE public.worldly_best_ever_albums_country (
     id SERIAL PRIMARY KEY,
     country VARCHAR(150),
     artist VARCHAR(350),
@@ -201,7 +198,7 @@ CREATE TABLE worldly.best_ever_albums_country (
 
 
 -- FILM_RATINGS table
-CREATE TABLE worldly.film_ratings (
+CREATE TABLE public.worldly_film_ratings (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     film_id INTEGER NOT NULL,
@@ -209,11 +206,31 @@ CREATE TABLE worldly.film_ratings (
     review TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES worldly.users(id) ON DELETE CASCADE,
-    FOREIGN KEY (film_id) REFERENCES worldly.films(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES public.worldly_users(id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id) REFERENCES public.worldly_films(id) ON DELETE CASCADE,
     CONSTRAINT chk_film_user_rating CHECK (rating >= 0 AND rating <= 10),
     CONSTRAINT unique_user_film UNIQUE (user_id, film_id)
 );
+
+-- Table: worldly_quotes
+CREATE TABLE public.worldly_quotes (
+    id SERIAL PRIMARY KEY,
+    quote_text TEXT NOT NULL,
+    author VARCHAR(255),
+    source VARCHAR(255),
+    language VARCHAR(50),
+    country VARCHAR(100),
+    iso_code_2 VARCHAR(10),
+    iso_code_3 VARCHAR(10),
+    context TEXT,
+    year INTEGER,
+    category VARCHAR(100),
+    theme VARCHAR(100),
+    extra_data JSONB, -- Allows for additional/unmapped fields from the JSON file
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 
 
 -- Create function to update updated_at timestamp
@@ -227,65 +244,65 @@ $$ LANGUAGE plpgsql;
 
 -- Create triggers for updated_at on all relevant tables
 CREATE TRIGGER update_countries_updated_at
-    BEFORE UPDATE ON worldly.countries
+    BEFORE UPDATE ON public.worldly_countries
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_artists_updated_at
-    BEFORE UPDATE ON worldly.artists
+    BEFORE UPDATE ON public.worldly_artists
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_albums_updated_at
-    BEFORE UPDATE ON worldly.albums
+    BEFORE UPDATE ON public.worldly_albums
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_authors_updated_at
-    BEFORE UPDATE ON worldly.authors
+    BEFORE UPDATE ON public.worldly_authors
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_books_updated_at
-    BEFORE UPDATE ON worldly.books
+    BEFORE UPDATE ON public.worldly_books
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_directors_updated_at
-    BEFORE UPDATE ON worldly.directors
+    BEFORE UPDATE ON public.worldly_directors
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_films_updated_at
-    BEFORE UPDATE ON worldly.films
+    BEFORE UPDATE ON public.worldly_films
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_album_ratings_updated_at
-    BEFORE UPDATE ON worldly.album_ratings
+    BEFORE UPDATE ON public.worldly_album_ratings
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_book_ratings_updated_at
-    BEFORE UPDATE ON worldly.book_ratings
+    BEFORE UPDATE ON public.worldly_book_ratings
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_film_ratings_updated_at
-    BEFORE UPDATE ON worldly.film_ratings
+    BEFORE UPDATE ON public.worldly_film_ratings
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Add comments to tables for documentation
-COMMENT ON SCHEMA worldly IS 'Schema for the Worldly countries and art application';
-COMMENT ON TABLE worldly.countries IS 'Central table containing all countries in the world';
-COMMENT ON TABLE worldly.users IS 'Application users who can rate and review content';
-COMMENT ON TABLE worldly.artists IS 'Musical artists from various countries';
-COMMENT ON TABLE worldly.albums IS 'Albums created by artists';
-COMMENT ON TABLE worldly.authors IS 'Book authors from various countries';
-COMMENT ON TABLE worldly.books IS 'Books written by authors';
-COMMENT ON TABLE worldly.directors IS 'Film directors from various countries';
-COMMENT ON TABLE worldly.films IS 'Films directed by directors';
-COMMENT ON TABLE worldly.album_ratings IS 'User ratings and reviews for albums';
-COMMENT ON TABLE worldly.book_ratings IS 'User ratings and reviews for books';
-COMMENT ON TABLE worldly.film_ratings IS 'User ratings and reviews for films';
+COMMENT ON SCHEMA public.worldly IS 'Schema for the Worldly countries and art application';
+COMMENT ON TABLE public.worldly_countries IS 'Central table containing all countries in the world';
+COMMENT ON TABLE public.worldly_users IS 'Application users who can rate and review content';
+COMMENT ON TABLE public.worldly_artists IS 'Musical artists from various countries';
+COMMENT ON TABLE public.worldly_albums IS 'Albums created by artists';
+COMMENT ON TABLE public.worldly_authors IS 'Book authors from various countries';
+COMMENT ON TABLE public.worldly_books IS 'Books written by authors';
+COMMENT ON TABLE public.worldly_directors IS 'Film directors from various countries';
+COMMENT ON TABLE public.worldly_films IS 'Films directed by directors';
+COMMENT ON TABLE public.worldly_album_ratings IS 'User ratings and reviews for albums';
+COMMENT ON TABLE public.worldly_book_ratings IS 'User ratings and reviews for books';
+COMMENT ON TABLE public.worldly_film_ratings IS 'User ratings and reviews for films';
