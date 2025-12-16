@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from supa import supabase
 
-def load_quotes(json_path="app/data/quotes_keep.json"):
+def load_quotes(json_path="data/quotes_keep.json"):
     """
     Loads quotes from a JSON file and inserts them into the worldly_quotes table in Supabase.
     Skips duplicates (by quote text and author).

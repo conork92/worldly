@@ -146,6 +146,12 @@ def get_books_page():
     books_path = Path(__file__).parent / "books.html"
     return FileResponse(books_path)
 
+@app.get("/quotes")
+def get_quotes_page():
+    """Serve the quotes HTML page"""
+    quotes_path = Path(__file__).parent / "quotes.html"
+    return FileResponse(quotes_path)
+
 @app.get("/api/books")
 def get_books():
     try:
@@ -153,6 +159,54 @@ def get_books():
         return result.data if result.data else []
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch books"}
+
+@app.get("/api/quotes")
+def get_quotes():
+    try:
+        result = supabase.table("worldly_quotes").select("*").execute()
+        return result.data if result.data else []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch quotes"}
+
+@app.get("/api/quotes/random")
+def get_random_quote():
+    """Get a random quote"""
+    try:
+        result = supabase.table("worldly_quotes").select("*").execute()
+        if result.data and len(result.data) > 0:
+            import random
+            return random.choice(result.data)
+        return {}
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch random quote"}
+
+class QuoteCreate(BaseModel):
+    quote: str
+    author: str = None
+    source: str = None
+    type: str = None
+    page: str = None
+    country: str = None
+    iso_code_3: str = None
+    year: int = None
+    category: str = None
+    tags: list = None
+
+@app.post("/api/quotes")
+def create_quote(quote: QuoteCreate):
+    """Create a new quote"""
+    try:
+        payload = quote.dict(exclude_none=True)
+        result = supabase.table("worldly_quotes").insert(payload).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=400, detail="Failed to create quote")
+        
+        return {"success": True, "data": result.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create quote: {str(e)}")
 
 @app.get("/api/books/needs-country")
 def get_books_needs_country():
