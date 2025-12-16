@@ -124,6 +124,12 @@ def get_world_hexed_polygons():
         return {"error": str(e), "message": "Failed to fetch world hexed polygons data"}
 
 
+@app.get("/albums")
+def get_albums_page():
+    """Serve the albums HTML page"""
+    albums_path = Path(__file__).parent / "albums.html"
+    return FileResponse(albums_path)
+
 @app.get("/api/albums")
 def get_albums():
     try:
@@ -131,6 +137,45 @@ def get_albums():
         return result.data if result.data else []
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch albums"}
+
+@app.get("/api/albums/listened")
+def get_albums_listened():
+    """Get albums from worldly_countrys_listened table"""
+    try:
+        result = supabase.table("worldly_countrys_listened").select("*").execute()
+        return result.data if result.data else []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch listened albums"}
+
+class AlbumUpdate(BaseModel):
+    album: str = None
+    artist: str = None
+    rating: float = None
+    listen_date: str = None
+    country_name: str = None
+    iso_alpha_2: str = None
+    iso_alpha_3: str = None
+    year: int = None
+    spotify_link: str = None
+    comments: str = None
+
+@app.patch("/api/albums/listened/{album_id}")
+def update_album_listened(album_id: int, update: AlbumUpdate):
+    """Update an album in worldly_countrys_listened table"""
+    try:
+        # Remove None values
+        update_data = update.dict(exclude_none=True)
+        
+        result = supabase.table("worldly_countrys_listened").update(update_data).eq("id", album_id).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Album not found")
+        
+        return {"success": True, "data": result.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update album: {str(e)}")
 
 @app.get("/api/artists")
 def get_artists():

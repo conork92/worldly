@@ -229,6 +229,25 @@ CREATE TABLE public.worldly_quotes (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE public.worldly_countrys_listened (
+    id SERIAL PRIMARY KEY,
+    country_name VARCHAR(255),
+    iso_alpha_2 CHAR(2),
+    iso_alpha_3 CHAR(3),
+    artist VARCHAR(255),
+    album VARCHAR(255),
+    rating DECIMAL(3,1),
+    listen_date VARCHAR(20),
+    comments TEXT,
+    state_or_country VARCHAR(255),
+    year INTEGER,
+    spotify_link TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
 
 Source - where it's from (book title, speech, article, etc.)
 Date added - when you saved it
