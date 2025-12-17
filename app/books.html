@@ -302,6 +302,166 @@
             color: rgba(255,255,255,0.4);
         }
 
+        /* Assign Country Form */
+        .assign-country-form {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .assign-country-form.visible {
+            max-height: 2000px;
+            opacity: 1;
+            margin-top: 0;
+            margin-bottom: 30px;
+            padding-top: 25px;
+            padding-bottom: 25px;
+        }
+
+        .form-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group-full {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 8px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-group select:hover {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+
+        .form-group select:focus {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-group select option {
+            background: rgba(20, 20, 40, 0.95);
+            color: white;
+        }
+
+        .form-submit-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .form-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .form-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-align: center;
+            display: none;
+        }
+
+        .form-message.success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.5);
+            color: #4caf50;
+            display: block;
+        }
+
+        .form-message.error {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.5);
+            color: #f44336;
+            display: block;
+        }
+
+        .toggle-form-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .toggle-form-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .toggle-form-btn.active {
+            background: rgba(102, 126, 234, 0.3);
+            border: 1px solid rgba(102, 126, 234, 0.5);
+        }
+
         /* Loading & Error States */
         .loading {
             text-align: center;
@@ -401,7 +561,7 @@
             <div class="stat-value" id="rated-books">0</div>
         </div>
         <div class="stat-card">
-            <div class="stat-label">With Country</div>
+            <div class="stat-label">Countries Read From</div>
             <div class="stat-value" id="country-books">0</div>
         </div>
         <div class="stat-card">
@@ -442,6 +602,33 @@
             <label for="search-input">Search:</label>
             <input type="text" id="search-input" placeholder="Title or author...">
         </div>
+        <div class="filter-group">
+            <button type="button" class="toggle-form-btn" id="toggle-assign-btn" onclick="toggleAssignForm()">+ Assign Country</button>
+        </div>
+    </div>
+
+    <!-- Assign Country Form -->
+    <div class="assign-country-form" id="assign-country-form-container">
+        <div class="form-title">Assign Country to Book</div>
+        <form id="assign-country-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="book-select">Select Book</label>
+                    <select id="book-select" required>
+                        <option value="">Loading books...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="country-select">Select Country</label>
+                    <select id="country-select" required>
+                        <option value="">Loading countries...</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="form-submit-btn" id="submit-btn" disabled>Submit</button>
+            <button type="button" class="form-submit-btn" id="cancel-btn" onclick="toggleAssignForm()" style="background: rgba(102, 126, 234, 0.2); margin-top: 10px;">Cancel</button>
+            <div class="form-message" id="form-message"></div>
+        </form>
     </div>
 
     <div class="loading" id="loading">
@@ -487,7 +674,7 @@
         function updateStats() {
             const total = allBooks.length;
             const rated = allBooks.filter(b => b.rating).length;
-            const withCountry = allBooks.filter(b => b.country && b.iso_code_3).length;
+            const uniqueCountries = new Set(allBooks.filter(b => b.country && b.iso_code_3).map(b => b.iso_code_3)).size;
             const ratings = allBooks.filter(b => b.rating).map(b => b.rating);
             const avgRating = ratings.length > 0 
                 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
@@ -495,7 +682,7 @@
 
             document.getElementById('total-books').textContent = total;
             document.getElementById('rated-books').textContent = rated;
-            document.getElementById('country-books').textContent = withCountry;
+            document.getElementById('country-books').textContent = uniqueCountries;
             document.getElementById('avg-rating').textContent = avgRating;
         }
 
@@ -663,6 +850,173 @@
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(filterAndSort, 300); // Debounce search for 300ms
         });
+
+        // Toggle assign country form
+        function toggleAssignForm() {
+            const formContainer = document.getElementById('assign-country-form-container');
+            const toggleBtn = document.getElementById('toggle-assign-btn');
+            
+            formContainer.classList.toggle('visible');
+            toggleBtn.classList.toggle('active');
+            
+            if (formContainer.classList.contains('visible')) {
+                toggleBtn.textContent = '− Close';
+                // Load books and countries if not already loaded
+                if (booksNeedingCountry.length === 0) {
+                    loadBooksNeedingCountry();
+                }
+                if (countriesList.length === 0) {
+                    loadCountriesList();
+                }
+                // Scroll to form smoothly
+                setTimeout(() => {
+                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                toggleBtn.textContent = '+ Assign Country';
+            }
+        }
+
+        // Book Assignment Form Functionality
+        const bookSelect = document.getElementById('book-select');
+        const countrySelect = document.getElementById('country-select');
+        const submitBtn = document.getElementById('submit-btn');
+        const messageDiv = document.getElementById('form-message');
+        const assignForm = document.getElementById('assign-country-form');
+        let booksNeedingCountry = [];
+        let countriesList = [];
+
+        // Load books that need country assignment
+        function loadBooksNeedingCountry() {
+            fetch('http://localhost:8000/api/books/needs-country')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        bookSelect.innerHTML = '<option value="">Error loading books</option>';
+                        return;
+                    }
+                    booksNeedingCountry = Array.isArray(data) ? data : [];
+                    bookSelect.innerHTML = '<option value="">Select a book...</option>';
+                    if (booksNeedingCountry.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'No books need country assignment';
+                        option.disabled = true;
+                        bookSelect.appendChild(option);
+                    } else {
+                        booksNeedingCountry.forEach(book => {
+                            const option = document.createElement('option');
+                            option.value = book.id;
+                            const title = book.title || 'Untitled';
+                            const author = book.author || 'Unknown';
+                            option.textContent = `${title} by ${author}`;
+                            bookSelect.appendChild(option);
+                        });
+                    }
+                    updateSubmitButton();
+                })
+                .catch(err => {
+                    console.error('Error loading books:', err);
+                    bookSelect.innerHTML = '<option value="">Error loading books</option>';
+                });
+        }
+
+        // Load countries
+        function loadCountriesList() {
+            fetch('http://localhost:8000/api/countries')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        countrySelect.innerHTML = '<option value="">Error loading countries</option>';
+                        return;
+                    }
+                    countriesList = data;
+                    countrySelect.innerHTML = '<option value="">Select a country...</option>';
+                    countriesList.sort((a, b) => a.name.localeCompare(b.name)).forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country.iso_code_3;
+                        option.textContent = `${country.name} (${country.iso_code_3})`;
+                        option.dataset.countryName = country.name;
+                        countrySelect.appendChild(option);
+                    });
+                    updateSubmitButton();
+                })
+                .catch(err => {
+                    console.error('Error loading countries:', err);
+                    countrySelect.innerHTML = '<option value="">Error loading countries</option>';
+                });
+        }
+
+        // Update submit button state
+        function updateSubmitButton() {
+            const bookSelected = bookSelect.value !== '';
+            const countrySelected = countrySelect.value !== '';
+            submitBtn.disabled = !(bookSelected && countrySelected);
+        }
+
+        // Handle form submission
+        assignForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const bookId = bookSelect.value;
+            const isoCode3 = countrySelect.value;
+            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            const countryName = selectedOption.dataset.countryName;
+
+            if (!bookId || !isoCode3) {
+                messageDiv.className = 'form-message error';
+                messageDiv.textContent = 'Please select both a book and a country';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            messageDiv.className = 'form-message';
+            messageDiv.textContent = '';
+
+            try {
+                const response = await fetch(`http://localhost:8000/api/books/${bookId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        country: countryName,
+                        iso_code_3: isoCode3
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to update book');
+                }
+
+                messageDiv.className = 'form-message success';
+                messageDiv.textContent = `Successfully assigned ${countryName} to book!`;
+                
+                // Close form and reload books
+                setTimeout(() => {
+                    toggleAssignForm();
+                    loadBooks(); // Reload all books to refresh the list
+                    bookSelect.value = '';
+                    countrySelect.value = '';
+                    updateSubmitButton();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error updating book:', error);
+                messageDiv.className = 'form-message error';
+                messageDiv.textContent = `Error: ${error.message}`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+            }
+        });
+
+        // Update submit button when selections change
+        bookSelect.addEventListener('change', updateSubmitButton);
+        countrySelect.addEventListener('change', updateSubmitButton);
 
         // Load books on page load
         loadBooks();
