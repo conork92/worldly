@@ -327,6 +327,20 @@
             font-size: 12px;
             color: rgba(255,255,255,0.8);
             line-height: 1.5;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .tooltip-content strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .tooltip-content em {
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
         }
 
         /* Responsive */
@@ -402,6 +416,15 @@
         </div>
 
         <div class="control-group">
+            <span class="control-label">Data Type</span>
+            <div class="button-group">
+                <button class="btn active" onclick="setDataType('books')" id="data-type-books">Books</button>
+                <button class="btn" onclick="setDataType('quotes')" id="data-type-quotes">Quotes</button>
+                <button class="btn" onclick="setDataType('albums')" id="data-type-albums">Albums</button>
+            </div>
+        </div>
+
+        <div class="control-group">
             <span class="control-label">Actions</span>
             <div class="button-group">
                 <button class="btn" onclick="resetView()">Reset View</button>
@@ -412,16 +435,20 @@
 
     <div class="stats">
         <div class="stat-item">
-            <div class="stat-label">Data Points</div>
-            <div class="stat-value" id="data-count">0</div>
+            <div class="stat-label" id="stat-label-1">Total</div>
+            <div class="stat-value" id="stat-value-1">0</div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Active Hexagons</div>
-            <div class="stat-value" id="hex-count">0</div>
+            <div class="stat-label" id="stat-label-2">With Country</div>
+            <div class="stat-value" id="stat-value-2">0</div>
         </div>
         <div class="stat-item">
-            <div class="stat-label">Max Value</div>
-            <div class="stat-value" id="max-value">0</div>
+            <div class="stat-label" id="stat-label-3">Countries</div>
+            <div class="stat-value" id="stat-value-3">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label" id="stat-label-4">Average Rating</div>
+            <div class="stat-value" id="stat-value-4">-</div>
         </div>
     </div>
 
@@ -445,6 +472,9 @@
         let altitudeScale = 1.0;
         let isRotating = false;
         let rotationInterval = null;
+        let currentDataType = 'books';
+        let countryDataMap = {}; // Maps ISO code to array of items (books/quotes/albums)
+        let worldGeoJson = null;
 
         const loadingEl = document.getElementById('loading');
         const tooltip = document.getElementById('tooltip');
@@ -496,10 +526,56 @@
             loadingEl.style.display = 'none';
         }
 
+        // Update statistics based on current data type
         function updateStats() {
-            document.getElementById('data-count').textContent = rawData.length;
-            const maxVal = Math.max(...rawData.map(p => p.value || 0));
-            document.getElementById('max-value').textContent = maxVal.toFixed(2);
+            if (!countryDataMap || Object.keys(countryDataMap).length === 0) {
+                document.getElementById('stat-value-1').textContent = '0';
+                document.getElementById('stat-value-2').textContent = '0';
+                document.getElementById('stat-value-3').textContent = '0';
+                document.getElementById('stat-value-4').textContent = '-';
+                return;
+            }
+            
+            const allItems = Object.values(countryDataMap).flat();
+            const totalItems = allItems.length;
+            const itemsWithCountry = allItems.filter(item => item.iso_code_3 && item.iso_code_3.trim() !== '').length;
+            const countriesWithData = Object.keys(countryDataMap).length;
+            
+            // Calculate average rating if applicable
+            let avgRating = '-';
+            if (currentDataType === 'books' || currentDataType === 'albums') {
+                const ratedItems = allItems.filter(item => item.rating != null && item.rating > 0);
+                if (ratedItems.length > 0) {
+                    const sum = ratedItems.reduce((acc, item) => acc + parseFloat(item.rating), 0);
+                    avgRating = (sum / ratedItems.length).toFixed(1);
+                }
+            }
+            
+            // Update labels and values based on data type
+            if (currentDataType === 'books') {
+                document.getElementById('stat-label-1').textContent = 'Total Books';
+                document.getElementById('stat-label-2').textContent = 'With Country';
+                document.getElementById('stat-label-3').textContent = 'Countries';
+                document.getElementById('stat-label-4').textContent = 'Avg Rating';
+            } else if (currentDataType === 'quotes') {
+                document.getElementById('stat-label-1').textContent = 'Total Quotes';
+                document.getElementById('stat-label-2').textContent = 'With Country';
+                document.getElementById('stat-label-3').textContent = 'Countries';
+                document.getElementById('stat-label-4').textContent = 'With Author';
+                // For quotes, show count with author instead of rating
+                const withAuthor = allItems.filter(item => item.author && item.author.trim() !== '').length;
+                avgRating = withAuthor.toString();
+            } else if (currentDataType === 'albums') {
+                document.getElementById('stat-label-1').textContent = 'Total Albums';
+                document.getElementById('stat-label-2').textContent = 'With Country';
+                document.getElementById('stat-label-3').textContent = 'Countries';
+                document.getElementById('stat-label-4').textContent = 'Avg Rating';
+            }
+            
+            document.getElementById('stat-value-1').textContent = totalItems;
+            document.getElementById('stat-value-2').textContent = itemsWithCountry;
+            document.getElementById('stat-value-3').textContent = countriesWithData;
+            document.getElementById('stat-value-4').textContent = avgRating;
         }
 
         function setMode(mode) {
@@ -604,46 +680,158 @@
             }
         }
 
+        // Load data for selected type
+        async function loadDataType(type) {
+            const endpoint = type === 'books' ? '/api/books' : 
+                           type === 'quotes' ? '/api/quotes' : 
+                           '/api/albums/listened';
+            
+            try {
+                const response = await fetch(`http://localhost:8000${endpoint}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Error loading data:', data.error);
+                    return {};
+                }
+                
+                // Group data by ISO code
+                const grouped = {};
+                (Array.isArray(data) ? data : []).forEach(item => {
+                    const iso3 = item.iso_code_3;
+                    if (iso3) {
+                        if (!grouped[iso3]) {
+                            grouped[iso3] = [];
+                        }
+                        grouped[iso3].push(item);
+                    }
+                });
+                
+                return grouped;
+            } catch (error) {
+                console.error(`Error loading ${type}:`, error);
+                return {};
+            }
+        }
+
+        // Update globe polygons based on current data type
+        function updateGlobePolygons() {
+            if (!globeInstance || !worldGeoJson) return;
+
+            // Process GeoJSON to add country data info
+            const polygonsData = worldGeoJson.features.map(feature => {
+                const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
+                const countryItems = countryDataMap[iso3] || [];
+                const hasData = countryItems.length > 0;
+                const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
+                
+                return {
+                    ...feature,
+                    properties: {
+                        ...feature.properties,
+                        hasData: hasData,
+                        items: countryItems,
+                        countryName: countryName,
+                        iso3: iso3
+                    }
+                };
+            });
+
+            globeInstance.polygonsData(polygonsData);
+        }
+
+        // Format tooltip content based on data type
+        function formatTooltipContent(items, dataType) {
+            if (!items || items.length === 0) {
+                return 'No data available';
+            }
+
+            const count = items.length;
+            let content = `<strong>${count} ${dataType}</strong><br><br>`;
+            
+            // Show first 5 items
+            const displayItems = items.slice(0, 5);
+            displayItems.forEach(item => {
+                if (dataType === 'books') {
+                    const title = item.title || 'Untitled';
+                    const author = item.author || 'Unknown';
+                    const rating = item.rating ? ` ⭐ ${item.rating}` : '';
+                    content += `• ${title} by ${author}${rating}<br>`;
+                } else if (dataType === 'quotes') {
+                    const quote = item.quote || 'No quote text';
+                    const author = item.author || 'Unknown';
+                    const shortQuote = quote.length > 60 ? quote.substring(0, 60) + '...' : quote;
+                    content += `• "${shortQuote}" - ${author}<br>`;
+                } else if (dataType === 'albums') {
+                    const album = item.album || 'Untitled';
+                    const artist = item.artist || 'Unknown';
+                    const rating = item.rating ? ` ⭐ ${item.rating}` : '';
+                    content += `• ${album} by ${artist}${rating}<br>`;
+                }
+            });
+            
+            if (items.length > 5) {
+                content += `<br><em>+ ${items.length - 5} more</em>`;
+            }
+            
+            return content;
+        }
+
+        // Set data type and reload
+        async function setDataType(type) {
+            currentDataType = type;
+            
+            // Update button states
+            document.querySelectorAll('[id^="data-type-"]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`data-type-${type}`).classList.add('active');
+            
+            // Load data for selected type
+            countryDataMap = await loadDataType(type);
+            
+            // Update statistics
+            updateStats();
+            
+            // Update globe polygons
+            updateGlobePolygons();
+        }
+
         // Initialize globe
         if (typeof Globe === 'undefined') {
             showError('Failed to load globe.gl library. Please check your internet connection.');
         } else {
-            // Load both hex data and countries data in parallel
+            // Load hex data, world GeoJSON, and initial data type in parallel
             Promise.all([
                 fetch('http://localhost:8000/api/world_hexed_polygons').then(res => res.json()),
-                fetch('http://localhost:8000/api/countries/with-data').then(res => res.json()),
-                fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then(res => res.json())
+                fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then(res => res.json()),
+                loadDataType('books')
             ])
-                .then(([hexData, countriesData, worldGeoJson]) => {
-                    console.log('Fetched data:', hexData);
-                    console.log('Fetched countries:', countriesData);
+                .then(([hexData, geoJson, initialData]) => {
+                    console.log('Fetched hex data:', hexData);
                     
                     if (!Array.isArray(hexData)) throw new Error('Invalid hex data format');
-                    if (!Array.isArray(countriesData)) throw new Error('Invalid countries data format');
 
                     rawData = hexData;
+                    worldGeoJson = geoJson;
+                    countryDataMap = initialData;
                     updateStats();
-
-                    // Create a map of ISO codes to country data
-                    const countriesMap = {};
-                    countriesData.forEach(country => {
-                        if (country.iso_code_3) {
-                            countriesMap[country.iso_code_3] = country;
-                        }
-                    });
 
                     // Process GeoJSON to add country data info
                     const polygonsData = worldGeoJson.features.map(feature => {
                         const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
-                        const countryInfo = countriesMap[iso3];
+                        const countryItems = countryDataMap[iso3] || [];
+                        const hasData = countryItems.length > 0;
+                        const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
                         
                         return {
                             ...feature,
                             properties: {
                                 ...feature.properties,
-                                hasData: countryInfo ? countryInfo.has_data : false,
-                                dataTypes: countryInfo ? countryInfo.data_types : [],
-                                countryName: countryInfo ? countryInfo.name : feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown'
+                                hasData: hasData,
+                                items: countryItems,
+                                countryName: countryName,
+                                iso3: iso3
                             }
                         };
                     });
@@ -677,13 +865,14 @@
                         })
                         .polygonStrokeColor(() => 'rgba(102, 126, 234, 0.3)')
                         .polygonLabel(d => {
-                            if (d.properties.hasData) {
-                                const dataTypes = d.properties.dataTypes || [];
+                            const items = d.properties.items || [];
+                            const count = items.length;
+                            if (count > 0) {
                                 return `
                                     <div style="padding: 10px;">
                                         <div style="font-weight: 600; margin-bottom: 5px; color: #667eea;">${d.properties.countryName}</div>
                                         <div style="font-size: 11px; color: rgba(255,255,255,0.8);">
-                                            Data: ${dataTypes.join(', ') || 'Available'}
+                                            ${count} ${currentDataType}
                                         </div>
                                     </div>
                                 `;
@@ -691,7 +880,7 @@
                             return `
                                 <div style="padding: 10px;">
                                     <div style="font-weight: 600; margin-bottom: 5px;">${d.properties.countryName}</div>
-                                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">No data</div>
+                                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">No ${currentDataType}</div>
                                 </div>
                             `;
                         })
@@ -699,14 +888,9 @@
                             if (polygon) {
                                 tooltip.classList.add('visible');
                                 const props = polygon.properties;
+                                const items = props.items || [];
                                 document.getElementById('tooltip-title').textContent = props.countryName || 'Unknown Country';
-                                if (props.hasData) {
-                                    const dataTypes = props.dataTypes || [];
-                                    document.getElementById('tooltip-content').textContent = 
-                                        `Has data: ${dataTypes.join(', ') || 'Yes'}`;
-                                } else {
-                                    document.getElementById('tooltip-content').textContent = 'No data available';
-                                }
+                                document.getElementById('tooltip-content').innerHTML = formatTooltipContent(items, currentDataType);
                             } else {
                                 tooltip.classList.remove('visible');
                             }
