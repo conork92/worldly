@@ -39,6 +39,59 @@
             justify-content: space-between;
         }
 
+        /* Data Type Filter Bar */
+        .data-type-filter {
+            position: absolute;
+            top: 100px;
+            left: 40px;
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+            pointer-events: auto;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .data-type-filter-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+            margin-right: 10px;
+        }
+
+        .data-type-btn {
+            padding: 10px 20px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 8px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .data-type-btn:hover {
+            background: rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .data-type-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+            color: white;
+        }
+
         .title {
             font-size: 32px;
             font-weight: 300;
@@ -99,12 +152,64 @@
             left: 40px;
             background: rgba(20, 20, 40, 0.85);
             backdrop-filter: blur(10px);
-            padding: 25px;
+            padding: 0;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.1);
             z-index: 100;
             min-width: 280px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .controls.collapsed {
+            padding: 0;
+        }
+
+        .controls-header {
+            padding: 15px 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .controls-header:hover {
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        .controls-header-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.8);
+            font-weight: 600;
+        }
+
+        .controls-minimize-icon {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .controls.collapsed .controls-minimize-icon {
+            transform: rotate(180deg);
+        }
+
+        .controls-content {
+            padding: 25px;
+            max-height: 1000px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .controls.collapsed .controls-content {
+            max-height: 0;
+            padding: 0 25px;
+            overflow: hidden;
         }
 
         .control-group {
@@ -114,6 +219,7 @@
         .control-group:last-child {
             margin-bottom: 0;
         }
+
 
         .control-label {
             font-size: 12px;
@@ -300,14 +406,14 @@
 
         /* Tooltip */
         .tooltip {
-            position: absolute;
+            position: fixed;
             background: rgba(20, 20, 40, 0.95);
             backdrop-filter: blur(10px);
             padding: 15px 20px;
             border-radius: 12px;
             border: 1px solid rgba(102, 126, 234, 0.3);
             pointer-events: none;
-            z-index: 1000;
+            z-index: 10000;
             display: none;
             box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
@@ -384,51 +490,56 @@
         </div>
     </div>
 
+    <!-- Data Type Filter Bar -->
+    <div class="data-type-filter">
+        <span class="data-type-filter-label">Data Type:</span>
+        <button class="data-type-btn active" onclick="setDataType('books')" id="data-type-books">Books</button>
+        <button class="data-type-btn" onclick="setDataType('quotes')" id="data-type-quotes">Quotes</button>
+        <button class="data-type-btn" onclick="setDataType('albums')" id="data-type-albums">Albums</button>
+    </div>
+
     <div id="globe-container"></div>
     
-    <div class="controls">
-        <div class="control-group">
-            <span class="control-label">Visualization Mode</span>
-            <div class="button-group">
-                <button class="btn active" onclick="setMode('hexagons')">Hexagons</button>
-                <button class="btn" onclick="setMode('points')">Points</button>
-                <button class="btn" onclick="setMode('arcs')">Arcs</button>
-            </div>
+    <div class="controls" id="controls-panel">
+        <div class="controls-header" onclick="toggleControls()">
+            <span class="controls-header-label">Controls</span>
+            <span class="controls-minimize-icon">▼</span>
         </div>
-
-        <div class="control-group">
-            <span class="control-label">Color Scheme</span>
-            <div class="button-group">
-                <button class="btn active" onclick="setColorScheme('gradient')">Gradient</button>
-                <button class="btn" onclick="setColorScheme('heat')">Heat</button>
-                <button class="btn" onclick="setColorScheme('cool')">Cool</button>
+        <div class="controls-content" id="controls-content">
+            <div class="control-group">
+                <span class="control-label">Visualization Mode</span>
+                <div class="button-group">
+                    <button class="btn active" onclick="setMode('hexagons')">Hexagons</button>
+                    <button class="btn" onclick="setMode('points')">Points</button>
+                    <button class="btn" onclick="setMode('arcs')">Arcs</button>
+                </div>
             </div>
-        </div>
 
-        <div class="control-group">
-            <span class="control-label">
-                Altitude Scale
-                <span class="slider-value" id="altitude-value">1.0x</span>
-            </span>
-            <div class="slider-container">
-                <input type="range" id="altitude-slider" min="0.1" max="3" step="0.1" value="1" oninput="updateAltitude(this.value)">
+            <div class="control-group">
+                <span class="control-label">Color Scheme</span>
+                <div class="button-group">
+                    <button class="btn active" onclick="setColorScheme('gradient')">Gradient</button>
+                    <button class="btn" onclick="setColorScheme('heat')">Heat</button>
+                    <button class="btn" onclick="setColorScheme('cool')">Cool</button>
+                </div>
             </div>
-        </div>
 
-        <div class="control-group">
-            <span class="control-label">Data Type</span>
-            <div class="button-group">
-                <button class="btn active" onclick="setDataType('books')" id="data-type-books">Books</button>
-                <button class="btn" onclick="setDataType('quotes')" id="data-type-quotes">Quotes</button>
-                <button class="btn" onclick="setDataType('albums')" id="data-type-albums">Albums</button>
+            <div class="control-group">
+                <span class="control-label">
+                    Altitude Scale
+                    <span class="slider-value" id="altitude-value">1.0x</span>
+                </span>
+                <div class="slider-container">
+                    <input type="range" id="altitude-slider" min="0.1" max="3" step="0.1" value="1" oninput="updateAltitude(this.value)">
+                </div>
             </div>
-        </div>
 
-        <div class="control-group">
-            <span class="control-label">Actions</span>
-            <div class="button-group">
-                <button class="btn" onclick="resetView()">Reset View</button>
-                <button class="btn" onclick="toggleRotation()">Auto Rotate</button>
+            <div class="control-group">
+                <span class="control-label">Actions</span>
+                <div class="button-group">
+                    <button class="btn" onclick="resetView()">Reset View</button>
+                    <button class="btn" onclick="toggleRotation()">Auto Rotate</button>
+                </div>
             </div>
         </div>
     </div>
@@ -478,6 +589,18 @@
 
         const loadingEl = document.getElementById('loading');
         const tooltip = document.getElementById('tooltip');
+        
+        // Suppress Three.js deprecation warnings
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('useLegacyLights')) {
+                return; // Suppress this specific warning
+            }
+            originalWarn.apply(console, args);
+        };
+        
+        // Track if mousemove listener is already added
+        let mouseMoveListenerAdded = false;
 
         // Color schemes
         const colorSchemes = {
@@ -578,9 +701,17 @@
             document.getElementById('stat-value-4').textContent = avgRating;
         }
 
+        // Toggle entire controls panel
+        function toggleControls() {
+            const controlsPanel = document.getElementById('controls-panel');
+            if (controlsPanel) {
+                controlsPanel.classList.toggle('collapsed');
+            }
+        }
+
         function setMode(mode) {
             currentMode = mode;
-            document.querySelectorAll('.controls .control-group:first-child .btn').forEach(btn => {
+            document.querySelectorAll('#controls-content .button-group:first-child .btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
@@ -718,26 +849,70 @@
         function updateGlobePolygons() {
             if (!globeInstance || !worldGeoJson) return;
 
-            // Process GeoJSON to add country data info
-            const polygonsData = worldGeoJson.features.map(feature => {
-                const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
-                const countryItems = countryDataMap[iso3] || [];
-                const hasData = countryItems.length > 0;
-                const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
-                
-                return {
-                    ...feature,
-                    properties: {
-                        ...feature.properties,
-                        hasData: hasData,
-                        items: countryItems,
-                        countryName: countryName,
-                        iso3: iso3
-                    }
-                };
-            });
+            // Prepare country polygons
+            const polygonsData = worldGeoJson.features
+                .filter(feature => {
+                    // Some GeoJSONs include Antarctica or disputed/boundary areas; skip if necessary
+                    const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
+                    // Remove polygons that aren't actual countries
+                    return (
+                        iso3 &&
+                        iso3.length === 3 &&
+                        iso3 !== "-99" &&
+                        feature.geometry &&
+                        feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon"
+                    );
+                })
+                .map(feature => {
+                    const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
+                    const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
 
-            globeInstance.polygonsData(polygonsData);
+                    const countryItems = countryDataMap[iso3] || [];
+                    const hasData = countryItems.length > 0;
+
+                    // Debug: Log for visual check
+                    if (
+                        iso3 === 'USA' ||
+                        iso3 === 'US' ||
+                        (countryName && countryName.toLowerCase().includes('united states'))
+                    ) {
+                        console.log('USA polygon found:', {
+                            iso3: iso3,
+                            countryName: countryName,
+                            ISO_A3: feature.properties.ISO_A3,
+                            ISO_A3_EH: feature.properties.ISO_A3_EH,
+                            NAME: feature.properties.NAME,
+                            NAME_LONG: feature.properties.NAME_LONG,
+                            geometry: feature.geometry,
+                            allProperties: Object.keys(feature.properties)
+                        });
+                    }
+
+                    return {
+                        ...feature,
+                        properties: {
+                            ...feature.properties,
+                            hasData: hasData, // Used for coloring
+                            items: countryItems,
+                            countryName: countryName,
+                            iso3: iso3
+                        }
+                    };
+                });
+
+            // Actually show the polygons on the globe.
+            globeInstance
+                .polygonsData(polygonsData)
+                .polygonCapColor(feat => feat.properties.hasData
+                    ? 'rgba(102,126,234,0.65)' // colored for countries with data
+                    : 'rgba(100, 100, 160, 0.26)'
+                )
+                .polygonSideColor(() => 'rgba(80,80,120,0.15)')
+                .polygonStrokeColor(() => 'rgba(102,126,234,0.4)')
+                .polygonsTransitionDuration(800);
+
+            // Optionally: set polygonsEnableArcsDrag(false) to allow interaction
+            // globeInstance.polygonsEnableArcsDrag(false);
         }
 
         // Format tooltip content based on data type
@@ -781,8 +956,8 @@
         async function setDataType(type) {
             currentDataType = type;
             
-            // Update button states
-            document.querySelectorAll('[id^="data-type-"]').forEach(btn => {
+            // Update button states in the data type filter bar
+            document.querySelectorAll('.data-type-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.getElementById(`data-type-${type}`).classList.add('active');
@@ -801,11 +976,12 @@
         if (typeof Globe === 'undefined') {
             showError('Failed to load globe.gl library. Please check your internet connection.');
         } else {
-            // Load hex data, world GeoJSON, and initial data type in parallel
+            // Load hex data and world GeoJSON
+            // Note: Data type loading is optional for now - polygons will show regardless
             Promise.all([
                 fetch('http://localhost:8000/api/world_hexed_polygons').then(res => res.json()),
                 fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then(res => res.json()),
-                loadDataType('books')
+                loadDataType('books').catch(() => ({})) // Load data but don't fail if it errors
             ])
                 .then(([hexData, geoJson, initialData]) => {
                     console.log('Fetched hex data:', hexData);
@@ -814,22 +990,35 @@
 
                     rawData = hexData;
                     worldGeoJson = geoJson;
-                    countryDataMap = initialData;
+                    countryDataMap = initialData || {};
                     updateStats();
 
                     // Process GeoJSON to add country data info
+                    // For now, just show all countries with name and ISO code
+                    // Later: add hasData and items when database views are ready
                     const polygonsData = worldGeoJson.features.map(feature => {
                         const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
+                        const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
+                        
+                        // Keep structure for future data integration
                         const countryItems = countryDataMap[iso3] || [];
                         const hasData = countryItems.length > 0;
-                        const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
+                        
+                        // Debug: Log USA properties
+                        if (iso3 === 'USA' || iso3 === 'US') {
+                            console.log('USA polygon found:', {
+                                iso3: iso3,
+                                countryName: countryName,
+                                allProperties: feature.properties
+                            });
+                        }
                         
                         return {
                             ...feature,
                             properties: {
                                 ...feature.properties,
-                                hasData: hasData,
-                                items: countryItems,
+                                hasData: hasData, // Will be used later for coloring
+                                items: countryItems, // Will be populated from database views later
                                 countryName: countryName,
                                 iso3: iso3
                             }
@@ -851,46 +1040,33 @@
                         .hexBinPointLng('lng')
                         .polygonsData(polygonsData)
                         .polygonAltitude(0.01)
-                        .polygonCapColor(d => {
-                            if (d.properties.hasData) {
-                                return 'rgba(102, 126, 234, 0.4)'; // Purple overlay for countries with data
-                            }
-                            return 'rgba(255, 255, 255, 0.05)'; // Very subtle overlay for countries without data
+                        .polygonCapColor(() => {
+                            // For now, show all countries with same subtle overlay
+                            // Later: use hasData to differentiate colors
+                            return 'rgba(102, 126, 234, 0.3)'; // Subtle purple overlay for all countries
                         })
-                        .polygonSideColor(d => {
-                            if (d.properties.hasData) {
-                                return 'rgba(102, 126, 234, 0.2)';
-                            }
-                            return 'rgba(255, 255, 255, 0.02)';
+                        .polygonSideColor(() => {
+                            return 'rgba(102, 126, 234, 0.15)';
                         })
                         .polygonStrokeColor(() => 'rgba(102, 126, 234, 0.3)')
-                        .polygonLabel(d => {
-                            const items = d.properties.items || [];
-                            const count = items.length;
-                            if (count > 0) {
-                                return `
-                                    <div style="padding: 10px;">
-                                        <div style="font-weight: 600; margin-bottom: 5px; color: #667eea;">${d.properties.countryName}</div>
-                                        <div style="font-size: 11px; color: rgba(255,255,255,0.8);">
-                                            ${count} ${currentDataType}
-                                        </div>
-                                    </div>
-                                `;
-                            }
-                            return `
-                                <div style="padding: 10px;">
-                                    <div style="font-weight: 600; margin-bottom: 5px;">${d.properties.countryName}</div>
-                                    <div style="font-size: 11px; color: rgba(255,255,255,0.5);">No ${currentDataType}</div>
-                                </div>
-                            `;
-                        })
-                        .onPolygonHover(polygon => {
+                        .polygonLabel('') // Disable built-in labels, we'll use custom tooltip instead
+                        .onPolygonHover((polygon, prevPolygon) => {
+                            if (!tooltip) return;
+                            
                             if (polygon) {
-                                tooltip.classList.add('visible');
                                 const props = polygon.properties;
-                                const items = props.items || [];
-                                document.getElementById('tooltip-title').textContent = props.countryName || 'Unknown Country';
-                                document.getElementById('tooltip-content').innerHTML = formatTooltipContent(items, currentDataType);
+                                // Try multiple property names to get country name and ISO code
+                                const countryName = props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
+                                const iso3 = props.iso3 || props.ISO_A3 || props.ISO_A3_EH || 'N/A';
+                                
+                                const tooltipTitle = document.getElementById('tooltip-title');
+                                const tooltipContent = document.getElementById('tooltip-content');
+                                
+                                if (tooltipTitle && tooltipContent) {
+                                    tooltipTitle.textContent = countryName;
+                                    tooltipContent.textContent = `ISO Code: ${iso3}`;
+                                    tooltip.classList.add('visible');
+                                }
                             } else {
                                 tooltip.classList.remove('visible');
                             }
@@ -899,11 +1075,17 @@
                         .atmosphereColor('#667eea')
                         .atmosphereAltitude(0.2)
                         .onHexHover(hex => {
+                            if (!tooltip) return;
+                            
                             if (hex) {
-                                tooltip.classList.add('visible');
-                                document.getElementById('tooltip-title').textContent = `Cluster Data`;
-                                document.getElementById('tooltip-content').textContent = 
-                                    `Points: ${hex.points.length}\nTotal Value: ${hex.sumWeight.toFixed(2)}`;
+                                const tooltipTitle = document.getElementById('tooltip-title');
+                                const tooltipContent = document.getElementById('tooltip-content');
+                                
+                                if (tooltipTitle && tooltipContent) {
+                                    tooltipTitle.textContent = `Cluster Data`;
+                                    tooltipContent.textContent = `Points: ${hex.points.length}\nTotal Value: ${hex.sumWeight.toFixed(2)}`;
+                                    tooltip.classList.add('visible');
+                                }
                             } else {
                                 tooltip.classList.remove('visible');
                             }
@@ -923,11 +1105,16 @@
                         }
                     });
 
-                    // Track mouse for tooltip
-                    document.addEventListener('mousemove', e => {
-                        tooltip.style.left = e.clientX + 15 + 'px';
-                        tooltip.style.top = e.clientY + 15 + 'px';
-                    });
+                    // Track mouse for tooltip (only add once)
+                    if (!mouseMoveListenerAdded) {
+                        document.addEventListener('mousemove', e => {
+                            if (tooltip && tooltip.classList.contains('visible')) {
+                                tooltip.style.left = e.clientX + 15 + 'px';
+                                tooltip.style.top = e.clientY + 15 + 'px';
+                            }
+                        });
+                        mouseMoveListenerAdded = true;
+                    }
 
                     hideLoading();
                 })
