@@ -449,6 +449,48 @@
             font-size: 11px;
         }
 
+        /* Country Info Panel (shown on click) */
+        .country-info-panel {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            background: rgba(20, 20, 40, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            z-index: 10000;
+            min-width: 280px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            display: none;
+            pointer-events: auto;
+        }
+
+        .country-info-panel.visible {
+            display: block;
+        }
+
+        .country-info-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .country-info-iso {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            font-family: 'Courier New', monospace;
+            padding: 8px 12px;
+            background: rgba(102, 126, 234, 0.15);
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -539,6 +581,7 @@
                 <div class="button-group">
                     <button class="btn" onclick="resetView()">Reset View</button>
                     <button class="btn" onclick="toggleRotation()">Auto Rotate</button>
+                    <button class="btn" onclick="testCountries()" style="margin-top: 10px; background: rgba(102, 126, 234, 0.3);">🔍 Test Countries</button>
                 </div>
             </div>
         </div>
@@ -571,6 +614,13 @@
     <div class="tooltip" id="tooltip">
         <div class="tooltip-title" id="tooltip-title"></div>
         <div class="tooltip-content" id="tooltip-content"></div>
+    </div>
+
+    <!-- Country Info Panel (shown on click) -->
+    <div class="country-info-panel" id="country-info-panel">
+        <div class="country-info-close" onclick="closeCountryInfo()">×</div>
+        <div class="country-info-title" id="country-info-title">Select a Country</div>
+        <div class="country-info-iso" id="country-info-iso">Click on any country</div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.31.0/dist/globe.gl.min.js"></script>
@@ -707,6 +757,72 @@
             if (controlsPanel) {
                 controlsPanel.classList.toggle('collapsed');
             }
+        }
+
+        // Close country info panel
+        function closeCountryInfo() {
+            const infoPanel = document.getElementById('country-info-panel');
+            if (infoPanel) {
+                infoPanel.classList.remove('visible');
+            }
+        }
+
+        // Test function to see what countries are loaded
+        function testCountries() {
+            if (!worldGeoJson) {
+                console.error('GeoJSON not loaded yet');
+                alert('GeoJSON not loaded yet. Wait for the globe to finish loading.');
+                return;
+            }
+            
+            console.log('=== TEST COUNTRIES ===');
+            console.log('Total features in GeoJSON:', worldGeoJson.features.length);
+            
+            // Test specific countries
+            const testISOs = ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE', 'CAN', 'CA', 'AUS', 'AU'];
+            const found = [];
+            
+            worldGeoJson.features.forEach(feature => {
+                const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
+                const name = feature.properties.NAME || feature.properties.NAME_LONG;
+                
+                if (testISOs.includes(iso3)) {
+                    found.push({
+                        iso3: iso3,
+                        name: name,
+                        hasNAME: !!feature.properties.NAME,
+                        hasNAME_LONG: !!feature.properties.NAME_LONG,
+                        allProps: Object.keys(feature.properties)
+                    });
+                }
+            });
+            
+            console.log('Test countries found:', found);
+            
+            // Also check if polygons are set on globe
+            if (globeInstance) {
+                const polygons = globeInstance.polygonsData();
+                console.log('Polygons on globe:', polygons?.length || 0);
+                if (polygons && polygons.length > 0) {
+                    console.log('First polygon on globe:', {
+                        type: polygons[0]?.geometry?.type,
+                        properties: polygons[0]?.properties
+                    });
+                    
+                    // Find test countries in globe polygons
+                    const testPolygons = polygons.filter(p => {
+                        const iso = p.properties?.iso3 || p.properties?.ISO_A3 || p.properties?.ISO_A3_EH;
+                        return testISOs.includes(iso);
+                    });
+                    console.log('Test countries in globe polygons:', testPolygons.map(p => ({
+                        iso3: p.properties?.iso3 || p.properties?.ISO_A3,
+                        countryName: p.properties?.countryName || p.properties?.NAME,
+                        allProps: Object.keys(p.properties || {})
+                    })));
+                }
+            }
+            
+            alert(`Check console for details!\n\nFound ${found.length} test countries in GeoJSON.\nPolygons on globe: ${globeInstance?.polygonsData()?.length || 0}`);
         }
 
         function setMode(mode) {
@@ -1004,26 +1120,62 @@
                         const countryItems = countryDataMap[iso3] || [];
                         const hasData = countryItems.length > 0;
                         
-                        // Debug: Log USA properties
-                        if (iso3 === 'USA' || iso3 === 'US') {
-                            console.log('USA polygon found:', {
-                                iso3: iso3,
+                        // Debug: Log a few test countries (USA, UK, France, Germany)
+                        const testCountries = ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE'];
+                        if (testCountries.includes(iso3)) {
+                            console.log(`=== ${iso3} POLYGON PROCESSED ===`);
+                            console.log('ISO3:', iso3);
+                            console.log('Country Name:', countryName);
+                            console.log('All original properties:', feature.properties);
+                            console.log('Properties we will set:', {
                                 countryName: countryName,
-                                allProperties: feature.properties
+                                iso3: iso3,
+                                hasData: hasData
                             });
                         }
                         
                         return {
                             ...feature,
                             properties: {
-                                ...feature.properties,
+                                ...feature.properties, // Keep all original properties
                                 hasData: hasData, // Will be used later for coloring
                                 items: countryItems, // Will be populated from database views later
-                                countryName: countryName,
-                                iso3: iso3
+                                countryName: countryName, // Add our processed country name
+                                iso3: iso3 // Add our processed ISO code
                             }
                         };
                     });
+                    
+                    // Debug: Log summary
+                    console.log('=== POLYGONS PROCESSED ===');
+                    console.log('Total polygons:', polygonsData.length);
+                    console.log('Sample polygon properties:', polygonsData[0]?.properties);
+                    console.log('Test countries in data:', polygonsData.filter(p => ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE'].includes(p.properties.iso3)).map(p => ({
+                        iso3: p.properties.iso3,
+                        name: p.properties.countryName
+                    })));
+
+                    // DEBUG: Log what we're about to set
+                    console.log('=== SETTING POLYGONS ON GLOBE ===');
+                    console.log('Polygons data count:', polygonsData.length);
+                    if (polygonsData.length > 0) {
+                        console.log('First polygon sample:', {
+                            type: polygonsData[0]?.geometry?.type,
+                            properties: polygonsData[0]?.properties
+                        });
+                    }
+                    
+                    // Find and log test countries
+                    const testPolygons = polygonsData.filter(p => {
+                        const iso = p.properties?.iso3;
+                        return ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE'].includes(iso);
+                    });
+                    console.log('Test countries found:', testPolygons.map(p => ({
+                        iso3: p.properties?.iso3,
+                        countryName: p.properties?.countryName,
+                        hasOriginalName: !!p.properties?.NAME,
+                        hasOriginalISO: !!p.properties?.ISO_A3
+                    })));
 
                     globeInstance = Globe()
                         (document.getElementById('globe-container'))
@@ -1055,9 +1207,10 @@
                             
                             if (polygon) {
                                 const props = polygon.properties;
-                                // Try multiple property names to get country name and ISO code
-                                const countryName = props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
-                                const iso3 = props.iso3 || props.ISO_A3 || props.ISO_A3_EH || 'N/A';
+                                // Use 'name' property first (it's working correctly from GeoJSON)
+                                const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
+                                // For ISO, check original GeoJSON properties first (ISO_A3, ISO_A3_EH)
+                                const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso3 || props.iso_a3 || 'N/A';
                                 
                                 const tooltipTitle = document.getElementById('tooltip-title');
                                 const tooltipContent = document.getElementById('tooltip-content');
@@ -1069,6 +1222,35 @@
                                 }
                             } else {
                                 tooltip.classList.remove('visible');
+                            }
+                        })
+                        .onPolygonClick((polygon) => {
+                            if (!polygon) return;
+                            
+                            const props = polygon.properties;
+                            
+                            // DEBUG: Log all available properties
+                            console.log('=== POLYGON CLICKED ===');
+                            console.log('All properties:', props);
+                            console.log('Property keys:', Object.keys(props));
+                            
+                            // Use 'name' property first (it's working correctly), then fallback to others
+                            // The 'name' property is correctly set by the GeoJSON
+                            const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
+                            
+                            // For ISO, try the processed iso3 first, then original properties
+                            const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso3 || props.iso_a3 || 'N/A';
+                            
+                            console.log('Extracted - Country:', countryName, 'ISO:', iso3);
+                            
+                            const infoPanel = document.getElementById('country-info-panel');
+                            const infoTitle = document.getElementById('country-info-title');
+                            const infoISO = document.getElementById('country-info-iso');
+                            
+                            if (infoPanel && infoTitle && infoISO) {
+                                infoTitle.textContent = countryName;
+                                infoISO.textContent = iso3;
+                                infoPanel.classList.add('visible');
                             }
                         })
                         .showAtmosphere(true)
