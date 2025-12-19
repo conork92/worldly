@@ -188,6 +188,14 @@
             color: white;
         }
 
+        /* Main Content Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            align-items: start;
+        }
+
         /* Quotes Grid */
         .quotes-grid {
             display: grid;
@@ -227,10 +235,20 @@
             }
         }
 
+        .quote-card {
+            cursor: pointer;
+        }
+
         .quote-card:hover {
             transform: translateY(-4px);
             border-color: rgba(102, 126, 234, 0.5);
             box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .quote-card.selected {
+            border-color: #667eea;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+            background: rgba(102, 126, 234, 0.1);
         }
 
         .quote-card::before {
@@ -676,6 +694,115 @@
             color: rgba(255,255,255,0.5);
         }
 
+        /* Detail Panel */
+        .detail-panel {
+            position: sticky;
+            top: 40px;
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            max-height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+
+        .detail-panel.empty {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .detail-panel-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .detail-section {
+            margin-bottom: 25px;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .detail-value {
+            font-size: 15px;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+
+        .detail-quote-text {
+            font-size: 18px;
+            font-style: italic;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.95);
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .detail-quote-text::before {
+            content: '"';
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            font-size: 40px;
+            color: #667eea;
+            opacity: 0.3;
+        }
+
+        .detail-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .detail-tag {
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 12px;
+            font-size: 11px;
+            color: #667eea;
+        }
+
+        .detail-country {
+            display: inline-block;
+            padding: 6px 14px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #667eea;
+            margin-top: 8px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             body {
@@ -686,8 +813,17 @@
                 font-size: 28px;
             }
 
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
             .quotes-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .detail-panel {
+                position: relative;
+                margin-top: 30px;
             }
 
             .stats-bar {
@@ -846,7 +982,14 @@
         <div class="loading-text">LOADING QUOTES</div>
     </div>
 
-    <div class="quotes-grid" id="quotes-grid"></div>
+    <div class="main-content">
+        <div class="quotes-grid" id="quotes-grid"></div>
+        
+        <!-- Detail Panel -->
+        <div class="detail-panel empty" id="detail-panel">
+            <div>Click on a quote card to view details</div>
+        </div>
+    </div>
 
     <script>
         let allQuotes = [];
@@ -1004,7 +1147,7 @@
                         : '';
                     
                     return `
-                        <div class="quote-card" style="animation-delay: ${index * 0.03}s">
+                        <div class="quote-card" style="animation-delay: ${index * 0.03}s" data-quote-id="${quote.id || index}" onclick="showQuoteDetails(${index})">
                             <div class="quote-text">${escapeHtml(quote.quote || '')}</div>
                             ${quote.author ? `<div class="quote-author">— ${escapeHtml(quote.author)}</div>` : ''}
                             <div class="quote-meta">
@@ -1194,6 +1337,107 @@
             } else {
                 toggleBtn.textContent = '+ Add Quote';
             }
+        }
+
+        // Show quote details in the detail panel
+        function showQuoteDetails(index) {
+            const quote = filteredQuotes[index];
+            if (!quote) return;
+
+            // Remove selected class from all cards
+            document.querySelectorAll('.quote-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Add selected class to clicked card
+            const clickedCard = document.querySelector(`[data-quote-id="${quote.id || index}"]`);
+            if (clickedCard) {
+                clickedCard.classList.add('selected');
+            }
+
+            // Update detail panel
+            const detailPanel = document.getElementById('detail-panel');
+            detailPanel.classList.remove('empty');
+
+            const country = quote.country && quote.iso_code_3 
+                ? `<span class="detail-country">${escapeHtml(quote.country)} (${escapeHtml(quote.iso_code_3)})</span>`
+                : '<span class="detail-country" style="opacity: 0.5;">No Country</span>';
+
+            const tags = quote.tags && Array.isArray(quote.tags) && quote.tags.length > 0
+                ? `<div class="detail-tags">${quote.tags.map(tag => `<span class="detail-tag">${escapeHtml(tag)}</span>`).join('')}</div>`
+                : '';
+
+            detailPanel.innerHTML = `
+                <div class="detail-panel-title">Quote Details</div>
+                
+                <div class="detail-section">
+                    <div class="detail-quote-text">${escapeHtml(quote.quote || '')}</div>
+                </div>
+
+                ${quote.author ? `
+                    <div class="detail-section">
+                        <span class="detail-label">Author</span>
+                        <div class="detail-value">${escapeHtml(quote.author)}</div>
+                    </div>
+                ` : ''}
+
+                ${quote.source ? `
+                    <div class="detail-section">
+                        <span class="detail-label">Source</span>
+                        <div class="detail-value">${escapeHtml(quote.source)}</div>
+                    </div>
+                ` : ''}
+
+                ${quote.year ? `
+                    <div class="detail-section">
+                        <span class="detail-label">Year</span>
+                        <div class="detail-value">${quote.year}</div>
+                    </div>
+                ` : ''}
+
+                ${quote.category ? `
+                    <div class="detail-section">
+                        <span class="detail-label">Category</span>
+                        <div class="detail-value">${escapeHtml(quote.category)}</div>
+                    </div>
+                ` : ''}
+
+                ${quote.type ? `
+                    <div class="detail-section">
+                        <span class="detail-label">Type</span>
+                        <div class="detail-value">${escapeHtml(quote.type)}</div>
+                    </div>
+                ` : ''}
+
+                ${quote.page ? `
+                    <div class="detail-section">
+                        <span class="detail-label">Page</span>
+                        <div class="detail-value">${escapeHtml(quote.page)}</div>
+                    </div>
+                ` : ''}
+
+                ${tags ? `
+                    <div class="detail-section">
+                        <span class="detail-label">Tags</span>
+                        ${tags}
+                    </div>
+                ` : ''}
+
+                <div class="detail-section">
+                    <span class="detail-label">Country</span>
+                    ${country}
+                </div>
+
+                ${quote.iso_code_3 ? `
+                    <div class="detail-section">
+                        <span class="detail-label">ISO Code</span>
+                        <div class="detail-value">${escapeHtml(quote.iso_code_3)}</div>
+                    </div>
+                ` : ''}
+            `;
+
+            // Scroll detail panel to top
+            detailPanel.scrollTop = 0;
         }
 
         // Load quotes and random quote on page load

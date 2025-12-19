@@ -22,9 +22,6 @@ app.add_middleware(
 )
 
 @app.get("/")
-def read_root():
-    return {"message": "Welcome to Worldly API"}
-
 @app.get("/globe")
 def get_globe():
     """Serve the globe visualization HTML page (React version)"""
