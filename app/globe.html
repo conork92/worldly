@@ -448,6 +448,38 @@
             color: rgba(255,255,255,0.6);
             font-size: 11px;
         }
+        
+        .tooltip-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+        
+        .tooltip-table th {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            padding: 6px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .tooltip-table td {
+            padding: 6px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        }
+        
+        .tooltip-table tr:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .tooltip-table td strong {
+            color: #667eea;
+        }
 
         /* Country Info Panel (shown on click) */
         .country-info-panel {
@@ -498,6 +530,47 @@
             color: #667eea;
             display: block;
             margin-bottom: 8px;
+        }
+        
+        .country-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+        
+        .country-info-table th {
+            background: rgba(102, 126, 234, 0.15);
+            color: #667eea;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+            position: sticky;
+            top: 0;
+        }
+        
+        .country-info-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            vertical-align: top;
+        }
+        
+        .country-info-table tr:hover {
+            background: rgba(102, 126, 234, 0.08);
+        }
+        
+        .country-info-table td strong {
+            color: #667eea;
+        }
+        
+        .country-info-table td em {
+            color: rgba(255,255,255,0.7);
+            font-size: 11px;
+            font-style: italic;
         }
 
         /* Responsive */
@@ -647,6 +720,58 @@
         let worldGeoJson = null;
         let countryItemsCache = {}; // Cache for country items from the view endpoint
         let allCountryItemsLoaded = false; // Track if we've pre-loaded all country data
+        
+        // Country name to ISO code mapping for countries missing ISO codes in GeoJSON
+        const countryNameToISO = {
+            'morocco': 'MAR',
+            'united kingdom': 'GBR',
+            'uk': 'GBR',
+            'england': 'GBR',
+            'great britain': 'GBR',
+            'usa': 'USA',
+            'united states': 'USA',
+            'united states of america': 'USA',
+            'russia': 'RUS',
+            'russian federation': 'RUS',
+            'south korea': 'KOR',
+            'korea': 'KOR',
+            'north korea': 'PRK',
+            'czech republic': 'CZE',
+            'czechia': 'CZE',
+            'vietnam': 'VNM',
+            'viet nam': 'VNM',
+            'iran': 'IRN',
+            'iran, islamic republic of': 'IRN',
+            'syria': 'SYR',
+            'syrian arab republic': 'SYR',
+            'venezuela': 'VEN',
+            'venezuela, bolivarian republic of': 'VEN',
+            'tanzania': 'TZA',
+            'united republic of tanzania': 'TZA',
+            'myanmar': 'MMR',
+            'burma': 'MMR',
+            'laos': 'LAO',
+            'lao people\'s democratic republic': 'LAO',
+            'macedonia': 'MKD',
+            'north macedonia': 'MKD',
+            'moldova': 'MDA',
+            'republic of moldova': 'MDA',
+            'palestine': 'PSE',
+            'state of palestine': 'PSE',
+            'congo': 'COG',
+            'republic of the congo': 'COG',
+            'democratic republic of the congo': 'COD',
+            'drc': 'COD',
+            'ivory coast': 'CIV',
+            'côte d\'ivoire': 'CIV',
+            'cote d\'ivoire': 'CIV',
+            'east timor': 'TLS',
+            'timor-leste': 'TLS',
+            'cape verde': 'CPV',
+            'cabo verde': 'CPV',
+            'swaziland': 'SWZ',
+            'eswatini': 'SWZ'
+        };
 
         const loadingEl = document.getElementById('loading');
         const tooltip = document.getElementById('tooltip');
@@ -1227,8 +1352,23 @@
                                 const props = polygon.properties;
                                 // Use 'name' property first (it's working correctly from GeoJSON)
                                 const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
-                                // For ISO, check original GeoJSON properties first (ISO_A3, ISO_A3_EH)
-                                const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso3 || props.iso_a3 || 'N/A';
+                                
+                                // Try multiple property names for ISO code
+                                // Check props.iso3 first since that's what we set during polygon processing
+                                let iso3Raw = props.iso3 || props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || 
+                                             props.ADM0_A3 || props.adm0_a3 || props.ISO_A3_UN || props.ISO_A3_WB || 
+                                             props.iso_alpha_3;
+                                
+                                // If still no ISO code, try country name mapping
+                                if (!iso3Raw || iso3Raw === null || iso3Raw === 'N/A' || iso3Raw === '-99') {
+                                    const countryNameLower = countryName.toLowerCase().trim();
+                                    iso3Raw = countryNameToISO[countryNameLower] || null;
+                                }
+                                
+                                // Normalize ISO code
+                                const finalISO3 = (iso3Raw && iso3Raw !== 'N/A' && iso3Raw !== '-99' && iso3Raw !== null) 
+                                    ? String(iso3Raw).trim().toUpperCase() 
+                                    : 'N/A';
                                 
                                 const tooltipTitle = document.getElementById('tooltip-title');
                                 const tooltipContent = document.getElementById('tooltip-content');
@@ -1236,61 +1376,84 @@
                                 if (tooltipTitle && tooltipContent) {
                                     tooltipTitle.textContent = countryName;
                                     
-                                    // DEBUG: Log hover event
-                                    console.log('=== POLYGON HOVER ===', {
-                                        countryName: countryName,
-                                        iso3: iso3,
-                                        cached: !!countryItemsCache[iso3],
-                                        cacheSize: Object.keys(countryItemsCache).length,
-                                        allLoaded: allCountryItemsLoaded
-                                    });
-                                    
-                                    // Check cache first
-                                    let items = countryItemsCache[iso3] || [];
-                                    
-                                    // If not in cache and we have a valid ISO code, try to load it
-                                    if (iso3 && iso3 !== 'N/A' && items.length === 0) {
-                                        console.log(`Loading data for ${iso3}...`);
-                                        try {
-                                            const url = `http://localhost:8000/api/country-items/${iso3}`;
-                                            console.log('Fetching:', url);
-                                            const response = await fetch(url);
-                                            const data = await response.json();
-                                            console.log('Response for', iso3, ':', data);
-                                            
-                                            if (!data.error && Array.isArray(data)) {
-                                                countryItemsCache[iso3] = data;
-                                                items = data;
-                                                console.log(`Loaded ${data.length} items for ${iso3}`);
-                                            } else {
-                                                console.warn('Error in response:', data);
-                                            }
-                                        } catch (error) {
-                                            console.error('Error loading country items:', error);
+                                    // Helper function to update tooltip content
+                                    const updateTooltipContent = (items, iso3, tooltipContentEl) => {
+                                        if (!items || items.length === 0) {
+                                            tooltipContentEl.innerHTML = `<em>ISO: ${iso3}<br>No data available</em>`;
+                                            return;
                                         }
-                                    }
-                                    
-                                    // Display items if available
-                                    if (items.length > 0) {
-                                        let content = `ISO Code: ${iso3}<br><br>`;
-                                        content += `<strong>Items (${items.length}):</strong><br>`;
                                         
-                                        // Show first 5 items
-                                        items.slice(0, 5).forEach(item => {
-                                            const type = item.type === 'album' ? '🎵' : '📚';
+                                        const displayItems = items.slice(0, 5);
+                                        let content = `<strong>${items.length} items</strong><br><br>`;
+                                        content += `<table class="tooltip-table">`;
+                                        content += `<thead><tr><th>Type</th><th>Title</th><th>Artist/Author</th><th>Rating</th></tr></thead>`;
+                                        content += `<tbody>`;
+                                        
+                                        displayItems.forEach(item => {
+                                            const itemType = item.type || 'book';
+                                            const typeIcon = itemType === 'album' ? '🎵' : itemType === 'quote' ? '💬' : '📚';
                                             const title = item.title || 'Untitled';
                                             const artist = item.artist || 'Unknown';
-                                            const rating = item.rating ? ` ⭐ ${item.rating}` : '';
-                                            content += `${type} ${title} by ${artist}${rating}<br>`;
+                                            const rating = item.rating ? `⭐ ${item.rating}` : '-';
+                                            
+                                            content += `<tr>`;
+                                            content += `<td>${typeIcon}</td>`;
+                                            content += `<td><strong>${title}</strong></td>`;
+                                            content += `<td>${artist}</td>`;
+                                            content += `<td>${rating}</td>`;
+                                            content += `</tr>`;
                                         });
                                         
+                                        content += `</tbody></table>`;
+                                        
                                         if (items.length > 5) {
-                                            content += `<br><em>+ ${items.length - 5} more</em>`;
+                                            content += `<br><em>+ ${items.length - 5} more (click for full list)</em>`;
                                         }
                                         
-                                        tooltipContent.innerHTML = content;
+                                        tooltipContentEl.innerHTML = content;
+                                    };
+                                    
+                                    // Check cache first
+                                    let items = countryItemsCache[finalISO3] || [];
+                                    
+                                    // If not in cache and we have a valid ISO code, try to load it
+                                    if (finalISO3 && finalISO3 !== 'N/A' && items.length === 0) {
+                                        console.log(`[HOVER] Loading data for ${finalISO3}...`);
+                                        // Show loading state
+                                        tooltipContent.innerHTML = '<em>Loading...</em>';
+                                        tooltip.classList.add('visible');
+                                        
+                                        try {
+                                            const url = `http://localhost:8000/api/country-items/${finalISO3}`;
+                                            console.log('[HOVER] Fetching:', url);
+                                            const response = await fetch(url);
+                                            const data = await response.json();
+                                            console.log('[HOVER] Response for', finalISO3, ':', data);
+                                            
+                                            if (!data.error && Array.isArray(data)) {
+                                                countryItemsCache[finalISO3] = data;
+                                                items = data;
+                                                console.log(`[HOVER] Loaded ${data.length} items for ${finalISO3}`);
+                                                // Update tooltip with the newly loaded data
+                                                updateTooltipContent(items, finalISO3, tooltipContent);
+                                            } else if (data.error) {
+                                                console.warn('[HOVER] Error in response:', data);
+                                                tooltipContent.innerHTML = `<em>Error: ${data.message || data.error}</em>`;
+                                            } else {
+                                                console.warn('[HOVER] Response is not an array:', data);
+                                                tooltipContent.innerHTML = `<em>ISO: ${finalISO3}<br>No data available</em>`;
+                                            }
+                                        } catch (error) {
+                                            console.error('[HOVER] Error loading country items:', error);
+                                            tooltipContent.innerHTML = `<em>Error loading data</em>`;
+                                        }
+                                    } else if (items.length > 0) {
+                                        console.log(`[HOVER] Using cached data for ${finalISO3}: ${items.length} items`);
+                                        // Update tooltip with cached data
+                                        updateTooltipContent(items, finalISO3, tooltipContent);
                                     } else {
-                                        tooltipContent.textContent = `ISO Code: ${iso3}`;
+                                        // No data available
+                                        tooltipContent.innerHTML = `<em>ISO: ${finalISO3}<br>No data available</em>`;
                                     }
                                     
                                     tooltip.classList.add('visible');
@@ -1333,34 +1496,36 @@
                                             // Cache the results
                                             countryItemsCache[iso3] = items;
                                             
-                                            // Display all items with full details from endpoint response
-                                            let content = `ISO: ${iso3}<br><br>`;
-                                            content += `<strong>Items (${items.length}):</strong><br><br>`;
+                                            // Display all items in a table
+                                            let content = `<strong>ISO Code: ${iso3}</strong><br><br>`;
+                                            content += `<strong>Total Items: ${items.length}</strong><br><br>`;
+                                            
+                                            // Create a table with all items
+                                            content += `<table class="country-info-table">`;
+                                            content += `<thead><tr><th>Type</th><th>Title</th><th>Artist/Author</th><th>Rating</th><th>Year</th><th>Finished</th><th>Details</th></tr></thead>`;
+                                            content += `<tbody>`;
                                             
                                             items.forEach((item, index) => {
-                                                const type = item.type === 'album' ? '🎵' : '📚';
+                                                const type = item.type === 'album' ? '🎵' : item.type === 'quote' ? '💬' : '📚';
                                                 const title = item.title || 'Untitled';
                                                 const artist = item.artist || 'Unknown';
-                                                const rating = item.rating ? ` ⭐ ${item.rating}` : '';
-                                                const year = item.year ? ` (${item.year})` : '';
-                                                const country = item.country_name ? ` - ${item.country_name}` : '';
-                                                const finished = item.is_finished ? ' ✓' : '';
+                                                const rating = item.rating ? `⭐ ${item.rating}` : '-';
+                                                const year = item.year ? item.year : (item.pages ? `${item.pages} pages` : '-');
+                                                const finishedDate = item.finished_date ? new Date(item.finished_date).toLocaleDateString() : '-';
+                                                const comments = item.comments ? item.comments : '-';
                                                 
-                                                content += `${type} <strong>${title}</strong> by ${artist}${rating}${year}${country}${finished}`;
-                                                
-                                                // Add additional details if available
-                                                if (item.pages) {
-                                                    content += ` (${item.pages} pages)`;
-                                                }
-                                                if (item.comments) {
-                                                    content += `<br>  <em>${item.comments}</em>`;
-                                                }
-                                                if (item.finished_date) {
-                                                    content += `<br>  Finished: ${item.finished_date}`;
-                                                }
-                                                
-                                                content += '<br><br>';
+                                                content += `<tr>`;
+                                                content += `<td>${type}</td>`;
+                                                content += `<td><strong>${title}</strong></td>`;
+                                                content += `<td>${artist}</td>`;
+                                                content += `<td>${rating}</td>`;
+                                                content += `<td>${year}</td>`;
+                                                content += `<td>${finishedDate}</td>`;
+                                                content += `<td>${comments !== '-' ? `<em>${comments}</em>` : '-'}</td>`;
+                                                content += `</tr>`;
                                             });
+                                            
+                                            content += `</tbody></table>`;
                                             
                                             infoISO.innerHTML = content;
                                         } else {
