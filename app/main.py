@@ -94,6 +94,44 @@ def get_countries_with_data():
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch countries with data"}
 
+@app.get("/api/country-items/{iso_code_3}")
+def get_country_items(iso_code_3: str):
+    """
+    Get all items (books, albums) for a country using country_items_view by iso_code_3.
+    This pulls from the Postgres function/view directly for combined items.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        # Normalize ISO code (uppercase)
+        iso_code_3 = iso_code_3.upper().strip()
+        print(f"[DEBUG] get_country_items called with iso_code_3: {iso_code_3}")
+        
+        # Try calling the PostgreSQL function first
+        try:
+            print(f"[DEBUG] Attempting RPC call to country_items_view with iso_code_3: {iso_code_3}")
+            result = supabase.rpc("country_items_view", {"finished_only": False}).eq("iso_alpha_3", iso_code_3).execute()
+            print(f"[DEBUG] RPC result: {len(result.data) if result.data else 0} items")
+            
+            if result.data:
+                return result.data
+            else:
+                return []
+        except Exception as rpc_error:
+            print(f"[DEBUG] RPC failed: {str(rpc_error)}, trying table approach...")
+            # If RPC fails, try alternative approach - query the view directly
+            try:
+                result = supabase.table("country_items_view").select("*").eq("iso_alpha_3", iso_code_3).execute()
+                print(f"[DEBUG] Table query result: {len(result.data) if result.data else 0} items")
+                return result.data if result.data else []
+            except Exception as table_error:
+                print(f"[DEBUG] Table query also failed: {str(table_error)}")
+                return {"error": str(rpc_error), "rpc_error": str(rpc_error), "table_error": str(table_error), "message": f"Failed to fetch items for country {iso_code_3}"}
+    except Exception as e:
+        print(f"[DEBUG] Outer exception: {str(e)}")
+        return {"error": str(e), "message": f"Failed to fetch items for country {iso_code_3}"}
+
 @app.get("/api/world_hexed_polygons")
 def get_world_hexed_polygons():
     """

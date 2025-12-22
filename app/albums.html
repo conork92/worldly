@@ -70,6 +70,18 @@
             transform: translateY(-2px);
         }
 
+        .nav-btn.active {
+            background: rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .top-right-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         /* Stats Bar */
         .stats-bar {
             display: flex;
@@ -554,7 +566,12 @@
             <div class="title">My Albums</div>
             <div class="subtitle">All the albums I've listened to</div>
         </div>
-        <a href="/globe" class="nav-btn">Back to Globe</a>
+        <div class="top-right-nav">
+            <a class="nav-btn" href="/globe">Globe</a>
+            <a class="nav-btn" href="/books">Books</a>
+            <a class="nav-btn" href="/quotes">Quotes</a>
+            <a class="nav-btn active" href="/albums">Albums</a>
+        </div>
     </div>
 
     <div class="stats-bar" id="stats-bar">

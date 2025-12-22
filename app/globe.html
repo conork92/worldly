@@ -487,8 +487,17 @@
             padding: 8px 12px;
             background: rgba(102, 126, 234, 0.15);
             border-radius: 6px;
-            display: inline-block;
+            display: block;
             margin-top: 8px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .country-info-iso strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 8px;
         }
 
         /* Responsive */
@@ -542,7 +551,7 @@
 
     <div id="globe-container"></div>
     
-    <div class="controls" id="controls-panel">
+    <div class="controls collapsed" id="controls-panel">
         <div class="controls-header" onclick="toggleControls()">
             <span class="controls-header-label">Controls</span>
             <span class="controls-minimize-icon">▼</span>
@@ -636,6 +645,8 @@
         let currentDataType = 'books';
         let countryDataMap = {}; // Maps ISO code to array of items (books/quotes/albums)
         let worldGeoJson = null;
+        let countryItemsCache = {}; // Cache for country items from the view endpoint
+        let allCountryItemsLoaded = false; // Track if we've pre-loaded all country data
 
         const loadingEl = document.getElementById('loading');
         const tooltip = document.getElementById('tooltip');
@@ -968,50 +979,53 @@
             // Prepare country polygons
             const polygonsData = worldGeoJson.features
                 .filter(feature => {
-                    // Some GeoJSONs include Antarctica or disputed/boundary areas; skip if necessary
-                    const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
-                    // Remove polygons that aren't actual countries
-                    return (
-                        iso3 &&
-                        iso3.length === 3 &&
-                        iso3 !== "-99" &&
-                        feature.geometry &&
-                        feature.geometry.type === "Polygon" || feature.geometry.type === "MultiPolygon"
-                    );
+                    // Check if it has valid geometry
+                    if (!feature.geometry || 
+                        (feature.geometry.type !== "Polygon" && feature.geometry.type !== "MultiPolygon")) {
+                        return false;
+                    }
+                    
+                    // Try to find ISO code - if we can't find one, still include it (might be a valid country)
+                    const props = feature.properties;
+                    const iso3Raw = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
+                                   props.ADM0_A3 || props.adm0_a3;
+                    
+                    // Exclude invalid ISO codes, but include polygons without ISO codes (they might still be valid)
+                    if (iso3Raw && (iso3Raw === "-99" || String(iso3Raw).trim().length !== 3)) {
+                        return false;
+                    }
+                    
+                    return true;
                 })
                 .map(feature => {
-                    const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
-                    const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
+                    const props = feature.properties;
+                    
+                    // Try multiple property names for ISO code (same as initial setup)
+                    const iso3Raw = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
+                                   props.ADM0_A3 || props.adm0_a3 || null;
+                    
+                    // Normalize ISO code (uppercase, trim)
+                    const iso3 = iso3Raw ? String(iso3Raw).trim().toUpperCase() : null;
+                    
+                    // Try multiple property names for country name
+                    const countryName = props.name || props.NAME || props.NAME_LONG || props.ADMIN || 
+                                      props.ADMIN_NAME || props.NAME_EN || props.name_en || 'Unknown';
 
-                    const countryItems = countryDataMap[iso3] || [];
+                    // Match using normalized ISO code
+                    const countryItems = iso3 ? (countryDataMap[iso3] || []) : [];
                     const hasData = countryItems.length > 0;
-
-                    // Debug: Log for visual check
-                    if (
-                        iso3 === 'USA' ||
-                        iso3 === 'US' ||
-                        (countryName && countryName.toLowerCase().includes('united states'))
-                    ) {
-                        console.log('USA polygon found:', {
-                            iso3: iso3,
-                            countryName: countryName,
-                            ISO_A3: feature.properties.ISO_A3,
-                            ISO_A3_EH: feature.properties.ISO_A3_EH,
-                            NAME: feature.properties.NAME,
-                            NAME_LONG: feature.properties.NAME_LONG,
-                            geometry: feature.geometry,
-                            allProperties: Object.keys(feature.properties)
-                        });
-                    }
 
                     return {
                         ...feature,
                         properties: {
-                            ...feature.properties,
+                            ...props, // Keep all original properties
                             hasData: hasData, // Used for coloring
                             items: countryItems,
                             countryName: countryName,
-                            iso3: iso3
+                            iso3: iso3, // Normalized ISO code
+                            // Keep original ISO properties for fallback
+                            ISO_A3: props.ISO_A3,
+                            ISO_A3_EH: props.ISO_A3_EH
                         }
                     };
                 });
@@ -1019,13 +1033,18 @@
             // Actually show the polygons on the globe.
             globeInstance
                 .polygonsData(polygonsData)
-                .polygonCapColor(feat => feat.properties.hasData
-                    ? 'rgba(102,126,234,0.65)' // colored for countries with data
-                    : 'rgba(100, 100, 160, 0.26)'
-                )
+                .polygonAltitude(0.01) // Make sure altitude is set
+                .polygonCapColor(feat => {
+                    // Use hasData to differentiate colors
+                    return feat.properties?.hasData
+                        ? 'rgba(102,126,234,0.65)' // Brighter for countries with data
+                        : 'rgba(100, 100, 160, 0.26)'; // Dimmer for countries without data
+                })
                 .polygonSideColor(() => 'rgba(80,80,120,0.15)')
                 .polygonStrokeColor(() => 'rgba(102,126,234,0.4)')
                 .polygonsTransitionDuration(800);
+            
+            console.log('Updated polygons:', polygonsData.length, 'polygons set on globe');
 
             // Optionally: set polygonsEnableArcsDrag(false) to allow interaction
             // globeInstance.polygonsEnableArcsDrag(false);
@@ -1110,38 +1129,36 @@
                     updateStats();
 
                     // Process GeoJSON to add country data info
-                    // For now, just show all countries with name and ISO code
-                    // Later: add hasData and items when database views are ready
+                    // Try multiple property name variations to find ISO code
                     const polygonsData = worldGeoJson.features.map(feature => {
-                        const iso3 = feature.properties.ISO_A3 || feature.properties.ISO_A3_EH;
-                        const countryName = feature.properties.NAME || feature.properties.NAME_LONG || 'Unknown';
+                        const props = feature.properties;
+                        
+                        // Try multiple property names for ISO code (different GeoJSON sources use different names)
+                        const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
+                                     props.ISO_A3_EH || props.ADM0_A3 || props.adm0_a3 || null;
+                        
+                        // Try multiple property names for country name
+                        const countryName = props.name || props.NAME || props.NAME_LONG || props.ADMIN || 
+                                           props.ADMIN_NAME || props.NAME_EN || props.name_en || 'Unknown';
+                        
+                        // Normalize ISO code (uppercase, trim)
+                        const normalizedISO3 = iso3 ? String(iso3).trim().toUpperCase() : null;
                         
                         // Keep structure for future data integration
-                        const countryItems = countryDataMap[iso3] || [];
+                        const countryItems = normalizedISO3 ? (countryDataMap[normalizedISO3] || []) : [];
                         const hasData = countryItems.length > 0;
-                        
-                        // Debug: Log a few test countries (USA, UK, France, Germany)
-                        const testCountries = ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE'];
-                        if (testCountries.includes(iso3)) {
-                            console.log(`=== ${iso3} POLYGON PROCESSED ===`);
-                            console.log('ISO3:', iso3);
-                            console.log('Country Name:', countryName);
-                            console.log('All original properties:', feature.properties);
-                            console.log('Properties we will set:', {
-                                countryName: countryName,
-                                iso3: iso3,
-                                hasData: hasData
-                            });
-                        }
                         
                         return {
                             ...feature,
                             properties: {
-                                ...feature.properties, // Keep all original properties
+                                ...props, // Keep all original properties
                                 hasData: hasData, // Will be used later for coloring
                                 items: countryItems, // Will be populated from database views later
                                 countryName: countryName, // Add our processed country name
-                                iso3: iso3 // Add our processed ISO code
+                                iso3: normalizedISO3, // Add our processed ISO code (normalized)
+                                // Also keep original ISO properties for fallback
+                                ISO_A3: props.ISO_A3,
+                                ISO_A3_EH: props.ISO_A3_EH
                             }
                         };
                     });
@@ -1192,17 +1209,18 @@
                         .hexBinPointLng('lng')
                         .polygonsData(polygonsData)
                         .polygonAltitude(0.01)
-                        .polygonCapColor(() => {
-                            // For now, show all countries with same subtle overlay
-                            // Later: use hasData to differentiate colors
-                            return 'rgba(102, 126, 234, 0.3)'; // Subtle purple overlay for all countries
+                        .polygonCapColor(feat => {
+                            // Use hasData to differentiate colors
+                            return feat.properties?.hasData
+                                ? 'rgba(102, 126, 234, 0.65)' // Brighter for countries with data
+                                : 'rgba(100, 100, 160, 0.26)'; // Dimmer for countries without data
                         })
                         .polygonSideColor(() => {
                             return 'rgba(102, 126, 234, 0.15)';
                         })
                         .polygonStrokeColor(() => 'rgba(102, 126, 234, 0.3)')
                         .polygonLabel('') // Disable built-in labels, we'll use custom tooltip instead
-                        .onPolygonHover((polygon, prevPolygon) => {
+                        .onPolygonHover(async (polygon, prevPolygon) => {
                             if (!tooltip) return;
                             
                             if (polygon) {
@@ -1217,31 +1235,80 @@
                                 
                                 if (tooltipTitle && tooltipContent) {
                                     tooltipTitle.textContent = countryName;
-                                    tooltipContent.textContent = `ISO Code: ${iso3}`;
+                                    
+                                    // DEBUG: Log hover event
+                                    console.log('=== POLYGON HOVER ===', {
+                                        countryName: countryName,
+                                        iso3: iso3,
+                                        cached: !!countryItemsCache[iso3],
+                                        cacheSize: Object.keys(countryItemsCache).length,
+                                        allLoaded: allCountryItemsLoaded
+                                    });
+                                    
+                                    // Check cache first
+                                    let items = countryItemsCache[iso3] || [];
+                                    
+                                    // If not in cache and we have a valid ISO code, try to load it
+                                    if (iso3 && iso3 !== 'N/A' && items.length === 0) {
+                                        console.log(`Loading data for ${iso3}...`);
+                                        try {
+                                            const url = `http://localhost:8000/api/country-items/${iso3}`;
+                                            console.log('Fetching:', url);
+                                            const response = await fetch(url);
+                                            const data = await response.json();
+                                            console.log('Response for', iso3, ':', data);
+                                            
+                                            if (!data.error && Array.isArray(data)) {
+                                                countryItemsCache[iso3] = data;
+                                                items = data;
+                                                console.log(`Loaded ${data.length} items for ${iso3}`);
+                                            } else {
+                                                console.warn('Error in response:', data);
+                                            }
+                                        } catch (error) {
+                                            console.error('Error loading country items:', error);
+                                        }
+                                    }
+                                    
+                                    // Display items if available
+                                    if (items.length > 0) {
+                                        let content = `ISO Code: ${iso3}<br><br>`;
+                                        content += `<strong>Items (${items.length}):</strong><br>`;
+                                        
+                                        // Show first 5 items
+                                        items.slice(0, 5).forEach(item => {
+                                            const type = item.type === 'album' ? '🎵' : '📚';
+                                            const title = item.title || 'Untitled';
+                                            const artist = item.artist || 'Unknown';
+                                            const rating = item.rating ? ` ⭐ ${item.rating}` : '';
+                                            content += `${type} ${title} by ${artist}${rating}<br>`;
+                                        });
+                                        
+                                        if (items.length > 5) {
+                                            content += `<br><em>+ ${items.length - 5} more</em>`;
+                                        }
+                                        
+                                        tooltipContent.innerHTML = content;
+                                    } else {
+                                        tooltipContent.textContent = `ISO Code: ${iso3}`;
+                                    }
+                                    
                                     tooltip.classList.add('visible');
                                 }
                             } else {
                                 tooltip.classList.remove('visible');
                             }
                         })
-                        .onPolygonClick((polygon) => {
+                        .onPolygonClick(async (polygon) => {
                             if (!polygon) return;
                             
                             const props = polygon.properties;
                             
-                            // DEBUG: Log all available properties
-                            console.log('=== POLYGON CLICKED ===');
-                            console.log('All properties:', props);
-                            console.log('Property keys:', Object.keys(props));
-                            
                             // Use 'name' property first (it's working correctly), then fallback to others
-                            // The 'name' property is correctly set by the GeoJSON
                             const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
                             
-                            // For ISO, try the processed iso3 first, then original properties
+                            // For ISO, check original GeoJSON properties first (ISO_A3, ISO_A3_EH)
                             const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso3 || props.iso_a3 || 'N/A';
-                            
-                            console.log('Extracted - Country:', countryName, 'ISO:', iso3);
                             
                             const infoPanel = document.getElementById('country-info-panel');
                             const infoTitle = document.getElementById('country-info-title');
@@ -1249,8 +1316,64 @@
                             
                             if (infoPanel && infoTitle && infoISO) {
                                 infoTitle.textContent = countryName;
-                                infoISO.textContent = iso3;
-                                infoPanel.classList.add('visible');
+                                
+                                // Load country items from endpoint (always fetch fresh data)
+                                if (iso3 && iso3 !== 'N/A') {
+                                    // Show loading state
+                                    infoISO.textContent = 'Loading...';
+                                    infoPanel.classList.add('visible');
+                                    
+                                    try {
+                                        const response = await fetch(`http://localhost:8000/api/country-items/${iso3}`);
+                                        const items = await response.json();
+                                        
+                                        if (items.error) {
+                                            infoISO.textContent = `Error: ${items.message || items.error}`;
+                                        } else if (items.length > 0) {
+                                            // Cache the results
+                                            countryItemsCache[iso3] = items;
+                                            
+                                            // Display all items with full details from endpoint response
+                                            let content = `ISO: ${iso3}<br><br>`;
+                                            content += `<strong>Items (${items.length}):</strong><br><br>`;
+                                            
+                                            items.forEach((item, index) => {
+                                                const type = item.type === 'album' ? '🎵' : '📚';
+                                                const title = item.title || 'Untitled';
+                                                const artist = item.artist || 'Unknown';
+                                                const rating = item.rating ? ` ⭐ ${item.rating}` : '';
+                                                const year = item.year ? ` (${item.year})` : '';
+                                                const country = item.country_name ? ` - ${item.country_name}` : '';
+                                                const finished = item.is_finished ? ' ✓' : '';
+                                                
+                                                content += `${type} <strong>${title}</strong> by ${artist}${rating}${year}${country}${finished}`;
+                                                
+                                                // Add additional details if available
+                                                if (item.pages) {
+                                                    content += ` (${item.pages} pages)`;
+                                                }
+                                                if (item.comments) {
+                                                    content += `<br>  <em>${item.comments}</em>`;
+                                                }
+                                                if (item.finished_date) {
+                                                    content += `<br>  Finished: ${item.finished_date}`;
+                                                }
+                                                
+                                                content += '<br><br>';
+                                            });
+                                            
+                                            infoISO.innerHTML = content;
+                                        } else {
+                                            infoISO.textContent = `ISO: ${iso3}<br><br>No items found for this country.`;
+                                        }
+                                    } catch (error) {
+                                        console.error('Error loading country items:', error);
+                                        infoISO.textContent = `Error loading data: ${error.message}`;
+                                    }
+                                } else {
+                                    infoISO.textContent = `ISO: ${iso3 || 'N/A'}`;
+                                    infoPanel.classList.add('visible');
+                                }
                             }
                         })
                         .showAtmosphere(true)
@@ -1299,11 +1422,75 @@
                     }
 
                     hideLoading();
+                    
+                    // Pre-load all country data in the background
+                    preloadAllCountryData();
                 })
                 .catch(err => {
                     console.error('Error loading globe:', err);
                     showError(`${err.message}<br><br>Make sure the API is running on http://localhost:8000`);
                 });
+        }
+
+        // Pre-load all country data on initialization
+        async function preloadAllCountryData() {
+            if (allCountryItemsLoaded || !worldGeoJson) {
+                console.log('Skipping pre-load: allCountryItemsLoaded=', allCountryItemsLoaded, 'worldGeoJson=', !!worldGeoJson);
+                return;
+            }
+            
+            console.log('=== PRE-LOADING ALL COUNTRY DATA ===');
+            const countries = new Set();
+            
+            // Extract all unique ISO codes from GeoJSON
+            worldGeoJson.features.forEach(feature => {
+                const props = feature.properties;
+                const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
+                            props.ADM0_A3 || props.adm0_a3;
+                if (iso3 && iso3 !== "-99" && String(iso3).trim().length === 3) {
+                    countries.add(String(iso3).trim().toUpperCase());
+                }
+            });
+            
+            console.log(`Found ${countries.size} countries to pre-load`);
+            
+            // Load data for all countries in parallel (limit concurrent requests)
+            const countryArray = Array.from(countries);
+            const batchSize = 10; // Load 10 countries at a time
+            let loadedCount = 0;
+            
+            for (let i = 0; i < countryArray.length; i += batchSize) {
+                const batch = countryArray.slice(i, i + batchSize);
+                console.log(`Loading batch ${Math.floor(i/batchSize) + 1} (${batch.length} countries)...`);
+                
+                await Promise.all(
+                    batch.map(async (iso3) => {
+                        if (!countryItemsCache[iso3]) {
+                            try {
+                                const url = `http://localhost:8000/api/country-items/${iso3}`;
+                                console.log(`Fetching: ${url}`);
+                                const response = await fetch(url);
+                                const items = await response.json();
+                                
+                                if (items.error) {
+                                    console.warn(`Error for ${iso3}:`, items.error);
+                                } else if (Array.isArray(items) && items.length > 0) {
+                                    countryItemsCache[iso3] = items;
+                                    loadedCount++;
+                                    console.log(`✓ Loaded ${items.length} items for ${iso3}`);
+                                } else {
+                                    console.log(`  No items for ${iso3}`);
+                                }
+                            } catch (error) {
+                                console.error(`Failed to load data for ${iso3}:`, error);
+                            }
+                        }
+                    })
+                );
+            }
+            
+            allCountryItemsLoaded = true;
+            console.log(`=== FINISHED PRE-LOADING: ${loadedCount} countries with data ===`);
         }
 
         // Cleanup on page unload

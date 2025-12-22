@@ -1,2 +1,2 @@
 start:
-	uvicorn main:app --reload
+	. venv/bin/activate && uvicorn main:app --reload
