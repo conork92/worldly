@@ -1376,64 +1376,13 @@
                                 if (tooltipTitle && tooltipContent) {
                                     tooltipTitle.textContent = countryName;
                                     
-                                    // DEBUG: Log hover event with all available properties
-                                    if (finalISO3 === 'N/A') {
-                                        console.log('=== POLYGON HOVER (NO ISO) ===', {
-                                            countryName: countryName,
-                                            iso3Raw: iso3Raw,
-                                            finalISO3: finalISO3,
-                                            availableProps: Object.keys(props),
-                                            sampleProps: {
-                                                ISO_A3: props.ISO_A3,
-                                                ISO_A3_EH: props.ISO_A3_EH,
-                                                iso3: props.iso3,
-                                                iso_a3: props.iso_a3,
-                                                ADM0_A3: props.ADM0_A3,
-                                                adm0_a3: props.adm0_a3
-                                            }
-                                        });
-                                    } else {
-                                        console.log('=== POLYGON HOVER ===', {
-                                            countryName: countryName,
-                                            iso3Raw: iso3Raw,
-                                            finalISO3: finalISO3,
-                                            cached: !!countryItemsCache[finalISO3],
-                                            cacheSize: Object.keys(countryItemsCache).length,
-                                            allLoaded: allCountryItemsLoaded
-                                        });
-                                    }
-                                    
-                                    // Check cache first
-                                    let items = countryItemsCache[finalISO3] || [];
-                                    
-                                    // If not in cache and we have a valid ISO code, try to load it
-                                    if (finalISO3 && finalISO3 !== 'N/A' && items.length === 0) {
-                                        console.log(`[HOVER] Loading data for ${finalISO3}...`);
-                                        try {
-                                            const url = `http://localhost:8000/api/country-items/${finalISO3}`;
-                                            console.log('[HOVER] Fetching:', url);
-                                            const response = await fetch(url);
-                                            const data = await response.json();
-                                            console.log('[HOVER] Response for', finalISO3, ':', data);
-                                            
-                                            if (!data.error && Array.isArray(data)) {
-                                                countryItemsCache[finalISO3] = data;
-                                                items = data;
-                                                console.log(`[HOVER] Loaded ${data.length} items for ${finalISO3}`);
-                                            } else if (data.error) {
-                                                console.warn('[HOVER] Error in response:', data);
-                                            } else {
-                                                console.warn('[HOVER] Response is not an array:', data);
-                                            }
-                                        } catch (error) {
-                                            console.error('[HOVER] Error loading country items:', error);
+                                    // Helper function to update tooltip content
+                                    const updateTooltipContent = (items, iso3, tooltipContentEl) => {
+                                        if (!items || items.length === 0) {
+                                            tooltipContentEl.innerHTML = `<em>ISO: ${iso3}<br>No data available</em>`;
+                                            return;
                                         }
-                                    } else if (items.length > 0) {
-                                        console.log(`[HOVER] Using cached data for ${finalISO3}: ${items.length} items`);
-                                    }
-                                    
-                                    // Display items if available in a table
-                                    if (items.length > 0) {
+                                        
                                         const displayItems = items.slice(0, 5);
                                         let content = `<strong>${items.length} items</strong><br><br>`;
                                         content += `<table class="tooltip-table">`;
@@ -1461,8 +1410,49 @@
                                             content += `<br><em>+ ${items.length - 5} more (click for full list)</em>`;
                                         }
                                         
-                                        tooltipContent.innerHTML = content;
+                                        tooltipContentEl.innerHTML = content;
+                                    };
+                                    
+                                    // Check cache first
+                                    let items = countryItemsCache[finalISO3] || [];
+                                    
+                                    // If not in cache and we have a valid ISO code, try to load it
+                                    if (finalISO3 && finalISO3 !== 'N/A' && items.length === 0) {
+                                        console.log(`[HOVER] Loading data for ${finalISO3}...`);
+                                        // Show loading state
+                                        tooltipContent.innerHTML = '<em>Loading...</em>';
+                                        tooltip.classList.add('visible');
+                                        
+                                        try {
+                                            const url = `http://localhost:8000/api/country-items/${finalISO3}`;
+                                            console.log('[HOVER] Fetching:', url);
+                                            const response = await fetch(url);
+                                            const data = await response.json();
+                                            console.log('[HOVER] Response for', finalISO3, ':', data);
+                                            
+                                            if (!data.error && Array.isArray(data)) {
+                                                countryItemsCache[finalISO3] = data;
+                                                items = data;
+                                                console.log(`[HOVER] Loaded ${data.length} items for ${finalISO3}`);
+                                                // Update tooltip with the newly loaded data
+                                                updateTooltipContent(items, finalISO3, tooltipContent);
+                                            } else if (data.error) {
+                                                console.warn('[HOVER] Error in response:', data);
+                                                tooltipContent.innerHTML = `<em>Error: ${data.message || data.error}</em>`;
+                                            } else {
+                                                console.warn('[HOVER] Response is not an array:', data);
+                                                tooltipContent.innerHTML = `<em>ISO: ${finalISO3}<br>No data available</em>`;
+                                            }
+                                        } catch (error) {
+                                            console.error('[HOVER] Error loading country items:', error);
+                                            tooltipContent.innerHTML = `<em>Error loading data</em>`;
+                                        }
+                                    } else if (items.length > 0) {
+                                        console.log(`[HOVER] Using cached data for ${finalISO3}: ${items.length} items`);
+                                        // Update tooltip with cached data
+                                        updateTooltipContent(items, finalISO3, tooltipContent);
                                     } else {
+                                        // No data available
                                         tooltipContent.innerHTML = `<em>ISO: ${finalISO3}<br>No data available</em>`;
                                     }
                                     
