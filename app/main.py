@@ -111,12 +111,20 @@ def get_country_items(iso_code_3: str):
         # Try calling the PostgreSQL function first
         try:
             print(f"[DEBUG] Attempting RPC call to country_items_view with iso_code_3: {iso_code_3}")
-            result = supabase.rpc("country_items_view", {"finished_only": False}).eq("iso_alpha_3", iso_code_3).execute()
-            print(f"[DEBUG] RPC result: {len(result.data) if result.data else 0} items")
+            # RPC calls return all data, we need to filter in Python
+            result = supabase.rpc("country_items_view", {"finished_only": False}).execute()
+            print(f"[DEBUG] RPC result: {len(result.data) if result.data else 0} total items")
             
             if result.data:
-                return result.data
+                # Filter by iso_alpha_3 in Python
+                filtered_items = [
+                    item for item in result.data 
+                    if item.get("iso_alpha_3") and item.get("iso_alpha_3").upper() == iso_code_3
+                ]
+                print(f"[DEBUG] Filtered to {len(filtered_items)} items for {iso_code_3}")
+                return filtered_items
             else:
+                print(f"[DEBUG] No data returned from RPC")
                 return []
         except Exception as rpc_error:
             print(f"[DEBUG] RPC failed: {str(rpc_error)}, trying table approach...")
