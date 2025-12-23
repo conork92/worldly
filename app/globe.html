@@ -723,6 +723,8 @@
         
         // Country name to ISO code mapping for countries missing ISO codes in GeoJSON
         const countryNameToISO = {
+            'france': 'FRA',
+            'canada': 'CAN',
             'morocco': 'MAR',
             'united kingdom': 'GBR',
             'uk': 'GBR',
@@ -770,7 +772,35 @@
             'cape verde': 'CPV',
             'cabo verde': 'CPV',
             'swaziland': 'SWZ',
-            'eswatini': 'SWZ'
+            'eswatini': 'SWZ',
+            'germany': 'DEU',
+            'spain': 'ESP',
+            'italy': 'ITA',
+            'portugal': 'PRT',
+            'netherlands': 'NLD',
+            'belgium': 'BEL',
+            'switzerland': 'CHE',
+            'austria': 'AUT',
+            'poland': 'POL',
+            'sweden': 'SWE',
+            'norway': 'NOR',
+            'denmark': 'DNK',
+            'finland': 'FIN',
+            'greece': 'GRC',
+            'turkey': 'TUR',
+            'japan': 'JPN',
+            'china': 'CHN',
+            'india': 'IND',
+            'brazil': 'BRA',
+            'argentina': 'ARG',
+            'mexico': 'MEX',
+            'australia': 'AUS',
+            'new zealand': 'NZL',
+            'south africa': 'ZAF',
+            'egypt': 'EGY',
+            'israel': 'ISR',
+            'ireland': 'IRL',
+            'iceland': 'ISL'
         };
 
         const loadingEl = document.getElementById('loading');
@@ -1470,8 +1500,37 @@
                             // Use 'name' property first (it's working correctly), then fallback to others
                             const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
                             
-                            // For ISO, check original GeoJSON properties first (ISO_A3, ISO_A3_EH)
-                            const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso3 || props.iso_a3 || 'N/A';
+                            // Try multiple property names for ISO code (same as hover)
+                            let iso3Raw = props.iso3 || props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || 
+                                         props.ADM0_A3 || props.adm0_a3 || props.ISO_A3_UN || props.ISO_A3_WB || 
+                                         props.iso_alpha_3;
+                            
+                            // If still no ISO code, try country name mapping
+                            if (!iso3Raw || iso3Raw === null || iso3Raw === 'N/A' || iso3Raw === '-99') {
+                                const countryNameLower = countryName.toLowerCase().trim();
+                                iso3Raw = countryNameToISO[countryNameLower] || null;
+                                if (iso3Raw) {
+                                    console.log(`[CLICK] Found ISO via name mapping: "${countryName}" -> "${iso3Raw}"`);
+                                } else {
+                                    console.warn(`[CLICK] No ISO mapping found for: "${countryName}" (searched for: "${countryNameLower}")`);
+                                    console.log('[CLICK] Available properties:', Object.keys(props));
+                                    console.log('[CLICK] ISO property values:', {
+                                        ISO_A3: props.ISO_A3,
+                                        ISO_A3_EH: props.ISO_A3_EH,
+                                        iso3: props.iso3,
+                                        iso_a3: props.iso_a3,
+                                        ADM0_A3: props.ADM0_A3,
+                                        adm0_a3: props.adm0_a3
+                                    });
+                                }
+                            }
+                            
+                            // Normalize ISO code
+                            const iso3 = (iso3Raw && iso3Raw !== 'N/A' && iso3Raw !== '-99' && iso3Raw !== null) 
+                                ? String(iso3Raw).trim().toUpperCase() 
+                                : 'N/A';
+                            
+                            console.log('[CLICK] Final - Country:', countryName, 'ISO:', iso3, 'Raw:', iso3Raw);
                             
                             const infoPanel = document.getElementById('country-info-panel');
                             const infoTitle = document.getElementById('country-info-title');
@@ -1480,63 +1539,83 @@
                             if (infoPanel && infoTitle && infoISO) {
                                 infoTitle.textContent = countryName;
                                 
-                                // Load country items from endpoint (always fetch fresh data)
+                                // Load country items from endpoint (check cache first, then fetch if needed)
                                 if (iso3 && iso3 !== 'N/A') {
-                                    // Show loading state
-                                    infoISO.textContent = 'Loading...';
-                                    infoPanel.classList.add('visible');
+                                    // Check cache first
+                                    let items = countryItemsCache[iso3] || [];
                                     
-                                    try {
-                                        const response = await fetch(`http://localhost:8000/api/country-items/${iso3}`);
-                                        const items = await response.json();
+                                    if (items.length === 0) {
+                                        // Show loading state
+                                        infoISO.innerHTML = '<em>Loading...</em>';
+                                        infoPanel.classList.add('visible');
                                         
-                                        if (items.error) {
-                                            infoISO.textContent = `Error: ${items.message || items.error}`;
-                                        } else if (items.length > 0) {
-                                            // Cache the results
-                                            countryItemsCache[iso3] = items;
+                                        try {
+                                            console.log(`[CLICK] Fetching data for ${iso3}...`);
+                                            const response = await fetch(`http://localhost:8000/api/country-items/${iso3}`);
+                                            const itemsData = await response.json();
+                                            console.log(`[CLICK] Response for ${iso3}:`, itemsData);
                                             
-                                            // Display all items in a table
-                                            let content = `<strong>ISO Code: ${iso3}</strong><br><br>`;
-                                            content += `<strong>Total Items: ${items.length}</strong><br><br>`;
-                                            
-                                            // Create a table with all items
-                                            content += `<table class="country-info-table">`;
-                                            content += `<thead><tr><th>Type</th><th>Title</th><th>Artist/Author</th><th>Rating</th><th>Year</th><th>Finished</th><th>Details</th></tr></thead>`;
-                                            content += `<tbody>`;
-                                            
-                                            items.forEach((item, index) => {
-                                                const type = item.type === 'album' ? '🎵' : item.type === 'quote' ? '💬' : '📚';
-                                                const title = item.title || 'Untitled';
-                                                const artist = item.artist || 'Unknown';
-                                                const rating = item.rating ? `⭐ ${item.rating}` : '-';
-                                                const year = item.year ? item.year : (item.pages ? `${item.pages} pages` : '-');
-                                                const finishedDate = item.finished_date ? new Date(item.finished_date).toLocaleDateString() : '-';
-                                                const comments = item.comments ? item.comments : '-';
-                                                
-                                                content += `<tr>`;
-                                                content += `<td>${type}</td>`;
-                                                content += `<td><strong>${title}</strong></td>`;
-                                                content += `<td>${artist}</td>`;
-                                                content += `<td>${rating}</td>`;
-                                                content += `<td>${year}</td>`;
-                                                content += `<td>${finishedDate}</td>`;
-                                                content += `<td>${comments !== '-' ? `<em>${comments}</em>` : '-'}</td>`;
-                                                content += `</tr>`;
-                                            });
-                                            
-                                            content += `</tbody></table>`;
-                                            
-                                            infoISO.innerHTML = content;
-                                        } else {
-                                            infoISO.textContent = `ISO: ${iso3}<br><br>No items found for this country.`;
+                                            if (itemsData.error) {
+                                                infoISO.innerHTML = `<em>Error: ${itemsData.message || itemsData.error}</em>`;
+                                            } else if (Array.isArray(itemsData)) {
+                                                // Cache the results
+                                                countryItemsCache[iso3] = itemsData;
+                                                items = itemsData;
+                                                console.log(`[CLICK] Loaded ${itemsData.length} items for ${iso3}`);
+                                            } else {
+                                                console.warn('[CLICK] Response is not an array:', itemsData);
+                                                items = [];
+                                            }
+                                        } catch (error) {
+                                            console.error('[CLICK] Error loading country items:', error);
+                                            infoISO.innerHTML = `<em>Error loading data: ${error.message}</em>`;
+                                            return;
                                         }
-                                    } catch (error) {
-                                        console.error('Error loading country items:', error);
-                                        infoISO.textContent = `Error loading data: ${error.message}`;
+                                    } else {
+                                        console.log(`[CLICK] Using cached data for ${iso3}: ${items.length} items`);
                                     }
+                                    
+                                    // Display all items in a table
+                                    if (items.length > 0) {
+                                        let content = `<strong>ISO Code: ${iso3}</strong><br><br>`;
+                                        content += `<strong>Total Items: ${items.length}</strong><br><br>`;
+                                        
+                                        // Create a table with all items
+                                        content += `<table class="country-info-table">`;
+                                        content += `<thead><tr><th>Type</th><th>Title</th><th>Artist/Author</th><th>Rating</th><th>Year</th><th>Finished</th><th>Details</th></tr></thead>`;
+                                        content += `<tbody>`;
+                                        
+                                        items.forEach((item, index) => {
+                                            const type = item.type === 'album' ? '🎵' : item.type === 'quote' ? '💬' : '📚';
+                                            const title = item.title || 'Untitled';
+                                            const artist = item.artist || 'Unknown';
+                                            const rating = item.rating ? `⭐ ${item.rating}` : '-';
+                                            const year = item.year ? item.year : (item.pages ? `${item.pages} pages` : '-');
+                                            const finishedDate = item.finished_date ? new Date(item.finished_date).toLocaleDateString() : '-';
+                                            const comments = item.comments ? item.comments : '-';
+                                            
+                                            content += `<tr>`;
+                                            content += `<td>${type}</td>`;
+                                            content += `<td><strong>${title}</strong></td>`;
+                                            content += `<td>${artist}</td>`;
+                                            content += `<td>${rating}</td>`;
+                                            content += `<td>${year}</td>`;
+                                            content += `<td>${finishedDate}</td>`;
+                                            content += `<td>${comments !== '-' ? `<em>${comments}</em>` : '-'}</td>`;
+                                            content += `</tr>`;
+                                        });
+                                        
+                                        content += `</tbody></table>`;
+                                        
+                                        infoISO.innerHTML = content;
+                                    } else {
+                                        infoISO.innerHTML = `<strong>ISO: ${iso3}</strong><br><br><em>No items found for this country.</em>`;
+                                    }
+                                    
+                                    infoPanel.classList.add('visible');
                                 } else {
-                                    infoISO.textContent = `ISO: ${iso3 || 'N/A'}`;
+                                    console.warn('[CLICK] No valid ISO code for:', countryName);
+                                    infoISO.innerHTML = `<em>ISO: ${iso3 || 'N/A'}<br>No ISO code available</em>`;
                                     infoPanel.classList.add('visible');
                                 }
                             }
