@@ -14,7 +14,7 @@
         body {
             overflow: hidden;
             background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             color: white;
         }
 
@@ -44,52 +44,114 @@
             position: absolute;
             top: 100px;
             left: 40px;
-            background: rgba(20, 20, 40, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 40, 0.9);
+            backdrop-filter: blur(20px);
             padding: 12px 20px;
-            border-radius: 12px;
+            border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.1);
             z-index: 100;
             pointer-events: auto;
             display: flex;
             gap: 10px;
             align-items: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .data-type-filter:hover {
+            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.2);
+        }
+        
+        /* Subtle listen filter */
+        .listen-filter {
+            position: absolute;
+            top: 100px;
+            left: 40px;
+            margin-top: 60px;
+            z-index: 99;
+            pointer-events: auto;
+        }
+        
+        .listen-filter-select {
+            padding: 8px 16px;
+            background: rgba(20, 20, 40, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        .listen-filter-select:hover {
+            background: rgba(20, 20, 40, 0.85);
+            border-color: rgba(102, 126, 234, 0.3);
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .listen-filter-select:focus {
+            border-color: rgba(102, 126, 234, 0.5);
+            color: rgba(255,255,255,0.95);
         }
 
         .data-type-filter-label {
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255,255,255,0.7);
+            letter-spacing: 1.2px;
+            color: rgba(255,255,255,0.6);
             margin-right: 10px;
+            font-weight: 600;
         }
 
         .data-type-btn {
             padding: 10px 20px;
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.4);
-            border-radius: 8px;
-            color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            color: #8a9ef5;
             cursor: pointer;
             font-size: 13px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-weight: 500;
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .data-type-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .data-type-btn:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
         .data-type-btn:hover {
-            background: rgba(102, 126, 234, 0.4);
-            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.6);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
         }
 
         .data-type-btn.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-color: transparent;
             color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
         .title {
@@ -106,10 +168,11 @@
         }
 
         .subtitle {
-            font-size: 14px;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 1px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1.5px;
             pointer-events: auto;
+            font-weight: 400;
         }
 
         /* Top-right nav buttons */
@@ -124,25 +187,27 @@
         }
 
         .top-right-nav .nav-btn {
-            padding: 8px 16px;
+            padding: 10px 18px;
             background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.35);
-            border-radius: 8px;
-            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            color: #8a9ef5;
             cursor: pointer;
             font-size: 13px;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-weight: 500;
+            font-weight: 600;
             text-decoration: none;
             outline: none;
         }
 
         .top-right-nav .nav-btn:hover {
-            background: rgba(102, 126, 234, 0.35);
-            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.6);
             color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
         }
 
         /* Control Panel */
@@ -150,16 +215,16 @@
             position: absolute;
             bottom: 40px;
             left: 40px;
-            background: rgba(20, 20, 40, 0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(20, 20, 40, 0.9);
+            backdrop-filter: blur(20px);
             padding: 0;
-            border-radius: 16px;
+            border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.1);
             z-index: 100;
-            min-width: 280px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            min-width: 300px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .controls.collapsed {
@@ -167,7 +232,7 @@
         }
 
         .controls-header {
-            padding: 15px 20px;
+            padding: 18px 24px;
             background: rgba(102, 126, 234, 0.1);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
@@ -175,6 +240,7 @@
             justify-content: space-between;
             cursor: pointer;
             user-select: none;
+            transition: all 0.3s ease;
         }
 
         .controls-header:hover {
@@ -182,17 +248,17 @@
         }
 
         .controls-header-label {
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             color: rgba(255,255,255,0.8);
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .controls-minimize-icon {
             font-size: 14px;
             color: rgba(255,255,255,0.5);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .controls.collapsed .controls-minimize-icon {
@@ -200,71 +266,72 @@
         }
 
         .controls-content {
-            padding: 25px;
+            padding: 28px;
             max-height: 1000px;
             overflow: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .controls.collapsed .controls-content {
             max-height: 0;
-            padding: 0 25px;
+            padding: 0 28px;
             overflow: hidden;
         }
 
         .control-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .control-group:last-child {
             margin-bottom: 0;
         }
 
-
         .control-label {
-            font-size: 12px;
+            font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255,255,255,0.7);
-            margin-bottom: 10px;
+            letter-spacing: 1.2px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 12px;
             display: block;
+            font-weight: 600;
         }
 
         .button-group {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .btn {
-            padding: 10px 18px;
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.4);
-            border-radius: 8px;
-            color: #667eea;
+            padding: 11px 20px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            color: #8a9ef5;
             cursor: pointer;
             font-size: 13px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            font-weight: 500;
+            font-weight: 600;
         }
 
         .btn:hover {
-            background: rgba(102, 126, 234, 0.4);
-            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.6);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
         }
 
         .btn.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-color: transparent;
             color: white;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
         .slider-container {
-            margin-top: 10px;
+            margin-top: 12px;
         }
 
         input[type="range"] {
@@ -279,28 +346,36 @@
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.6);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.8);
         }
 
         input[type="range"]::-moz-range-thumb {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 50%;
             cursor: pointer;
             border: none;
+            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.6);
         }
 
         .slider-value {
             display: inline-block;
             margin-left: 10px;
-            color: #667eea;
-            font-weight: 600;
+            color: #8a9ef5;
+            font-weight: 700;
+            font-size: 13px;
         }
 
         /* Stats Panel */
@@ -308,21 +383,25 @@
             position: absolute;
             top: 120px;
             right: 40px;
-            background: rgba(20, 20, 40, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 16px;
+            background: rgba(20, 20, 40, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 28px;
+            border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.1);
             z-index: 100;
-            min-width: 240px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            min-width: 260px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .stats:hover {
+            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.2);
+        }
 
         .stat-item {
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 18px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
         .stat-item:last-child {
@@ -332,16 +411,17 @@
         }
 
         .stat-label {
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.2px;
             color: rgba(255,255,255,0.5);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .stat-value {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -359,13 +439,13 @@
         }
 
         .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(102, 126, 234, 0.2);
-            border-top: 4px solid #667eea;
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(102, 126, 234, 0.2);
+            border-top: 5px solid #667eea;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            margin: 0 auto 24px;
         }
 
         @keyframes spin {
@@ -376,7 +456,8 @@
         .loading-text {
             font-size: 16px;
             color: rgba(255,255,255,0.8);
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
+            font-weight: 600;
         }
 
         .error {
@@ -385,217 +466,384 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(20, 20, 40, 0.95);
-            padding: 40px;
-            border-radius: 16px;
+            padding: 50px;
+            border-radius: 20px;
             border: 1px solid rgba(255, 68, 68, 0.5);
             text-align: center;
             max-width: 500px;
             z-index: 1000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
         }
 
         .error-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
+            font-size: 56px;
+            margin-bottom: 24px;
         }
 
         .error-text {
             color: #ff4444;
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
-        /* Tooltip */
+        /* Enhanced Tooltip */
         .tooltip {
             position: fixed;
-            background: rgba(20, 20, 40, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            border-radius: 12px;
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(20px);
+            padding: 18px 22px;
+            border-radius: 14px;
             border: 1px solid rgba(102, 126, 234, 0.3);
             pointer-events: none;
             z-index: 10000;
-            display: none;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+            max-width: 350px;
         }
 
         .tooltip.visible {
-            display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .tooltip-title {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #667eea;
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #8a9ef5;
+            letter-spacing: 0.5px;
         }
 
         .tooltip-content {
             font-size: 12px;
-            color: rgba(255,255,255,0.8);
-            line-height: 1.5;
-            max-width: 300px;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.6;
             max-height: 400px;
             overflow-y: auto;
         }
 
+        .tooltip-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .tooltip-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+        }
+
+        .tooltip-content::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 3px;
+        }
+
         .tooltip-content strong {
-            color: #667eea;
+            color: #8a9ef5;
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .tooltip-content em {
             color: rgba(255,255,255,0.6);
             font-size: 11px;
         }
-        
+
         .tooltip-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 11px;
         }
-        
+
         .tooltip-table th {
             background: rgba(102, 126, 234, 0.2);
-            color: #667eea;
-            padding: 6px;
+            color: #8a9ef5;
+            padding: 8px;
             text-align: left;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 10px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             border-bottom: 1px solid rgba(102, 126, 234, 0.3);
         }
-        
+
         .tooltip-table td {
-            padding: 6px;
+            padding: 8px;
             border-bottom: 1px solid rgba(102, 126, 234, 0.1);
         }
-        
+
         .tooltip-table tr:hover {
-            background: rgba(102, 126, 234, 0.05);
-        }
-        
-        .tooltip-table td strong {
-            color: #667eea;
+            background: rgba(102, 126, 234, 0.08);
         }
 
-        /* Country Info Panel (shown on click) */
-        .country-info-panel {
+        .tooltip-table td strong {
+            color: #8a9ef5;
+        }
+
+        /* MODERNIZED Country Info Panel (Modal Style) */
+        .country-modal-overlay {
             position: fixed;
-            bottom: 40px;
-            right: 40px;
-            background: rgba(20, 20, 40, 0.95);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            z-index: 10000;
-            min-width: 280px;
-            max-width: 400px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-            display: none;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .country-modal-overlay.visible {
+            opacity: 1;
             pointer-events: auto;
         }
 
+        .country-info-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(15, 15, 35, 0.98);
+            backdrop-filter: blur(30px);
+            padding: 0;
+            border-radius: 24px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            z-index: 10000;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85vh;
+            box-shadow: 0 20px 80px rgba(0,0,0,0.8);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
         .country-info-panel.visible {
-            display: block;
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .country-info-header {
+            padding: 28px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
         }
 
         .country-info-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #667eea;
+            font-size: 24px;
+            font-weight: 700;
+            color: #8a9ef5;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            margin: 0;
         }
 
-        .country-info-iso {
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            font-family: 'Courier New', monospace;
-            padding: 8px 12px;
-            background: rgba(102, 126, 234, 0.15);
-            border-radius: 6px;
-            display: block;
-            margin-top: 8px;
-            line-height: 1.6;
-            max-height: 400px;
+        .country-info-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 300;
+        }
+
+        .country-info-close:hover {
+            background: rgba(255, 68, 68, 0.3);
+            border-color: rgba(255, 68, 68, 0.5);
+            color: #ff4444;
+            transform: rotate(90deg);
+        }
+
+        .country-info-body {
+            padding: 32px;
             overflow-y: auto;
+            flex: 1;
         }
-        
-        .country-info-iso strong {
-            color: #667eea;
-            display: block;
-            margin-bottom: 8px;
+
+        .country-info-body::-webkit-scrollbar {
+            width: 8px;
         }
-        
+
+        .country-info-body::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+        }
+
+        .country-info-body::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 4px;
+        }
+
+        .country-info-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.7);
+        }
+
+        .country-info-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .country-info-meta-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 12px 18px;
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .country-info-meta-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .country-info-meta-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #8a9ef5;
+        }
+
         .country-info-table {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 12px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            font-size: 13px;
+            border-radius: 12px;
+            overflow: hidden;
         }
-        
+
+        .country-info-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
         .country-info-table th {
-            background: rgba(102, 126, 234, 0.15);
-            color: #667eea;
-            padding: 10px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #8a9ef5;
+            padding: 14px 12px;
             text-align: left;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
             border-bottom: 2px solid rgba(102, 126, 234, 0.3);
-            position: sticky;
-            top: 0;
         }
-        
+
+        .country-info-table th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        .country-info-table th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
         .country-info-table td {
-            padding: 10px 8px;
-            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            padding: 14px 12px;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.08);
             vertical-align: top;
+            background: rgba(255, 255, 255, 0.02);
         }
-        
-        .country-info-table tr:hover {
+
+        .country-info-table tr:hover td {
             background: rgba(102, 126, 234, 0.08);
         }
-        
-        .country-info-table td strong {
-            color: #667eea;
+
+        .country-info-table tr:last-child td:first-child {
+            border-radius: 0 0 0 12px;
         }
-        
+
+        .country-info-table tr:last-child td:last-child {
+            border-radius: 0 0 12px 0;
+        }
+
+        .country-info-table td strong {
+            color: #8a9ef5;
+            font-weight: 600;
+        }
+
         .country-info-table td em {
             color: rgba(255,255,255,0.7);
-            font-size: 11px;
+            font-size: 12px;
             font-style: italic;
+        }
+
+        .no-data-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.5);
+            font-size: 14px;
+        }
+
+        .no-data-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
         }
 
         /* Responsive */
         @media (max-width: 768px) {
             .header {
                 padding: 20px;
+                flex-direction: column;
+                gap: 15px;
             }
             .title {
-                font-size: 24px;
+                font-size: 22px;
             }
-            .controls, .stats {
+            .subtitle {
+                font-size: 11px;
+            }
+            .controls, .stats, .data-type-filter {
                 position: relative;
                 bottom: auto;
                 top: auto;
                 left: auto;
                 right: auto;
-                margin: 20px;
-                width: calc(100% - 40px);
+                margin: 15px;
+                width: calc(100% - 30px);
             }
             .top-right-nav {
                 position: static;
-                top: auto;
-                right: auto;
-                margin-left: auto;
-                margin-bottom: 10px;
+                margin-top: 10px;
+            }
+            .country-info-panel {
+                width: 95%;
+                max-height: 90vh;
+            }
+            .country-info-header {
+                padding: 20px;
+            }
+            .country-info-title {
+                font-size: 18px;
+            }
+            .country-info-body {
+                padding: 20px;
             }
         }
     </style>
@@ -616,10 +864,20 @@
 
     <!-- Data Type Filter Bar -->
     <div class="data-type-filter">
-        <span class="data-type-filter-label">Data Type:</span>
-        <button class="data-type-btn active" onclick="setDataType('books')" id="data-type-books">Books</button>
+        <span class="data-type-filter-label">Show:</span>
+        <button class="data-type-btn active" onclick="setDataType('all')" id="data-type-all">All</button>
+        <button class="data-type-btn" onclick="setDataType('books')" id="data-type-books">Books</button>
         <button class="data-type-btn" onclick="setDataType('quotes')" id="data-type-quotes">Quotes</button>
         <button class="data-type-btn" onclick="setDataType('albums')" id="data-type-albums">Albums</button>
+    </div>
+    
+    <!-- Subtle listen filter (only visible for albums) -->
+    <div class="listen-filter" id="listen-filter-container" style="display: none;">
+        <select class="listen-filter-select" id="listen-filter-select" onchange="setListenFilter(this.value)">
+            <option value="all">All Albums</option>
+            <option value="listened">Listened</option>
+            <option value="unlistened">Unlistened</option>
+        </select>
     </div>
 
     <div id="globe-container"></div>
@@ -640,21 +898,10 @@
             </div>
 
             <div class="control-group">
-                <span class="control-label">Color Scheme</span>
+                <span class="control-label">Show Finished Items</span>
                 <div class="button-group">
-                    <button class="btn active" onclick="setColorScheme('gradient')">Gradient</button>
-                    <button class="btn" onclick="setColorScheme('heat')">Heat</button>
-                    <button class="btn" onclick="setColorScheme('cool')">Cool</button>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <span class="control-label">
-                    Altitude Scale
-                    <span class="slider-value" id="altitude-value">1.0x</span>
-                </span>
-                <div class="slider-container">
-                    <input type="range" id="altitude-slider" min="0.1" max="3" step="0.1" value="1" oninput="updateAltitude(this.value)">
+                    <button class="btn active" id="finished-yes" onclick="setFinishedFilter(true)">Yes</button>
+                    <button class="btn" id="finished-no" onclick="setFinishedFilter(false)">No</button>
                 </div>
             </div>
 
@@ -663,7 +910,7 @@
                 <div class="button-group">
                     <button class="btn" onclick="resetView()">Reset View</button>
                     <button class="btn" onclick="toggleRotation()">Auto Rotate</button>
-                    <button class="btn" onclick="testCountries()" style="margin-top: 10px; background: rgba(102, 126, 234, 0.3);">🔍 Test Countries</button>
+                    <button class="btn" onclick="testCountries()" style="margin-top: 10px; background: rgba(102, 126, 234, 0.3);">🔍 Test</button>
                 </div>
             </div>
         </div>
@@ -698,11 +945,17 @@
         <div class="tooltip-content" id="tooltip-content"></div>
     </div>
 
-    <!-- Country Info Panel (shown on click) -->
+    <!-- Modernized Country Info Modal -->
+    <div class="country-modal-overlay" id="country-modal-overlay" onclick="closeCountryInfo()"></div>
     <div class="country-info-panel" id="country-info-panel">
-        <div class="country-info-close" onclick="closeCountryInfo()">×</div>
-        <div class="country-info-title" id="country-info-title">Select a Country</div>
-        <div class="country-info-iso" id="country-info-iso">Click on any country</div>
+        <div class="country-info-header">
+            <div class="country-info-title" id="country-info-title">Select a Country</div>
+            <div class="country-info-close" onclick="closeCountryInfo()">×</div>
+        </div>
+        <div class="country-info-body" id="country-info-body">
+            <div class="country-info-meta" id="country-info-meta"></div>
+            <div id="country-info-content"></div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.31.0/dist/globe.gl.min.js"></script>
@@ -715,110 +968,77 @@
         let altitudeScale = 1.0;
         let isRotating = false;
         let rotationInterval = null;
-        let currentDataType = 'books';
-        let countryDataMap = {}; // Maps ISO code to array of items (books/quotes/albums)
+        let currentDataType = 'all';
+        let countryDataMap = {};
         let worldGeoJson = null;
-        let countryItemsCache = {}; // Cache for country items from the view endpoint
-        let allCountryItemsLoaded = false; // Track if we've pre-loaded all country data
+        let countryItemsCache = {};
+        let allCountryItemsLoaded = false;
+        let listenFilter = 'all'; // 'all', 'listened', 'unlistened'
+        let showFinishedOnly = true; // true = show finished items, false = show unfinished items
         
-        // Country name to ISO code mapping for countries missing ISO codes in GeoJSON
         const countryNameToISO = {
-            'france': 'FRA',
-            'canada': 'CAN',
-            'morocco': 'MAR',
-            'united kingdom': 'GBR',
-            'uk': 'GBR',
-            'england': 'GBR',
-            'great britain': 'GBR',
-            'usa': 'USA',
-            'united states': 'USA',
-            'united states of america': 'USA',
-            'russia': 'RUS',
-            'russian federation': 'RUS',
-            'south korea': 'KOR',
-            'korea': 'KOR',
-            'north korea': 'PRK',
-            'czech republic': 'CZE',
-            'czechia': 'CZE',
-            'vietnam': 'VNM',
-            'viet nam': 'VNM',
-            'iran': 'IRN',
-            'iran, islamic republic of': 'IRN',
-            'syria': 'SYR',
-            'syrian arab republic': 'SYR',
-            'venezuela': 'VEN',
-            'venezuela, bolivarian republic of': 'VEN',
-            'tanzania': 'TZA',
-            'united republic of tanzania': 'TZA',
-            'myanmar': 'MMR',
-            'burma': 'MMR',
-            'laos': 'LAO',
-            'lao people\'s democratic republic': 'LAO',
-            'macedonia': 'MKD',
-            'north macedonia': 'MKD',
-            'moldova': 'MDA',
-            'republic of moldova': 'MDA',
-            'palestine': 'PSE',
-            'state of palestine': 'PSE',
-            'congo': 'COG',
-            'republic of the congo': 'COG',
-            'democratic republic of the congo': 'COD',
-            'drc': 'COD',
-            'ivory coast': 'CIV',
-            'côte d\'ivoire': 'CIV',
-            'cote d\'ivoire': 'CIV',
-            'east timor': 'TLS',
-            'timor-leste': 'TLS',
-            'cape verde': 'CPV',
-            'cabo verde': 'CPV',
-            'swaziland': 'SWZ',
-            'eswatini': 'SWZ',
-            'germany': 'DEU',
-            'spain': 'ESP',
-            'italy': 'ITA',
-            'portugal': 'PRT',
-            'netherlands': 'NLD',
-            'belgium': 'BEL',
-            'switzerland': 'CHE',
-            'austria': 'AUT',
-            'poland': 'POL',
-            'sweden': 'SWE',
-            'norway': 'NOR',
-            'denmark': 'DNK',
-            'finland': 'FIN',
-            'greece': 'GRC',
-            'turkey': 'TUR',
-            'japan': 'JPN',
-            'china': 'CHN',
-            'india': 'IND',
-            'brazil': 'BRA',
-            'argentina': 'ARG',
-            'mexico': 'MEX',
-            'australia': 'AUS',
-            'new zealand': 'NZL',
-            'south africa': 'ZAF',
-            'egypt': 'EGY',
-            'israel': 'ISR',
-            'ireland': 'IRL',
-            'iceland': 'ISL'
+            'france': 'FRA', 'canada': 'CAN', 'morocco': 'MAR', 'united kingdom': 'GBR',
+            'uk': 'GBR', 'england': 'GBR', 'great britain': 'GBR', 'usa': 'USA',
+            'united states': 'USA', 'united states of america': 'USA', 'russia': 'RUS',
+            'russian federation': 'RUS', 'south korea': 'KOR', 'korea': 'KOR',
+            'north korea': 'PRK', 'czech republic': 'CZE', 'czechia': 'CZE',
+            'vietnam': 'VNM', 'viet nam': 'VNM', 'iran': 'IRN',
+            'iran, islamic republic of': 'IRN', 'syria': 'SYR',
+            'syrian arab republic': 'SYR', 'venezuela': 'VEN',
+            'venezuela, bolivarian republic of': 'VEN', 'tanzania': 'TZA',
+            'united republic of tanzania': 'TZA', 'myanmar': 'MMR', 'burma': 'MMR',
+            'laos': 'LAO', 'lao people\'s democratic republic': 'LAO',
+            'macedonia': 'MKD', 'north macedonia': 'MKD', 'moldova': 'MDA',
+            'republic of moldova': 'MDA', 'palestine': 'PSE', 'state of palestine': 'PSE',
+            'congo': 'COG', 'republic of the congo': 'COG',
+            'democratic republic of the congo': 'COD', 'drc': 'COD',
+            'ivory coast': 'CIV', 'côte d\'ivoire': 'CIV', 'cote d\'ivoire': 'CIV',
+            'east timor': 'TLS', 'timor-leste': 'TLS', 'cape verde': 'CPV',
+            'cabo verde': 'CPV', 'swaziland': 'SWZ', 'eswatini': 'SWZ',
+            'germany': 'DEU', 'spain': 'ESP', 'italy': 'ITA', 'portugal': 'PRT',
+            'netherlands': 'NLD', 'belgium': 'BEL', 'switzerland': 'CHE',
+            'austria': 'AUT', 'poland': 'POL', 'sweden': 'SWE', 'norway': 'NOR',
+            'denmark': 'DNK', 'finland': 'FIN', 'greece': 'GRC', 'turkey': 'TUR',
+            'japan': 'JPN', 'china': 'CHN', 'india': 'IND', 'brazil': 'BRA',
+            'argentina': 'ARG', 'mexico': 'MEX', 'australia': 'AUS',
+            'new zealand': 'NZL', 'south africa': 'ZAF', 'egypt': 'EGY',
+            'israel': 'ISR', 'ireland': 'IRL', 'iceland': 'ISL',
+            'nigeria': 'NGA', 'niger': 'NER', 'south africa': 'ZAF',
+            'kenya': 'KEN', 'ghana': 'GHA', 'ethiopia': 'ETH',
+            'uganda': 'UGA', 'tanzania': 'TZA', 'zimbabwe': 'ZWE',
+            'mozambique': 'MOZ', 'madagascar': 'MDG', 'cameroon': 'CMR',
+            'ivory coast': 'CIV', 'côte d\'ivoire': 'CIV', 'cote d\'ivoire': 'CIV',
+            'senegal': 'SEN', 'mali': 'MLI', 'burkina faso': 'BFA',
+            'niger': 'NER', 'chad': 'TCD', 'sudan': 'SDN',
+            'angola': 'AGO', 'zambia': 'ZMB', 'malawi': 'MWI',
+            'rwanda': 'RWA', 'burundi': 'BDI', 'somalia': 'SOM',
+            'djibouti': 'DJI', 'eritrea': 'ERI', 'gambia': 'GMB',
+            'guinea': 'GIN', 'guinea-bissau': 'GNB', 'liberia': 'LBR',
+            'sierra leone': 'SLE', 'togo': 'TGO', 'benin': 'BEN',
+            'mauritania': 'MRT', 'botswana': 'BWA', 'namibia': 'NAM',
+            'lesotho': 'LSO', 'eswatini': 'SWZ', 'swaziland': 'SWZ',
+            'gabon': 'GAB', 'equatorial guinea': 'GNQ', 'congo': 'COG',
+            'republic of the congo': 'COG', 'democratic republic of the congo': 'COD',
+            'drc': 'COD', 'central african republic': 'CAF',
+            'são tomé and príncipe': 'STP', 'sao tome and principe': 'STP',
+            'cape verde': 'CPV', 'cabo verde': 'CPV', 'comoros': 'COM',
+            'mauritius': 'MUS', 'seychelles': 'SYC', 'libya': 'LBY',
+            'tunisia': 'TUN', 'algeria': 'DZA', 'morocco': 'MAR'
         };
 
         const loadingEl = document.getElementById('loading');
         const tooltip = document.getElementById('tooltip');
         
-        // Suppress Three.js deprecation warnings
         const originalWarn = console.warn;
         console.warn = function(...args) {
             if (args[0] && typeof args[0] === 'string' && args[0].includes('useLegacyLights')) {
-                return; // Suppress this specific warning
+                return;
             }
             originalWarn.apply(console, args);
         };
         
-        // Track if mousemove listener is already added
         let mouseMoveListenerAdded = false;
 
-        // Color schemes
         const colorSchemes = {
             gradient: {
                 top: d => {
@@ -865,7 +1085,6 @@
             loadingEl.style.display = 'none';
         }
 
-        // Update statistics based on current data type
         function updateStats() {
             if (!countryDataMap || Object.keys(countryDataMap).length === 0) {
                 document.getElementById('stat-value-1').textContent = '0';
@@ -880,7 +1099,6 @@
             const itemsWithCountry = allItems.filter(item => item.iso_code_3 && item.iso_code_3.trim() !== '').length;
             const countriesWithData = Object.keys(countryDataMap).length;
             
-            // Calculate average rating if applicable
             let avgRating = '-';
             if (currentDataType === 'books' || currentDataType === 'albums') {
                 const ratedItems = allItems.filter(item => item.rating != null && item.rating > 0);
@@ -890,8 +1108,12 @@
                 }
             }
             
-            // Update labels and values based on data type
-            if (currentDataType === 'books') {
+            if (currentDataType === 'all') {
+                document.getElementById('stat-label-1').textContent = 'Total Items';
+                document.getElementById('stat-label-2').textContent = 'With Country';
+                document.getElementById('stat-label-3').textContent = 'Countries';
+                document.getElementById('stat-label-4').textContent = 'Avg Rating';
+            } else if (currentDataType === 'books') {
                 document.getElementById('stat-label-1').textContent = 'Total Books';
                 document.getElementById('stat-label-2').textContent = 'With Country';
                 document.getElementById('stat-label-3').textContent = 'Countries';
@@ -901,7 +1123,6 @@
                 document.getElementById('stat-label-2').textContent = 'With Country';
                 document.getElementById('stat-label-3').textContent = 'Countries';
                 document.getElementById('stat-label-4').textContent = 'With Author';
-                // For quotes, show count with author instead of rating
                 const withAuthor = allItems.filter(item => item.author && item.author.trim() !== '').length;
                 avgRating = withAuthor.toString();
             } else if (currentDataType === 'albums') {
@@ -917,7 +1138,6 @@
             document.getElementById('stat-value-4').textContent = avgRating;
         }
 
-        // Toggle entire controls panel
         function toggleControls() {
             const controlsPanel = document.getElementById('controls-panel');
             if (controlsPanel) {
@@ -925,15 +1145,15 @@
             }
         }
 
-        // Close country info panel
         function closeCountryInfo() {
             const infoPanel = document.getElementById('country-info-panel');
-            if (infoPanel) {
+            const overlay = document.getElementById('country-modal-overlay');
+            if (infoPanel && overlay) {
                 infoPanel.classList.remove('visible');
+                overlay.classList.remove('visible');
             }
         }
 
-        // Test function to see what countries are loaded
         function testCountries() {
             if (!worldGeoJson) {
                 console.error('GeoJSON not loaded yet');
@@ -944,7 +1164,6 @@
             console.log('=== TEST COUNTRIES ===');
             console.log('Total features in GeoJSON:', worldGeoJson.features.length);
             
-            // Test specific countries
             const testISOs = ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE', 'CAN', 'CA', 'AUS', 'AU'];
             const found = [];
             
@@ -965,7 +1184,6 @@
             
             console.log('Test countries found:', found);
             
-            // Also check if polygons are set on globe
             if (globeInstance) {
                 const polygons = globeInstance.polygonsData();
                 console.log('Polygons on globe:', polygons?.length || 0);
@@ -975,7 +1193,6 @@
                         properties: polygons[0]?.properties
                     });
                     
-                    // Find test countries in globe polygons
                     const testPolygons = polygons.filter(p => {
                         const iso = p.properties?.iso3 || p.properties?.ISO_A3 || p.properties?.ISO_A3_EH;
                         return testISOs.includes(iso);
@@ -1000,7 +1217,6 @@
 
             if (!globeInstance) return;
 
-            // Hide all layers first
             globeInstance.hexBinPointsData([]);
             globeInstance.pointsData([]);
             globeInstance.arcsData([]);
@@ -1021,7 +1237,6 @@
                         });
                     break;
                 case 'arcs':
-                    // Create sample arcs between random points
                     const arcs = [];
                     for (let i = 0; i < Math.min(50, rawData.length - 1); i++) {
                         const start = rawData[i];
@@ -1059,7 +1274,6 @@
                 .hexTopColor(colors.top)
                 .hexSideColor(colors.side);
             
-            // Reapply mode to update colors
             setMode(currentMode);
         }
 
@@ -1093,8 +1307,42 @@
             }
         }
 
-        // Load data for selected type
         async function loadDataType(type) {
+            // If 'all', load all data types and combine them
+            if (type === 'all') {
+                try {
+                    const [booksRes, quotesRes, albumsRes] = await Promise.all([
+                        fetch('http://localhost:8000/api/books').then(r => r.json()),
+                        fetch('http://localhost:8000/api/quotes').then(r => r.json()),
+                        fetch('http://localhost:8000/api/albums/listened').then(r => r.json())
+                    ]);
+                    
+                    const allData = [
+                        ...(Array.isArray(booksRes) ? booksRes : []),
+                        ...(Array.isArray(quotesRes) ? quotesRes : []),
+                        ...(Array.isArray(albumsRes) ? albumsRes : [])
+                    ];
+                    
+                    const grouped = {};
+                    allData.forEach(item => {
+                        const iso3 = item.iso_code_3 || item.iso_alpha_3;
+                        if (iso3) {
+                            const normalizedISO = String(iso3).trim().toUpperCase();
+                            if (!grouped[normalizedISO]) {
+                                grouped[normalizedISO] = [];
+                            }
+                            grouped[normalizedISO].push(item);
+                        }
+                    });
+                    
+                    return grouped;
+                } catch (error) {
+                    console.error('Error loading all data:', error);
+                    return {};
+                }
+            }
+            
+            // Otherwise load specific type
             const endpoint = type === 'books' ? '/api/books' : 
                            type === 'quotes' ? '/api/quotes' : 
                            '/api/albums/listened';
@@ -1108,15 +1356,16 @@
                     return {};
                 }
                 
-                // Group data by ISO code
                 const grouped = {};
                 (Array.isArray(data) ? data : []).forEach(item => {
-                    const iso3 = item.iso_code_3;
+                    // For albums, check both iso_code_3 and iso_alpha_3 (from country_items_view)
+                    const iso3 = item.iso_code_3 || item.iso_alpha_3;
                     if (iso3) {
-                        if (!grouped[iso3]) {
-                            grouped[iso3] = [];
+                        const normalizedISO = String(iso3).trim().toUpperCase();
+                        if (!grouped[normalizedISO]) {
+                            grouped[normalizedISO] = [];
                         }
-                        grouped[iso3].push(item);
+                        grouped[normalizedISO].push(item);
                     }
                 });
                 
@@ -1127,25 +1376,20 @@
             }
         }
 
-        // Update globe polygons based on current data type
         function updateGlobePolygons() {
             if (!globeInstance || !worldGeoJson) return;
 
-            // Prepare country polygons
             const polygonsData = worldGeoJson.features
                 .filter(feature => {
-                    // Check if it has valid geometry
                     if (!feature.geometry || 
                         (feature.geometry.type !== "Polygon" && feature.geometry.type !== "MultiPolygon")) {
                         return false;
                     }
                     
-                    // Try to find ISO code - if we can't find one, still include it (might be a valid country)
                     const props = feature.properties;
                     const iso3Raw = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
                                    props.ADM0_A3 || props.adm0_a3;
                     
-                    // Exclude invalid ISO codes, but include polygons without ISO codes (they might still be valid)
                     if (iso3Raw && (iso3Raw === "-99" || String(iso3Raw).trim().length !== 3)) {
                         return false;
                     }
@@ -1155,57 +1399,111 @@
                 .map(feature => {
                     const props = feature.properties;
                     
-                    // Try multiple property names for ISO code (same as initial setup)
                     const iso3Raw = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
                                    props.ADM0_A3 || props.adm0_a3 || null;
                     
-                    // Normalize ISO code (uppercase, trim)
                     const iso3 = iso3Raw ? String(iso3Raw).trim().toUpperCase() : null;
                     
-                    // Try multiple property names for country name
                     const countryName = props.name || props.NAME || props.NAME_LONG || props.ADMIN || 
                                       props.ADMIN_NAME || props.NAME_EN || props.name_en || 'Unknown';
 
-                    // Match using normalized ISO code
                     const countryItems = iso3 ? (countryDataMap[iso3] || []) : [];
                     const hasData = countryItems.length > 0;
+                    
+                    // Check if country has listened albums (for listen filter)
+                    let hasListened = false;
+                    let hasUnlistened = false;
+                    if ((currentDataType === 'albums' || currentDataType === 'all') && countryItems.length > 0) {
+                        // Only check albums for listen status
+                        const albumItems = countryItems.filter(item => item.type === 'album' || (!item.type && currentDataType === 'albums'));
+                        if (albumItems.length > 0) {
+                            hasListened = albumItems.some(item => item.listen_date || item.finished_date);
+                            hasUnlistened = albumItems.some(item => !item.listen_date && !item.finished_date);
+                        } else {
+                            // For non-album types, consider all items as "listened" (books/quotes are always finished)
+                            hasListened = hasData;
+                            hasUnlistened = false;
+                        }
+                    } else {
+                        // For non-album types, consider all items as "listened" (books/quotes are always finished)
+                        hasListened = hasData;
+                        hasUnlistened = false;
+                    }
 
                     return {
                         ...feature,
                         properties: {
-                            ...props, // Keep all original properties
-                            hasData: hasData, // Used for coloring
+                            ...props,
+                            hasData: hasData,
                             items: countryItems,
                             countryName: countryName,
-                            iso3: iso3, // Normalized ISO code
-                            // Keep original ISO properties for fallback
+                            iso3: iso3,
                             ISO_A3: props.ISO_A3,
                             ISO_A3_EH: props.ISO_A3_EH
                         }
                     };
                 });
 
-            // Actually show the polygons on the globe.
-            globeInstance
-                .polygonsData(polygonsData)
-                .polygonAltitude(0.01) // Make sure altitude is set
-                .polygonCapColor(feat => {
-                    // Use hasData to differentiate colors
-                    return feat.properties?.hasData
-                        ? 'rgba(102,126,234,0.65)' // Brighter for countries with data
-                        : 'rgba(100, 100, 160, 0.26)'; // Dimmer for countries without data
-                })
-                .polygonSideColor(() => 'rgba(80,80,120,0.15)')
-                .polygonStrokeColor(() => 'rgba(102,126,234,0.4)')
-                .polygonsTransitionDuration(800);
+            // Filter polygons based on listen filter
+            let filteredPolygons = polygonsData;
+            if (currentDataType === 'albums' && listenFilter !== 'all') {
+                if (listenFilter === 'listened') {
+                    filteredPolygons = polygonsData.filter(feat => feat.properties?.hasListened);
+                } else if (listenFilter === 'unlistened') {
+                    filteredPolygons = polygonsData.filter(feat => feat.properties?.hasUnlistened);
+                }
+            }
             
-            console.log('Updated polygons:', polygonsData.length, 'polygons set on globe');
-
-            // Optionally: set polygonsEnableArcsDrag(false) to allow interaction
-            // globeInstance.polygonsEnableArcsDrag(false);
+            // Debug: Log polygon count and check for specific countries
+            console.log(`[POLYGONS] Setting ${filteredPolygons.length} polygons on globe`);
+            const testCountries = ['NGA', 'USA', 'FRA', 'GBR', 'CAN'];
+            testCountries.forEach(iso => {
+                const found = filteredPolygons.find(p => p.properties?.iso3 === iso);
+                console.log(`[POLYGONS] ${iso}: ${found ? 'FOUND' : 'NOT FOUND'}`, found ? {
+                    iso3: found.properties.iso3,
+                    countryName: found.properties.countryName,
+                    hasData: found.properties.hasData
+                } : '');
+            });
+            
+            globeInstance
+                .polygonsData(filteredPolygons)
+                .polygonAltitude(0.01)
+                .polygonCapColor(feat => {
+                    const props = feat.properties || {};
+                    // Color based on listen filter for albums
+                    if (currentDataType === 'albums' && listenFilter !== 'all') {
+                        if (listenFilter === 'listened') {
+                            return props.hasListened ? 'rgba(102, 200, 100, 0.7)' : 'rgba(100, 100, 160, 0.15)';
+                        } else if (listenFilter === 'unlistened') {
+                            return props.hasUnlistened ? 'rgba(255, 150, 50, 0.7)' : 'rgba(100, 100, 160, 0.15)';
+                        }
+                    }
+                    // Default: color based on hasData
+                    return props.hasData
+                        ? 'rgba(102,126,234,0.65)'
+                        : 'rgba(100, 100, 160, 0.26)';
+                })
+                        .polygonSideColor(() => 'rgba(80,80,120,0.15)')
+                        .polygonStrokeColor(() => 'rgba(102,126,234,0.4)')
+                        .polygonsTransitionDuration(800)
+                        .polygonsTransitionDuration(0); // Disable transition for debugging
+            
+            console.log('Updated polygons:', filteredPolygons.length, 'polygons set on globe');
+            
+            // Verify polygons are actually set
+            const actualPolygons = globeInstance.polygonsData();
+            console.log(`[POLYGONS] Globe instance has ${actualPolygons?.length || 0} polygons`);
+            if (actualPolygons && actualPolygons.length > 0) {
+                const ngaPolygon = actualPolygons.find(p => p.properties?.iso3 === 'NGA' || p.properties?.ISO_A3 === 'NGA');
+                console.log(`[POLYGONS] Nigeria in globe instance:`, ngaPolygon ? 'YES' : 'NO', ngaPolygon ? {
+                    iso3: ngaPolygon.properties?.iso3,
+                    ISO_A3: ngaPolygon.properties?.ISO_A3,
+                    countryName: ngaPolygon.properties?.countryName
+                } : '');
+            }
         }
 
-        // Format tooltip content based on data type
         function formatTooltipContent(items, dataType) {
             if (!items || items.length === 0) {
                 return 'No data available';
@@ -1214,7 +1512,6 @@
             const count = items.length;
             let content = `<strong>${count} ${dataType}</strong><br><br>`;
             
-            // Show first 5 items
             const displayItems = items.slice(0, 5);
             displayItems.forEach(item => {
                 if (dataType === 'books') {
@@ -1236,42 +1533,95 @@
             });
             
             if (items.length > 5) {
-                content += `<br><em>+ ${items.length - 5} more</em>`;
+                content += `<br><em>+ ${items.length - 5} more (click for full list)</em>`;
             }
             
             return content;
         }
 
-        // Set data type and reload
         async function setDataType(type) {
             currentDataType = type;
             
-            // Update button states in the data type filter bar
             document.querySelectorAll('.data-type-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.getElementById(`data-type-${type}`).classList.add('active');
             
-            // Load data for selected type
+            // Show/hide listen filter based on data type (show for albums or all)
+            const listenFilterContainer = document.getElementById('listen-filter-container');
+            if (listenFilterContainer) {
+                listenFilterContainer.style.display = (type === 'albums' || type === 'all') ? 'block' : 'none';
+            }
+            
+            // Reset filter to 'all' when switching away from albums/all
+            if (type !== 'albums' && type !== 'all') {
+                listenFilter = 'all';
+            }
+            
             countryDataMap = await loadDataType(type);
             
-            // Update statistics
             updateStats();
-            
-            // Update globe polygons
             updateGlobePolygons();
         }
+        
+        function setListenFilter(filter) {
+            listenFilter = filter;
+            
+            // Update select value if called from code
+            const select = document.getElementById('listen-filter-select');
+            if (select && select.value !== filter) {
+                select.value = filter;
+            }
+            
+            // Only apply filter for albums or all
+            if (currentDataType === 'albums' || currentDataType === 'all') {
+                updateGlobePolygons();
+            }
+        }
+        
+        function setFinishedFilter(finished) {
+            showFinishedOnly = finished;
+            
+            // Update button states
+            document.getElementById('finished-yes').classList.toggle('active', finished);
+            document.getElementById('finished-no').classList.toggle('active', !finished);
+            
+            // No need to update polygons, the filter is applied in the tooltip display
+        }
+        
+        function isItemFinished(item) {
+            // Check various ways an item can be "finished"
+            if (item.is_finished === true || item.is_finished === 'true') {
+                return true;
+            }
+            if (item.finished_date) {
+                return true;
+            }
+            if (item.date_read) {
+                return true;
+            }
+            if (item.listen_date) {
+                return true;
+            }
+            // For albums, if there's no listen_date, it's not finished
+            if (item.type === 'album' && !item.listen_date && !item.finished_date) {
+                return false;
+            }
+            // For books, if there's no date_read, it's not finished
+            if (item.type === 'book' && !item.date_read && !item.finished_date) {
+                return false;
+            }
+            // Default: if we can't determine, assume not finished
+            return false;
+        }
 
-        // Initialize globe
         if (typeof Globe === 'undefined') {
             showError('Failed to load globe.gl library. Please check your internet connection.');
         } else {
-            // Load hex data and world GeoJSON
-            // Note: Data type loading is optional for now - polygons will show regardless
             Promise.all([
                 fetch('http://localhost:8000/api/world_hexed_polygons').then(res => res.json()),
                 fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then(res => res.json()),
-                loadDataType('books').catch(() => ({})) // Load data but don't fail if it errors
+                loadDataType('all').catch(() => ({}))
             ])
                 .then(([hexData, geoJson, initialData]) => {
                     console.log('Fetched hex data:', hexData);
@@ -1283,71 +1633,37 @@
                     countryDataMap = initialData || {};
                     updateStats();
 
-                    // Process GeoJSON to add country data info
-                    // Try multiple property name variations to find ISO code
                     const polygonsData = worldGeoJson.features.map(feature => {
                         const props = feature.properties;
                         
-                        // Try multiple property names for ISO code (different GeoJSON sources use different names)
                         const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
                                      props.ISO_A3_EH || props.ADM0_A3 || props.adm0_a3 || null;
                         
-                        // Try multiple property names for country name
                         const countryName = props.name || props.NAME || props.NAME_LONG || props.ADMIN || 
                                            props.ADMIN_NAME || props.NAME_EN || props.name_en || 'Unknown';
                         
-                        // Normalize ISO code (uppercase, trim)
                         const normalizedISO3 = iso3 ? String(iso3).trim().toUpperCase() : null;
                         
-                        // Keep structure for future data integration
                         const countryItems = normalizedISO3 ? (countryDataMap[normalizedISO3] || []) : [];
                         const hasData = countryItems.length > 0;
                         
                         return {
                             ...feature,
                             properties: {
-                                ...props, // Keep all original properties
-                                hasData: hasData, // Will be used later for coloring
-                                items: countryItems, // Will be populated from database views later
-                                countryName: countryName, // Add our processed country name
-                                iso3: normalizedISO3, // Add our processed ISO code (normalized)
-                                // Also keep original ISO properties for fallback
+                                ...props,
+                                hasData: hasData,
+                                items: countryItems,
+                                countryName: countryName,
+                                iso3: normalizedISO3,
                                 ISO_A3: props.ISO_A3,
                                 ISO_A3_EH: props.ISO_A3_EH
                             }
                         };
                     });
                     
-                    // Debug: Log summary
                     console.log('=== POLYGONS PROCESSED ===');
                     console.log('Total polygons:', polygonsData.length);
                     console.log('Sample polygon properties:', polygonsData[0]?.properties);
-                    console.log('Test countries in data:', polygonsData.filter(p => ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE'].includes(p.properties.iso3)).map(p => ({
-                        iso3: p.properties.iso3,
-                        name: p.properties.countryName
-                    })));
-
-                    // DEBUG: Log what we're about to set
-                    console.log('=== SETTING POLYGONS ON GLOBE ===');
-                    console.log('Polygons data count:', polygonsData.length);
-                    if (polygonsData.length > 0) {
-                        console.log('First polygon sample:', {
-                            type: polygonsData[0]?.geometry?.type,
-                            properties: polygonsData[0]?.properties
-                        });
-                    }
-                    
-                    // Find and log test countries
-                    const testPolygons = polygonsData.filter(p => {
-                        const iso = p.properties?.iso3;
-                        return ['USA', 'US', 'GBR', 'GB', 'FRA', 'FR', 'DEU', 'DE'].includes(iso);
-                    });
-                    console.log('Test countries found:', testPolygons.map(p => ({
-                        iso3: p.properties?.iso3,
-                        countryName: p.properties?.countryName,
-                        hasOriginalName: !!p.properties?.NAME,
-                        hasOriginalISO: !!p.properties?.ISO_A3
-                    })));
 
                     globeInstance = Globe()
                         (document.getElementById('globe-container'))
@@ -1365,37 +1681,52 @@
                         .polygonsData(polygonsData)
                         .polygonAltitude(0.01)
                         .polygonCapColor(feat => {
-                            // Use hasData to differentiate colors
                             return feat.properties?.hasData
-                                ? 'rgba(102, 126, 234, 0.65)' // Brighter for countries with data
-                                : 'rgba(100, 100, 160, 0.26)'; // Dimmer for countries without data
+                                ? 'rgba(102, 126, 234, 0.65)'
+                                : 'rgba(100, 100, 160, 0.26)';
                         })
                         .polygonSideColor(() => {
                             return 'rgba(102, 126, 234, 0.15)';
                         })
                         .polygonStrokeColor(() => 'rgba(102, 126, 234, 0.3)')
-                        .polygonLabel('') // Disable built-in labels, we'll use custom tooltip instead
+                        .polygonLabel('')
                         .onPolygonHover(async (polygon, prevPolygon) => {
                             if (!tooltip) return;
                             
                             if (polygon) {
                                 const props = polygon.properties;
-                                // Use 'name' property first (it's working correctly from GeoJSON)
                                 const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
                                 
-                                // Try multiple property names for ISO code
-                                // Check props.iso3 first since that's what we set during polygon processing
                                 let iso3Raw = props.iso3 || props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || 
                                              props.ADM0_A3 || props.adm0_a3 || props.ISO_A3_UN || props.ISO_A3_WB || 
                                              props.iso_alpha_3;
                                 
-                                // If still no ISO code, try country name mapping
+                                // Debug: Log all available properties for troubleshooting
                                 if (!iso3Raw || iso3Raw === null || iso3Raw === 'N/A' || iso3Raw === '-99') {
                                     const countryNameLower = countryName.toLowerCase().trim();
                                     iso3Raw = countryNameToISO[countryNameLower] || null;
+                                    
+                                    // If still no ISO, log for debugging
+                                    if (!iso3Raw) {
+                                        console.log(`[HOVER DEBUG] No ISO found for: "${countryName}"`, {
+                                            countryName: countryName,
+                                            countryNameLower: countryNameLower,
+                                            availableProps: Object.keys(props),
+                                            sampleProps: {
+                                                ISO_A3: props.ISO_A3,
+                                                ISO_A3_EH: props.ISO_A3_EH,
+                                                iso3: props.iso3,
+                                                iso_a3: props.iso_a3,
+                                                ADM0_A3: props.ADM0_A3,
+                                                adm0_a3: props.adm0_a3,
+                                                name: props.name,
+                                                NAME: props.NAME,
+                                                NAME_LONG: props.NAME_LONG
+                                            }
+                                        });
+                                    }
                                 }
                                 
-                                // Normalize ISO code
                                 const finalISO3 = (iso3Raw && iso3Raw !== 'N/A' && iso3Raw !== '-99' && iso3Raw !== null) 
                                     ? String(iso3Raw).trim().toUpperCase() 
                                     : 'N/A';
@@ -1406,15 +1737,73 @@
                                 if (tooltipTitle && tooltipContent) {
                                     tooltipTitle.textContent = countryName;
                                     
-                                    // Helper function to update tooltip content
                                     const updateTooltipContent = (items, iso3, tooltipContentEl) => {
                                         if (!items || items.length === 0) {
-                                            tooltipContentEl.innerHTML = `<em>ISO: ${iso3}<br>No data available</em>`;
+                                            // Show specific message based on data type
+                                            let noDataMessage = '';
+                                            if (currentDataType === 'all') {
+                                                noDataMessage = 'No books, albums, or quotes';
+                                            } else if (currentDataType === 'books') {
+                                                noDataMessage = '📚 No books read';
+                                            } else if (currentDataType === 'albums') {
+                                                noDataMessage = '🎵 No albums listened to';
+                                            } else if (currentDataType === 'quotes') {
+                                                noDataMessage = '💬 No quotes';
+                                            } else {
+                                                noDataMessage = 'No data available';
+                                            }
+                                            tooltipContentEl.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
                                             return;
                                         }
                                         
-                                        const displayItems = items.slice(0, 5);
-                                        let content = `<strong>${items.length} items</strong><br><br>`;
+                                        // Filter items based on finished filter
+                                        const filteredItems = items.filter(item => {
+                                            const finished = isItemFinished(item);
+                                            return showFinishedOnly ? finished : !finished;
+                                        });
+                                        
+                                        if (filteredItems.length === 0) {
+                                            // Show specific message based on data type and filter
+                                            let noDataMessage = '';
+                                            if (currentDataType === 'all') {
+                                                noDataMessage = showFinishedOnly ? 'No books, albums, or quotes' : 'No unfinished items';
+                                            } else if (currentDataType === 'books') {
+                                                noDataMessage = showFinishedOnly ? '📚 No books read' : '📚 No unread books';
+                                            } else if (currentDataType === 'albums') {
+                                                noDataMessage = showFinishedOnly ? '🎵 No albums listened to' : '🎵 No unlistened albums';
+                                            } else if (currentDataType === 'quotes') {
+                                                noDataMessage = '💬 No quotes';
+                                            } else {
+                                                noDataMessage = `No ${showFinishedOnly ? 'finished' : 'unfinished'} items`;
+                                            }
+                                            tooltipContentEl.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
+                                            return;
+                                        }
+                                        
+                                        // Count items by type for display
+                                        const booksCount = filteredItems.filter(item => item.type === 'book' || !item.type).length;
+                                        const albumsCount = filteredItems.filter(item => item.type === 'album').length;
+                                        const quotesCount = filteredItems.filter(item => item.type === 'quote').length;
+                                        
+                                        const displayItems = filteredItems.slice(0, 5);
+                                        
+                                        // Create prominent count display
+                                        let content = `<div style="margin-bottom: 15px; padding: 12px; background: rgba(102, 126, 234, 0.15); border-radius: 8px; border: 1px solid rgba(102, 126, 234, 0.3);">`;
+                                        content += `<div style="font-size: 32px; font-weight: 700; color: #8a9ef5; margin-bottom: 8px; text-align: center; line-height: 1;">${filteredItems.length}</div>`;
+                                        content += `<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.7); text-align: center;">`;
+                                        
+                                        const typeCounts = [];
+                                        if (booksCount > 0) typeCounts.push(`📚 ${booksCount} book${booksCount !== 1 ? 's' : ''}`);
+                                        if (albumsCount > 0) typeCounts.push(`🎵 ${albumsCount} album${albumsCount !== 1 ? 's' : ''}`);
+                                        if (quotesCount > 0) typeCounts.push(`💬 ${quotesCount} quote${quotesCount !== 1 ? 's' : ''}`);
+                                        
+                                        content += typeCounts.join(' • ') || `${showFinishedOnly ? 'finished' : 'unfinished'} item${filteredItems.length !== 1 ? 's' : ''}`;
+                                        content += `</div>`;
+                                        
+                                        if (filteredItems.length < items.length) {
+                                            content += `<div style="font-size: 10px; text-align: center; color: rgba(255,255,255,0.5); margin-top: 8px;">(${items.length - filteredItems.length} ${showFinishedOnly ? 'unfinished' : 'finished'} hidden)</div>`;
+                                        }
+                                        content += `</div><br>`;
                                         content += `<table class="tooltip-table">`;
                                         content += `<thead><tr><th>Type</th><th>Title</th><th>Artist/Author</th><th>Rating</th></tr></thead>`;
                                         content += `<tbody>`;
@@ -1436,20 +1825,22 @@
                                         
                                         content += `</tbody></table>`;
                                         
-                                        if (items.length > 5) {
-                                            content += `<br><em>+ ${items.length - 5} more (click for full list)</em>`;
+                                        if (filteredItems.length > 5) {
+                                            content += `<br><em>+ ${filteredItems.length - 5} more (click for full list)</em>`;
+                                        }
+                                        
+                                        if (filteredItems.length < items.length) {
+                                            const hiddenCount = items.length - filteredItems.length;
+                                            content += `<br><em style="font-size: 10px; opacity: 0.7;">(${hiddenCount} ${showFinishedOnly ? 'unfinished' : 'finished'} item${hiddenCount !== 1 ? 's' : ''} hidden)</em>`;
                                         }
                                         
                                         tooltipContentEl.innerHTML = content;
                                     };
                                     
-                                    // Check cache first
                                     let items = countryItemsCache[finalISO3] || [];
                                     
-                                    // If not in cache and we have a valid ISO code, try to load it
                                     if (finalISO3 && finalISO3 !== 'N/A' && items.length === 0) {
                                         console.log(`[HOVER] Loading data for ${finalISO3}...`);
-                                        // Show loading state
                                         tooltipContent.innerHTML = '<em>Loading...</em>';
                                         tooltip.classList.add('visible');
                                         
@@ -1464,14 +1855,23 @@
                                                 countryItemsCache[finalISO3] = data;
                                                 items = data;
                                                 console.log(`[HOVER] Loaded ${data.length} items for ${finalISO3}`);
-                                                // Update tooltip with the newly loaded data
                                                 updateTooltipContent(items, finalISO3, tooltipContent);
                                             } else if (data.error) {
                                                 console.warn('[HOVER] Error in response:', data);
                                                 tooltipContent.innerHTML = `<em>Error: ${data.message || data.error}</em>`;
                                             } else {
                                                 console.warn('[HOVER] Response is not an array:', data);
-                                                tooltipContent.innerHTML = `<em>ISO: ${finalISO3}<br>No data available</em>`;
+                                                let noDataMessage = '';
+                                                if (currentDataType === 'books') {
+                                                    noDataMessage = '📚 No books read';
+                                                } else if (currentDataType === 'albums') {
+                                                    noDataMessage = '🎵 No albums listened to';
+                                                } else if (currentDataType === 'quotes') {
+                                                    noDataMessage = '💬 No quotes';
+                                                } else {
+                                                    noDataMessage = 'No data available';
+                                                }
+                                                tooltipContent.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
                                             }
                                         } catch (error) {
                                             console.error('[HOVER] Error loading country items:', error);
@@ -1479,11 +1879,19 @@
                                         }
                                     } else if (items.length > 0) {
                                         console.log(`[HOVER] Using cached data for ${finalISO3}: ${items.length} items`);
-                                        // Update tooltip with cached data
                                         updateTooltipContent(items, finalISO3, tooltipContent);
                                     } else {
-                                        // No data available
-                                        tooltipContent.innerHTML = `<em>ISO: ${finalISO3}<br>No data available</em>`;
+                                        let noDataMessage = '';
+                                        if (currentDataType === 'books') {
+                                            noDataMessage = '📚 No books read';
+                                        } else if (currentDataType === 'albums') {
+                                            noDataMessage = '🎵 No albums listened to';
+                                        } else if (currentDataType === 'quotes') {
+                                            noDataMessage = '💬 No quotes';
+                                        } else {
+                                            noDataMessage = 'No data available';
+                                        }
+                                        tooltipContent.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
                                     }
                                     
                                     tooltip.classList.add('visible');
@@ -1496,59 +1904,45 @@
                             if (!polygon) return;
                             
                             const props = polygon.properties;
-                            
-                            // Use 'name' property first (it's working correctly), then fallback to others
                             const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
                             
-                            // Try multiple property names for ISO code (same as hover)
                             let iso3Raw = props.iso3 || props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || 
                                          props.ADM0_A3 || props.adm0_a3 || props.ISO_A3_UN || props.ISO_A3_WB || 
                                          props.iso_alpha_3;
                             
-                            // If still no ISO code, try country name mapping
                             if (!iso3Raw || iso3Raw === null || iso3Raw === 'N/A' || iso3Raw === '-99') {
                                 const countryNameLower = countryName.toLowerCase().trim();
                                 iso3Raw = countryNameToISO[countryNameLower] || null;
                                 if (iso3Raw) {
                                     console.log(`[CLICK] Found ISO via name mapping: "${countryName}" -> "${iso3Raw}"`);
-                                } else {
-                                    console.warn(`[CLICK] No ISO mapping found for: "${countryName}" (searched for: "${countryNameLower}")`);
-                                    console.log('[CLICK] Available properties:', Object.keys(props));
-                                    console.log('[CLICK] ISO property values:', {
-                                        ISO_A3: props.ISO_A3,
-                                        ISO_A3_EH: props.ISO_A3_EH,
-                                        iso3: props.iso3,
-                                        iso_a3: props.iso_a3,
-                                        ADM0_A3: props.ADM0_A3,
-                                        adm0_a3: props.adm0_a3
-                                    });
                                 }
                             }
                             
-                            // Normalize ISO code
                             const iso3 = (iso3Raw && iso3Raw !== 'N/A' && iso3Raw !== '-99' && iso3Raw !== null) 
                                 ? String(iso3Raw).trim().toUpperCase() 
                                 : 'N/A';
                             
-                            console.log('[CLICK] Final - Country:', countryName, 'ISO:', iso3, 'Raw:', iso3Raw);
+                            console.log('[CLICK] Final - Country:', countryName, 'ISO:', iso3);
                             
                             const infoPanel = document.getElementById('country-info-panel');
+                            const overlay = document.getElementById('country-modal-overlay');
                             const infoTitle = document.getElementById('country-info-title');
-                            const infoISO = document.getElementById('country-info-iso');
+                            const infoMeta = document.getElementById('country-info-meta');
+                            const infoContent = document.getElementById('country-info-content');
                             
-                            if (infoPanel && infoTitle && infoISO) {
+                            if (infoPanel && overlay && infoTitle && infoMeta && infoContent) {
                                 infoTitle.textContent = countryName;
+                                infoMeta.innerHTML = '';
+                                infoContent.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="spinner"></div><div style="margin-top: 20px; color: rgba(255,255,255,0.6);">Loading data...</div></div>';
                                 
-                                // Load country items from endpoint (check cache first, then fetch if needed)
+                                // Show modal
+                                overlay.classList.add('visible');
+                                infoPanel.classList.add('visible');
+                                
                                 if (iso3 && iso3 !== 'N/A') {
-                                    // Check cache first
                                     let items = countryItemsCache[iso3] || [];
                                     
                                     if (items.length === 0) {
-                                        // Show loading state
-                                        infoISO.innerHTML = '<em>Loading...</em>';
-                                        infoPanel.classList.add('visible');
-                                        
                                         try {
                                             console.log(`[CLICK] Fetching data for ${iso3}...`);
                                             const response = await fetch(`http://localhost:8000/api/country-items/${iso3}`);
@@ -1556,9 +1950,9 @@
                                             console.log(`[CLICK] Response for ${iso3}:`, itemsData);
                                             
                                             if (itemsData.error) {
-                                                infoISO.innerHTML = `<em>Error: ${itemsData.message || itemsData.error}</em>`;
+                                                infoContent.innerHTML = `<div class="no-data-message"><div class="no-data-icon">⚠️</div><div>Error: ${itemsData.message || itemsData.error}</div></div>`;
+                                                return;
                                             } else if (Array.isArray(itemsData)) {
-                                                // Cache the results
                                                 countryItemsCache[iso3] = itemsData;
                                                 items = itemsData;
                                                 console.log(`[CLICK] Loaded ${itemsData.length} items for ${iso3}`);
@@ -1568,20 +1962,25 @@
                                             }
                                         } catch (error) {
                                             console.error('[CLICK] Error loading country items:', error);
-                                            infoISO.innerHTML = `<em>Error loading data: ${error.message}</em>`;
+                                            infoContent.innerHTML = `<div class="no-data-message"><div class="no-data-icon">⚠️</div><div>Error loading data: ${error.message}</div></div>`;
                                             return;
                                         }
-                                    } else {
-                                        console.log(`[CLICK] Using cached data for ${iso3}: ${items.length} items`);
                                     }
                                     
-                                    // Display all items in a table
+                                    // Display meta info
+                                    infoMeta.innerHTML = `
+                                        <div class="country-info-meta-item">
+                                            <div class="country-info-meta-label">ISO Code</div>
+                                            <div class="country-info-meta-value">${iso3}</div>
+                                        </div>
+                                        <div class="country-info-meta-item">
+                                            <div class="country-info-meta-label">Total Items</div>
+                                            <div class="country-info-meta-value">${items.length}</div>
+                                        </div>
+                                    `;
+                                    
                                     if (items.length > 0) {
-                                        let content = `<strong>ISO Code: ${iso3}</strong><br><br>`;
-                                        content += `<strong>Total Items: ${items.length}</strong><br><br>`;
-                                        
-                                        // Create a table with all items
-                                        content += `<table class="country-info-table">`;
+                                        let content = `<table class="country-info-table">`;
                                         content += `<thead><tr><th>Type</th><th>Title</th><th>Artist/Author</th><th>Rating</th><th>Year</th><th>Finished</th><th>Details</th></tr></thead>`;
                                         content += `<tbody>`;
                                         
@@ -1606,17 +2005,18 @@
                                         });
                                         
                                         content += `</tbody></table>`;
-                                        
-                                        infoISO.innerHTML = content;
+                                        infoContent.innerHTML = content;
                                     } else {
-                                        infoISO.innerHTML = `<strong>ISO: ${iso3}</strong><br><br><em>No items found for this country.</em>`;
+                                        infoContent.innerHTML = `<div class="no-data-message"><div class="no-data-icon">📭</div><div>No items found for this country.</div></div>`;
                                     }
-                                    
-                                    infoPanel.classList.add('visible');
                                 } else {
-                                    console.warn('[CLICK] No valid ISO code for:', countryName);
-                                    infoISO.innerHTML = `<em>ISO: ${iso3 || 'N/A'}<br>No ISO code available</em>`;
-                                    infoPanel.classList.add('visible');
+                                    infoMeta.innerHTML = `
+                                        <div class="country-info-meta-item">
+                                            <div class="country-info-meta-label">ISO Code</div>
+                                            <div class="country-info-meta-value">N/A</div>
+                                        </div>
+                                    `;
+                                    infoContent.innerHTML = `<div class="no-data-message"><div class="no-data-icon">🗺️</div><div>No ISO code available for this country.</div></div>`;
                                 }
                             }
                         })
@@ -1643,10 +2043,8 @@
                         .width(window.innerWidth)
                         .height(window.innerHeight);
 
-                    // Set initial view
                     globeInstance.pointOfView({ lat: 20, lng: 0, altitude: 2.5 });
 
-                    // Handle window resize
                     window.addEventListener('resize', () => {
                         if (globeInstance) {
                             globeInstance.width(window.innerWidth);
@@ -1654,7 +2052,6 @@
                         }
                     });
 
-                    // Track mouse for tooltip (only add once)
                     if (!mouseMoveListenerAdded) {
                         document.addEventListener('mousemove', e => {
                             if (tooltip && tooltip.classList.contains('visible')) {
@@ -1666,8 +2063,6 @@
                     }
 
                     hideLoading();
-                    
-                    // Pre-load all country data in the background
                     preloadAllCountryData();
                 })
                 .catch(err => {
@@ -1676,17 +2071,14 @@
                 });
         }
 
-        // Pre-load all country data on initialization
         async function preloadAllCountryData() {
             if (allCountryItemsLoaded || !worldGeoJson) {
-                console.log('Skipping pre-load: allCountryItemsLoaded=', allCountryItemsLoaded, 'worldGeoJson=', !!worldGeoJson);
                 return;
             }
             
             console.log('=== PRE-LOADING ALL COUNTRY DATA ===');
             const countries = new Set();
             
-            // Extract all unique ISO codes from GeoJSON
             worldGeoJson.features.forEach(feature => {
                 const props = feature.properties;
                 const iso3 = props.ISO_A3 || props.ISO_A3_EH || props.iso_a3 || props.ISO3 || props.iso3 || 
@@ -1698,9 +2090,8 @@
             
             console.log(`Found ${countries.size} countries to pre-load`);
             
-            // Load data for all countries in parallel (limit concurrent requests)
             const countryArray = Array.from(countries);
-            const batchSize = 10; // Load 10 countries at a time
+            const batchSize = 10;
             let loadedCount = 0;
             
             for (let i = 0; i < countryArray.length; i += batchSize) {
@@ -1712,7 +2103,6 @@
                         if (!countryItemsCache[iso3]) {
                             try {
                                 const url = `http://localhost:8000/api/country-items/${iso3}`;
-                                console.log(`Fetching: ${url}`);
                                 const response = await fetch(url);
                                 const items = await response.json();
                                 
@@ -1722,8 +2112,6 @@
                                     countryItemsCache[iso3] = items;
                                     loadedCount++;
                                     console.log(`✓ Loaded ${items.length} items for ${iso3}`);
-                                } else {
-                                    console.log(`  No items for ${iso3}`);
                                 }
                             } catch (error) {
                                 console.error(`Failed to load data for ${iso3}:`, error);
@@ -1737,7 +2125,6 @@
             console.log(`=== FINISHED PRE-LOADING: ${loadedCount} countries with data ===`);
         }
 
-        // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
             if (rotationInterval) clearInterval(rotationInterval);
         });
