@@ -28,6 +28,12 @@ def get_globe():
     globe_path = Path(__file__).parent / "globe.html"
     return FileResponse(globe_path)
 
+@app.get("/country")
+def get_country():
+    """Serve the country details HTML page"""
+    country_path = Path(__file__).parent / "country.html"
+    return FileResponse(country_path)
+
 @app.get("/globe-simple")
 def get_globe_simple():
     """Serve the simple globe visualization HTML page (globe.gl version)"""
@@ -117,11 +123,17 @@ def get_country_items(iso_code_3: str):
             
             if result.data:
                 # Filter by iso_alpha_3 in Python
-                filtered_items = [
-                    item for item in result.data 
-                    if item.get("iso_alpha_3") and item.get("iso_alpha_3").upper() == iso_code_3
-                ]
+                # Also check for iso_code_3 as a fallback (for books that might use different field name)
+                filtered_items = []
+                for item in result.data:
+                    iso_value = item.get("iso_alpha_3") or item.get("iso_code_3")
+                    if iso_value:
+                        iso_normalized = str(iso_value).upper().strip()
+                        if iso_normalized == iso_code_3:
+                            filtered_items.append(item)
+                
                 print(f"[DEBUG] Filtered to {len(filtered_items)} items for {iso_code_3}")
+                print(f"[DEBUG] Sample items: {filtered_items[:2] if filtered_items else 'None'}")
                 return filtered_items
             else:
                 print(f"[DEBUG] No data returned from RPC")
@@ -334,3 +346,18 @@ def update_book_country(book_id: int, update: BookUpdate):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to update book: {str(e)}")
+
+@app.get("/{iso_code}")
+def get_country_by_iso(iso_code: str):
+    """Serve the country details HTML page for a specific ISO code (3-letter code)
+    
+    This route must be placed after all other specific routes to avoid conflicts.
+    Examples: /NGA, /USA, /FRA
+    """
+    # Validate ISO code format (should be 3 uppercase letters)
+    iso_code_upper = iso_code.upper()
+    if len(iso_code_upper) == 3 and iso_code_upper.isalpha():
+        country_path = Path(__file__).parent / "country.html"
+        return FileResponse(country_path)
+    else:
+        raise HTTPException(status_code=404, detail="Invalid country code format. Expected 3-letter ISO code (e.g., NGA, USA, FRA)")

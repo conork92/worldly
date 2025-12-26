@@ -1924,6 +1924,13 @@
                             
                             console.log('[CLICK] Final - Country:', countryName, 'ISO:', iso3);
                             
+                            // Navigate to country page if we have a valid ISO code
+                            if (iso3 && iso3 !== 'N/A') {
+                                window.location.href = `/${iso3}`;
+                                return;
+                            }
+                            
+                            // Fallback: show modal if no ISO code (shouldn't happen often)
                             const infoPanel = document.getElementById('country-info-panel');
                             const overlay = document.getElementById('country-modal-overlay');
                             const infoTitle = document.getElementById('country-info-title');
