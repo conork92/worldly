@@ -87,6 +87,7 @@ RETURNS TABLE(
           ELSE FALSE
         END AS is_finished
     FROM "public"."worldly_good_reads_books"
+    WHERE iso_code_3 IS NOT NULL AND iso_code_3 != '' AND iso_code_3 != 'N/A'  -- Only include books with valid ISO codes
   ) t_final
   WHERE (finished_only IS FALSE OR is_finished IS TRUE)
 $$ LANGUAGE SQL

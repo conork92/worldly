@@ -1,12 +1,33 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from pathlib import Path
 from supa import supabase
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = FastAPI()
+
+# Authentication: API Key from environment variable
+API_KEY = os.getenv("API_KEY")
+if not API_KEY:
+    print("WARNING: API_KEY not set in environment. Write operations will be disabled.")
+    print("Set API_KEY in your .env file to enable write operations.")
+
+def verify_api_key(x_api_key: str = Header(None)):
+    """Verify API key for write operations"""
+    if not API_KEY:
+        raise HTTPException(status_code=503, detail="API authentication not configured")
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required. Provide X-API-Key header.")
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=403, detail="Invalid API key")
+    return True
 
 # Mount static files directory
 static_dir = Path(__file__).parent
@@ -121,18 +142,52 @@ def get_country_items(iso_code_3: str):
             result = supabase.rpc("country_items_view", {"finished_only": False}).execute()
             print(f"[DEBUG] RPC result: {len(result.data) if result.data else 0} total items")
             
+            # Debug: Count items by type and ISO code
+            if result.data:
+                books_by_iso = {}
+                albums_by_iso = {}
+                for item in result.data:
+                    iso_val = item.get("iso_alpha_3") or item.get("iso_code_3") or "NULL"
+                    item_type = item.get("type", "unknown")
+                    if item_type == "book":
+                        books_by_iso[iso_val] = books_by_iso.get(iso_val, 0) + 1
+                    elif item_type == "album":
+                        albums_by_iso[iso_val] = albums_by_iso.get(iso_val, 0) + 1
+                
+                print(f"[DEBUG] Books by ISO: {dict(list(books_by_iso.items())[:10])}")  # Show first 10
+                print(f"[DEBUG] Albums by ISO: {dict(list(albums_by_iso.items())[:10])}")  # Show first 10
+                if iso_code_3 in books_by_iso:
+                    print(f"[DEBUG] Found {books_by_iso[iso_code_3]} books for {iso_code_3}")
+                if iso_code_3 in albums_by_iso:
+                    print(f"[DEBUG] Found {albums_by_iso[iso_code_3]} albums for {iso_code_3}")
+            
             if result.data:
                 # Filter by iso_alpha_3 in Python
                 # Also check for iso_code_3 as a fallback (for books that might use different field name)
                 filtered_items = []
+                books_count = 0
+                albums_count = 0
+                null_iso_count = 0
+                
                 for item in result.data:
                     iso_value = item.get("iso_alpha_3") or item.get("iso_code_3")
                     if iso_value:
                         iso_normalized = str(iso_value).upper().strip()
                         if iso_normalized == iso_code_3:
                             filtered_items.append(item)
+                            if item.get("type") == "book":
+                                books_count += 1
+                            elif item.get("type") == "album":
+                                albums_count += 1
+                    else:
+                        # Count items with null ISO codes for debugging
+                        if item.get("type") == "book":
+                            null_iso_count += 1
+                            print(f"[DEBUG] Book with null ISO: {item.get('title', 'Unknown')} - type: {item.get('type')}, iso_alpha_3: {item.get('iso_alpha_3')}, iso_code_3: {item.get('iso_code_3')}")
                 
-                print(f"[DEBUG] Filtered to {len(filtered_items)} items for {iso_code_3}")
+                print(f"[DEBUG] Filtered to {len(filtered_items)} items for {iso_code_3} (Books: {books_count}, Albums: {albums_count})")
+                if null_iso_count > 0:
+                    print(f"[DEBUG] Found {null_iso_count} books with null ISO codes that were excluded")
                 print(f"[DEBUG] Sample items: {filtered_items[:2] if filtered_items else 'None'}")
                 return filtered_items
             else:
@@ -292,7 +347,7 @@ class QuoteCreate(BaseModel):
     category: str = None
     tags: list = None
 
-@app.post("/api/quotes")
+@app.post("/api/quotes", dependencies=[Depends(verify_api_key)])
 def create_quote(quote: QuoteCreate):
     """Create a new quote"""
     try:
@@ -329,7 +384,7 @@ class BookUpdate(BaseModel):
     country: str
     iso_code_3: str
 
-@app.patch("/api/books/{book_id}")
+@app.patch("/api/books/{book_id}", dependencies=[Depends(verify_api_key)])
 def update_book_country(book_id: int, update: BookUpdate):
     """Update a book's country and ISO code"""
     try:
