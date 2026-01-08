@@ -889,18 +889,10 @@
         </div>
         <div class="controls-content" id="controls-content">
             <div class="control-group">
-                <span class="control-label">Visualization Mode</span>
-                <div class="button-group">
-                    <button class="btn active" onclick="setMode('hexagons')">Hexagons</button>
-                    <button class="btn" onclick="setMode('points')">Points</button>
-                    <button class="btn" onclick="setMode('arcs')">Arcs</button>
-                </div>
-            </div>
-
-            <div class="control-group">
                 <span class="control-label">Show Finished Items</span>
                 <div class="button-group">
-                    <button class="btn active" id="finished-yes" onclick="setFinishedFilter(true)">Yes</button>
+                    <button class="btn active" id="finished-all" onclick="setFinishedFilter(null)">All</button>
+                    <button class="btn" id="finished-yes" onclick="setFinishedFilter(true)">Yes</button>
                     <button class="btn" id="finished-no" onclick="setFinishedFilter(false)">No</button>
                 </div>
             </div>
@@ -963,7 +955,7 @@
     <script>
         let globeInstance = null;
         let rawData = [];
-        let currentMode = 'hexagons';
+        // Removed currentMode - no longer using visualization modes
         let currentColorScheme = 'gradient';
         let altitudeScale = 1.0;
         let isRotating = false;
@@ -974,7 +966,7 @@
         let countryItemsCache = {};
         let allCountryItemsLoaded = false;
         let listenFilter = 'all'; // 'all', 'listened', 'unlistened'
-        let showFinishedOnly = true; // true = show finished items, false = show unfinished items
+        let showFinishedOnly = null; // null = show all, true = show finished only, false = show unfinished only
         
         const countryNameToISO = {
             'france': 'FRA', 'canada': 'CAN', 'morocco': 'MAR', 'united kingdom': 'GBR',
@@ -1208,83 +1200,11 @@
             alert(`Check console for details!\n\nFound ${found.length} test countries in GeoJSON.\nPolygons on globe: ${globeInstance?.polygonsData()?.length || 0}`);
         }
 
-        function setMode(mode) {
-            currentMode = mode;
-            document.querySelectorAll('#controls-content .button-group:first-child .btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
+        // Removed setMode function - no longer using hexagons, points, or arcs
 
-            if (!globeInstance) return;
+        // Removed setColorScheme function - no longer using hexagons
 
-            globeInstance.hexBinPointsData([]);
-            globeInstance.pointsData([]);
-            globeInstance.arcsData([]);
-
-            switch(mode) {
-                case 'hexagons':
-                    globeInstance.hexBinPointsData(rawData);
-                    break;
-                case 'points':
-                    globeInstance.pointsData(rawData)
-                        .pointAltitude(d => (d.value || 0) * 0.01 * altitudeScale)
-                        .pointRadius(0.3)
-                        .pointColor(d => {
-                            const intensity = d.value / Math.max(...rawData.map(p => p.value || 1));
-                            return currentColorScheme === 'gradient' ? `rgba(${102 + intensity * 100}, ${126 - intensity * 80}, ${234 + intensity * 21}, 1)` :
-                                   currentColorScheme === 'heat' ? `rgba(255, ${100 - intensity * 100}, 0, 1)` :
-                                   `rgba(0, ${200 - intensity * 100}, 255, 1)`;
-                        });
-                    break;
-                case 'arcs':
-                    const arcs = [];
-                    for (let i = 0; i < Math.min(50, rawData.length - 1); i++) {
-                        const start = rawData[i];
-                        const end = rawData[Math.floor(Math.random() * rawData.length)];
-                        arcs.push({
-                            startLat: start.lat,
-                            startLng: start.lng,
-                            endLat: end.lat,
-                            endLng: end.lng
-                        });
-                    }
-                    globeInstance.arcsData(arcs)
-                        .arcColor(() => currentColorScheme === 'gradient' ? ['#667eea', '#764ba2'] :
-                                       currentColorScheme === 'heat' ? ['#ff6600', '#ff0000'] :
-                                       ['#00c8ff', '#0066ff'])
-                        .arcStroke(0.5)
-                        .arcDashLength(0.4)
-                        .arcDashGap(0.2)
-                        .arcDashAnimateTime(2000);
-                    break;
-            }
-        }
-
-        function setColorScheme(scheme) {
-            currentColorScheme = scheme;
-            document.querySelectorAll('.controls .control-group:nth-child(2) .btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-
-            if (!globeInstance) return;
-
-            const colors = colorSchemes[scheme];
-            globeInstance
-                .hexTopColor(colors.top)
-                .hexSideColor(colors.side);
-            
-            setMode(currentMode);
-        }
-
-        function updateAltitude(value) {
-            altitudeScale = parseFloat(value);
-            document.getElementById('altitude-value').textContent = value + 'x';
-            
-            if (!globeInstance) return;
-            
-            globeInstance.hexAltitude(d => d.sumWeight * 0.01 * altitudeScale);
-        }
+        // Removed updateAltitude function - no longer using hexagons
 
         function resetView() {
             if (!globeInstance) return;
@@ -1550,7 +1470,8 @@
             // Show/hide listen filter based on data type (show for albums or all)
             const listenFilterContainer = document.getElementById('listen-filter-container');
             if (listenFilterContainer) {
-                listenFilterContainer.style.display = (type === 'albums' || type === 'all') ? 'block' : 'none';
+                // Hide listen filter - user requested removal
+                listenFilterContainer.style.display = 'none';
             }
             
             // Reset filter to 'all' when switching away from albums/all
@@ -1581,6 +1502,11 @@
         
         function setFinishedFilter(finished) {
             showFinishedOnly = finished;
+            
+            // Update button states
+            document.getElementById('finished-all').classList.toggle('active', finished === null);
+            document.getElementById('finished-yes').classList.toggle('active', finished === true);
+            document.getElementById('finished-no').classList.toggle('active', finished === false);
             
             // Update button states
             document.getElementById('finished-yes').classList.toggle('active', finished);
@@ -1619,16 +1545,13 @@
             showError('Failed to load globe.gl library. Please check your internet connection.');
         } else {
             Promise.all([
-                fetch('http://localhost:8000/api/world_hexed_polygons').then(res => res.json()),
+                Promise.resolve([]), // Removed hex data fetch
                 fetch('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson').then(res => res.json()),
                 loadDataType('all').catch(() => ({}))
             ])
                 .then(([hexData, geoJson, initialData]) => {
-                    console.log('Fetched hex data:', hexData);
-                    
-                    if (!Array.isArray(hexData)) throw new Error('Invalid hex data format');
-
-                    rawData = hexData;
+                    // Removed hex data processing
+                    rawData = [];
                     worldGeoJson = geoJson;
                     countryDataMap = initialData || {};
                     updateStats();
@@ -1669,15 +1592,6 @@
                         (document.getElementById('globe-container'))
                         .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/earth-night.jpg')
                         .backgroundImageUrl('https://cdn.jsdelivr.net/npm/three-globe@2.31.0/example/img/night-sky.png')
-                        .hexBinPointsData(rawData)
-                        .hexBinPointWeight('value')
-                        .hexBinResolution(4)
-                        .hexBinMerge(true)
-                        .hexTopColor(colorSchemes.gradient.top)
-                        .hexSideColor(colorSchemes.gradient.side)
-                        .hexAltitude(d => d.sumWeight * 0.01)
-                        .hexBinPointLat('lat')
-                        .hexBinPointLng('lng')
                         .polygonsData(polygonsData)
                         .polygonAltitude(0.01)
                         .polygonCapColor(feat => {
@@ -1757,24 +1671,26 @@
                                         }
                                         
                                         // Filter items based on finished filter
-                                        const filteredItems = items.filter(item => {
-                                            const finished = isItemFinished(item);
-                                            return showFinishedOnly ? finished : !finished;
-                                        });
+                                        const filteredItems = showFinishedOnly === null 
+                                            ? items // Show all if filter is null
+                                            : items.filter(item => {
+                                                const finished = isItemFinished(item);
+                                                return showFinishedOnly ? finished : !finished;
+                                            });
                                         
                                         if (filteredItems.length === 0) {
                                             // Show specific message based on data type and filter
                                             let noDataMessage = '';
                                             if (currentDataType === 'all') {
-                                                noDataMessage = showFinishedOnly ? 'No books, albums, or quotes' : 'No unfinished items';
+                                                noDataMessage = showFinishedOnly === null ? 'No items' : (showFinishedOnly ? 'No finished items' : 'No unfinished items');
                                             } else if (currentDataType === 'books') {
-                                                noDataMessage = showFinishedOnly ? '📚 No books read' : '📚 No unread books';
+                                                noDataMessage = showFinishedOnly === null ? '📚 No books' : (showFinishedOnly ? '📚 No books read' : '📚 No unread books');
                                             } else if (currentDataType === 'albums') {
-                                                noDataMessage = showFinishedOnly ? '🎵 No albums listened to' : '🎵 No unlistened albums';
+                                                noDataMessage = showFinishedOnly === null ? '🎵 No albums' : (showFinishedOnly ? '🎵 No albums listened to' : '🎵 No unlistened albums');
                                             } else if (currentDataType === 'quotes') {
                                                 noDataMessage = '💬 No quotes';
                                             } else {
-                                                noDataMessage = `No ${showFinishedOnly ? 'finished' : 'unfinished'} items`;
+                                                noDataMessage = showFinishedOnly === null ? 'No items' : `No ${showFinishedOnly ? 'finished' : 'unfinished'} items`;
                                             }
                                             tooltipContentEl.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
                                             return;
@@ -1797,11 +1713,13 @@
                                         if (albumsCount > 0) typeCounts.push(`🎵 ${albumsCount} album${albumsCount !== 1 ? 's' : ''}`);
                                         if (quotesCount > 0) typeCounts.push(`💬 ${quotesCount} quote${quotesCount !== 1 ? 's' : ''}`);
                                         
-                                        content += typeCounts.join(' • ') || `${showFinishedOnly ? 'finished' : 'unfinished'} item${filteredItems.length !== 1 ? 's' : ''}`;
+                                        content += typeCounts.join(' • ') || `${filteredItems.length} item${filteredItems.length !== 1 ? 's' : ''}`;
                                         content += `</div>`;
                                         
                                         if (filteredItems.length < items.length) {
-                                            content += `<div style="font-size: 10px; text-align: center; color: rgba(255,255,255,0.5); margin-top: 8px;">(${items.length - filteredItems.length} ${showFinishedOnly ? 'unfinished' : 'finished'} hidden)</div>`;
+                                            if (showFinishedOnly !== null) {
+                                                content += `<div style="font-size: 10px; text-align: center; color: rgba(255,255,255,0.5); margin-top: 8px;">(${items.length - filteredItems.length} ${showFinishedOnly ? 'unfinished' : 'finished'} hidden)</div>`;
+                                            }
                                         }
                                         content += `</div><br>`;
                                         content += `<table class="tooltip-table">`;
@@ -1831,7 +1749,9 @@
                                         
                                         if (filteredItems.length < items.length) {
                                             const hiddenCount = items.length - filteredItems.length;
-                                            content += `<br><em style="font-size: 10px; opacity: 0.7;">(${hiddenCount} ${showFinishedOnly ? 'unfinished' : 'finished'} item${hiddenCount !== 1 ? 's' : ''} hidden)</em>`;
+                                            if (showFinishedOnly !== null) {
+                                                content += `<br><em style="font-size: 10px; opacity: 0.7;">(${hiddenCount} ${showFinishedOnly ? 'unfinished' : 'finished'} item${hiddenCount !== 1 ? 's' : ''} hidden)</em>`;
+                                            }
                                         }
                                         
                                         tooltipContentEl.innerHTML = content;
@@ -2030,23 +1950,7 @@
                         .showAtmosphere(true)
                         .atmosphereColor('#667eea')
                         .atmosphereAltitude(0.2)
-                        .onHexHover(hex => {
-                            if (!tooltip) return;
-                            
-                            if (hex) {
-                                const tooltipTitle = document.getElementById('tooltip-title');
-                                const tooltipContent = document.getElementById('tooltip-content');
-                                
-                                if (tooltipTitle && tooltipContent) {
-                                    tooltipTitle.textContent = `Cluster Data`;
-                                    tooltipContent.textContent = `Points: ${hex.points.length}\nTotal Value: ${hex.sumWeight.toFixed(2)}`;
-                                    tooltip.classList.add('visible');
-                                }
-                            } else {
-                                tooltip.classList.remove('visible');
-                            }
-                        })
-                        .hexLabel('')
+                        // Removed hex hover handler - no longer using hexagons
                         .width(window.innerWidth)
                         .height(window.innerHeight);
 
