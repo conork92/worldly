@@ -212,7 +212,144 @@
             color: rgba(255,255,255,0.5);
             font-size: 16px;
         }
+
+        .toggle-form-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-form-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-artist-form {
+            background: rgba(20, 20, 40, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .add-artist-form.visible {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(20, 20, 40, 0.8);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-submit-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .form-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .artist-card {
+            background: rgba(20, 20, 40, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .artist-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+
+        .artist-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #8a9ef5;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="/static/login.css">
+    <script src="/static/auth.js"></script>
+    <script src="/static/login.js"></script>
 </head>
 <body>
     <div class="header">
@@ -254,6 +391,61 @@
                     <div class="stat-value" id="stat-rating">-</div>
                     <div class="stat-label">Avg Rating</div>
                 </div>
+            </div>
+
+            <div class="section" id="artists-section" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="section-title">Artists</div>
+                    <button type="button" class="toggle-form-btn" id="toggle-artist-form-btn" onclick="toggleArtistForm()">+ Add Artist</button>
+                </div>
+                
+                <!-- Add Artist Form -->
+                <div class="add-artist-form" id="add-artist-form">
+                    <form id="artist-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="artist-name">Artist Name *</label>
+                                <input type="text" id="artist-name" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="artist-genre">Genre</label>
+                                <input type="text" id="artist-genre" name="genre">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="artist-iso2">ISO Code 2 *</label>
+                                <input type="text" id="artist-iso2" name="iso_code_2" maxlength="2" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="artist-iso3">ISO Code 3 *</label>
+                                <input type="text" id="artist-iso3" name="iso_code_3" maxlength="3" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="artist-country">Country Name</label>
+                            <input type="text" id="artist-country" name="country">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="artist-formation-year">Formation Year</label>
+                                <input type="number" id="artist-formation-year" name="formation_year" min="1000" max="2100">
+                            </div>
+                            <div class="form-group">
+                                <label for="artist-bea-link">BEA Artist Link</label>
+                                <input type="text" id="artist-bea-link" name="bea_artist_link">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="artist-biography">Biography</label>
+                            <textarea id="artist-biography" name="biography" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="form-submit-btn" id="submit-artist-btn">Add Artist</button>
+                        <button type="button" class="form-submit-btn" id="cancel-artist-btn" onclick="toggleArtistForm()" style="background: rgba(102, 126, 234, 0.2); margin-top: 10px;">Cancel</button>
+                    </form>
+                </div>
+                
+                <div class="items-grid" id="artists-grid"></div>
             </div>
 
             <div class="section" id="items-section" style="display: none;">
@@ -305,6 +497,8 @@
                         document.getElementById('country-name').textContent = 'Unknown Country';
                         document.getElementById('country-iso').textContent = `ISO: ${isoCode.toUpperCase()}`;
                         document.getElementById('items-grid').innerHTML = '<div class="no-data">No items found for this country.</div>';
+                        // Still try to load artists even if no other items
+                        loadArtists(isoCode.toUpperCase());
                         return;
                     }
 
@@ -331,6 +525,9 @@
                     document.getElementById('stat-albums').textContent = albums.length;
                     document.getElementById('stat-quotes').textContent = quotes.length;
                     document.getElementById('stat-rating').textContent = avgRating;
+
+                    // Load artists for this country
+                    loadArtists(isoCode.toUpperCase());
 
                     // Render items if there are any
                     if (data.length > 0) {
@@ -390,6 +587,165 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Load artists for the country
+        async function loadArtists(isoCode) {
+            try {
+                const response = await fetch(`http://localhost:8000/api/artists/country/${isoCode}`);
+                const artists = await response.json();
+                
+                if (artists.error) {
+                    console.error('Error loading artists:', artists.error);
+                    return;
+                }
+
+                const artistsSection = document.getElementById('artists-section');
+                const artistsGrid = document.getElementById('artists-grid');
+                
+                if (artists && artists.length > 0) {
+                    artistsSection.style.display = 'block';
+                    artistsGrid.innerHTML = artists.map(artist => {
+                        const genre = artist.genre ? `<div class="item-meta">Genre: ${escapeHtml(artist.genre)}</div>` : '';
+                        const formationYear = artist.formation_year ? `<div class="item-meta">Formed: ${artist.formation_year}</div>` : '';
+                        const biography = artist.biography ? `<div class="item-meta" style="margin-top: 12px; font-style: italic; color: rgba(255,255,255,0.6);">${escapeHtml(artist.biography)}</div>` : '';
+                        
+                        return `
+                            <div class="artist-card">
+                                <div class="artist-name">${escapeHtml(artist.name || 'Unknown Artist')}</div>
+                                ${genre}
+                                ${formationYear}
+                                ${biography}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    artistsSection.style.display = 'block';
+                    artistsGrid.innerHTML = '<div class="no-data">No artists found for this country.</div>';
+                }
+            } catch (error) {
+                console.error('Error loading artists:', error);
+            }
+        }
+
+        // Toggle artist form visibility
+        function toggleArtistForm() {
+            const form = document.getElementById('add-artist-form');
+            const btn = document.getElementById('toggle-artist-form-btn');
+            
+            if (form.classList.contains('visible')) {
+                form.classList.remove('visible');
+                btn.textContent = '+ Add Artist';
+                document.getElementById('artist-form').reset();
+            } else {
+                // Check if user is logged in
+                if (!window.isLoggedIn || !window.isLoggedIn()) {
+                    alert('You must be logged in to add artists.');
+                    return;
+                }
+                form.classList.add('visible');
+                btn.textContent = 'Cancel';
+                
+                // Pre-fill ISO codes from URL
+                const pathParts = window.location.pathname.split('/').filter(p => p);
+                if (pathParts.length > 0) {
+                    const lastPart = pathParts[pathParts.length - 1].toUpperCase();
+                    if (lastPart.length === 3 && lastPart.match(/^[A-Z]{3}$/)) {
+                        document.getElementById('artist-iso3').value = lastPart;
+                        // Try to get ISO2 from country data if available
+                        const countryName = document.getElementById('country-name').textContent;
+                        if (countryName && countryName !== 'Loading...' && countryName !== 'Unknown Country') {
+                            document.getElementById('artist-country').value = countryName;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Handle artist form submission
+        document.getElementById('artist-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!window.isLoggedIn || !window.isLoggedIn()) {
+                alert('You must be logged in to add artists.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-artist-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Adding...';
+
+            try {
+                const formData = {
+                    name: document.getElementById('artist-name').value,
+                    iso_code_2: document.getElementById('artist-iso2').value.toUpperCase(),
+                    iso_code_3: document.getElementById('artist-iso3').value.toUpperCase(),
+                    country: document.getElementById('artist-country').value || null,
+                    genre: document.getElementById('artist-genre').value || null,
+                    formation_year: document.getElementById('artist-formation-year').value ? parseInt(document.getElementById('artist-formation-year').value) : null,
+                    biography: document.getElementById('artist-biography').value || null,
+                    bea_artist_link: document.getElementById('artist-bea-link').value || null
+                };
+
+                // Remove null/empty values
+                Object.keys(formData).forEach(key => {
+                    if (formData[key] === null || formData[key] === '') {
+                        delete formData[key];
+                    }
+                });
+
+                const response = await window.authenticatedFetch('http://localhost:8000/api/artists', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to add artist');
+                }
+
+                const newArtist = await response.json();
+                
+                // Reload artists to show the new one
+                const isoCode = document.getElementById('artist-iso3').value.toUpperCase();
+                await loadArtists(isoCode);
+                
+                // Reset form and hide it
+                document.getElementById('artist-form').reset();
+                toggleArtistForm();
+                
+                alert('Artist added successfully!');
+            } catch (error) {
+                console.error('Error adding artist:', error);
+                alert('Error adding artist: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
+
+        // Update form visibility based on login status
+        window.addEventListener('userLoggedIn', function() {
+            updateArtistFormVisibility();
+        });
+
+        function updateArtistFormVisibility() {
+            const isLoggedIn = window.isLoggedIn && window.isLoggedIn();
+            const btn = document.getElementById('toggle-artist-form-btn');
+            if (btn) {
+                btn.style.display = isLoggedIn ? 'block' : 'none';
+            }
+        }
+
+        // Check on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateArtistFormVisibility);
+        } else {
+            setTimeout(updateArtistFormVisibility, 100);
         }
     </script>
 </body>

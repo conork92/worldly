@@ -295,6 +295,45 @@ def get_artists():
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch artists"}
 
+@app.get("/api/artists/country/{iso_code_3}")
+def get_artists_by_country(iso_code_3: str):
+    """Get artists for a specific country by ISO code"""
+    try:
+        iso_code_3 = iso_code_3.upper().strip()
+        result = supabase.table("worldly_artists").select("*").eq("iso_code_3", iso_code_3).execute()
+        return result.data if result.data else []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch artists for country"}
+
+class ArtistCreate(BaseModel):
+    name: str
+    iso_code_2: str
+    iso_code_3: str
+    country: str = None
+    country_id: int = None
+    genre: str = None
+    formation_year: int = None
+    biography: str = None
+    bea_artist_link: str = None
+
+@app.post("/api/artists", dependencies=[Depends(verify_api_key)])
+def create_artist(artist: ArtistCreate):
+    """Create a new artist"""
+    try:
+        # Normalize ISO codes
+        artist_data = artist.dict(exclude_none=True)
+        artist_data["iso_code_2"] = artist_data["iso_code_2"].upper().strip()
+        artist_data["iso_code_3"] = artist_data["iso_code_3"].upper().strip()
+        
+        result = supabase.table("worldly_artists").insert(artist_data).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to create artist")
+        
+        return result.data[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create artist: {str(e)}")
+
 @app.get("/books")
 def get_books_page():
     """Serve the books HTML page"""
