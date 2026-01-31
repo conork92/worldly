@@ -772,14 +772,42 @@
 
         // Populate year filter
         function populateYearFilter() {
-            const years = [...new Set(allAlbums
-                .filter(a => a.year)
-                .map(a => a.year)
-                .filter(year => !isNaN(year))
-                .sort((a, b) => b - a))]; // Sort descending (newest first)
+            // Extract years from both release year and listen date
+            const years = new Set();
+            
+            allAlbums.forEach(album => {
+                // Add release year if available
+                if (album.year && !isNaN(album.year)) {
+                    years.add(Number(album.year));
+                }
+                
+                // Add listen date year if available
+                if (album.listen_date) {
+                    try {
+                        const date = new Date(album.listen_date);
+                        if (!isNaN(date.getTime())) {
+                            const year = date.getFullYear();
+                            if (year && !isNaN(year)) {
+                                years.add(year);
+                            }
+                        }
+                    } catch (e) {
+                        // Try to parse as string format like "05 Jan 2026, 07:51"
+                        const yearMatch = album.listen_date.match(/\b(19|20)\d{2}\b/);
+                        if (yearMatch) {
+                            const year = parseInt(yearMatch[0]);
+                            if (year && !isNaN(year)) {
+                                years.add(year);
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const sortedYears = Array.from(years).sort((a, b) => b - a); // Sort descending (newest first)
             
             const select = document.getElementById('filter-year');
-            years.forEach(year => {
+            sortedYears.forEach(year => {
                 const option = document.createElement('option');
                 option.value = year;
                 option.textContent = year;
@@ -882,7 +910,32 @@
                 
                 const matchesCountry = !countryFilter || album.country_name === countryFilter;
                 
-                const matchesYear = !yearFilter || (album.year && album.year.toString() === yearFilter);
+                // Match year filter against both release year and listen date year
+                let matchesYear = !yearFilter;
+                if (yearFilter) {
+                    const filterYear = parseInt(yearFilter);
+                    // Check release year
+                    const releaseYearMatch = album.year && album.year.toString() === yearFilter;
+                    // Check listen date year
+                    let listenYearMatch = false;
+                    if (album.listen_date) {
+                        try {
+                            const date = new Date(album.listen_date);
+                            if (!isNaN(date.getTime())) {
+                                listenYearMatch = date.getFullYear() === filterYear;
+                            } else {
+                                // Try to parse as string format like "05 Jan 2026, 07:51"
+                                const yearMatch = album.listen_date.match(/\b(19|20)\d{2}\b/);
+                                if (yearMatch && parseInt(yearMatch[0]) === filterYear) {
+                                    listenYearMatch = true;
+                                }
+                            }
+                        } catch (e) {
+                            // Ignore parse errors
+                        }
+                    }
+                    matchesYear = releaseYearMatch || listenYearMatch;
+                }
                 
                 let matchesListened = true;
                 if (listenedFilter === 'listened') {
