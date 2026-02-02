@@ -405,18 +405,36 @@ def get_books():
 def get_quotes():
     try:
         result = supabase.table("worldly_quotes").select("*").execute()
-        return result.data if result.data else []
+        quotes = result.data if result.data else []
+        
+        # Filter out quotes from CK, Conor, or Conor Kennedy (case-insensitive)
+        excluded_authors = ['ck', 'conor', 'conor kennedy']
+        filtered_quotes = [
+            quote for quote in quotes
+            if not quote.get('author') or quote.get('author', '').strip().lower() not in excluded_authors
+        ]
+        
+        return filtered_quotes
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch quotes"}
 
 @app.get("/api/quotes/random")
 def get_random_quote():
-    """Get a random quote"""
+    """Get a random quote (excluding quotes from CK, Conor, or Conor Kennedy)"""
     try:
         result = supabase.table("worldly_quotes").select("*").execute()
-        if result.data and len(result.data) > 0:
+        quotes = result.data if result.data else []
+        
+        # Filter out quotes from CK, Conor, or Conor Kennedy (case-insensitive)
+        excluded_authors = ['ck', 'conor', 'conor kennedy']
+        filtered_quotes = [
+            quote for quote in quotes
+            if not quote.get('author') or quote.get('author', '').strip().lower() not in excluded_authors
+        ]
+        
+        if filtered_quotes and len(filtered_quotes) > 0:
             import random
-            return random.choice(result.data)
+            return random.choice(filtered_quotes)
         return {}
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch random quote"}
