@@ -437,6 +437,11 @@
                 alert('You must be logged in to refresh Last.fm data.');
                 return;
             }
+            
+            if (!window.canWrite || !window.canWrite()) {
+                alert('Guest users can only view data. Please log in as an admin to refresh data.');
+                return;
+            }
 
             const btn = document.getElementById('refresh-btn');
             const originalText = btn.textContent;

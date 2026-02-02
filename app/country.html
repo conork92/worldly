@@ -643,6 +643,12 @@
                     alert('You must be logged in to add artists.');
                     return;
                 }
+                
+                // Check if user can write
+                if (!window.canWrite || !window.canWrite()) {
+                    alert('Guest users can only view data. Please log in as an admin to add artists.');
+                    return;
+                }
                 form.classList.add('visible');
                 btn.textContent = 'Cancel';
                 
@@ -734,10 +740,10 @@
         });
 
         function updateArtistFormVisibility() {
-            const isLoggedIn = window.isLoggedIn && window.isLoggedIn();
+            const canWrite = window.canWrite && window.canWrite();
             const btn = document.getElementById('toggle-artist-form-btn');
             if (btn) {
-                btn.style.display = isLoggedIn ? 'block' : 'none';
+                btn.style.display = canWrite ? 'block' : 'none';
             }
         }
 
