@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from pathlib import Path
 from supa import supabase
 import os
+import subprocess
+import sys
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -339,6 +341,51 @@ def get_books_page():
     """Serve the books HTML page"""
     books_path = Path(__file__).parent / "books.html"
     return FileResponse(books_path)
+
+@app.get("/listening")
+def get_listening_page():
+    """Serve the Last.fm listening page"""
+    listening_path = Path(__file__).parent / "listening.html"
+    return FileResponse(listening_path)
+
+@app.get("/api/listening")
+def get_listening_tracks(limit: int = 100):
+    """Get recent tracks from lastfm_listened_table"""
+    try:
+        result = supabase.table("lastfm_listened_table").select("*").order("date_uts", desc=True).limit(limit).execute()
+        return result.data if result.data else []
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch listening tracks"}
+
+@app.post("/api/listening/refresh", dependencies=[Depends(verify_api_key)])
+def refresh_listening_data():
+    """Trigger the Last.fm script to update the listening data"""
+    try:
+        # Get the path to the lastfm script
+        script_path = Path(__file__).parent / "scripts" / "lastfm.py"
+        
+        if not script_path.exists():
+            raise HTTPException(status_code=404, detail="Last.fm script not found")
+        
+        # Run the script in the background
+        # Use the same Python interpreter
+        python_path = sys.executable
+        process = subprocess.Popen(
+            [python_path, str(script_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=str(Path(__file__).parent)
+        )
+        
+        # Don't wait for completion - return immediately
+        # The script will run in the background
+        return {
+            "success": True,
+            "message": "Last.fm data refresh started",
+            "pid": process.pid
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start refresh: {str(e)}")
 
 @app.get("/quotes")
 def get_quotes_page():

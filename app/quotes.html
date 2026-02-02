@@ -856,6 +856,7 @@
             <a class="nav-btn" href="/books">Books</a>
             <a class="nav-btn active" href="/quotes">Quotes</a>
             <a class="nav-btn" href="/albums">Albums</a>
+            <a class="nav-btn" href="/listening">Listening</a>
         </div>
     </div>
 
@@ -1006,7 +1007,7 @@
         // Load random quote
         async function loadRandomQuote() {
             try {
-                const response = await fetch('http://localhost:8000/api/quotes/random');
+                const response = await fetch('/api/quotes/random');
                 const data = await response.json();
                 
                 if (data.error) {
@@ -1032,7 +1033,7 @@
         // Load quotes from API
         async function loadQuotes() {
             try {
-                const response = await fetch('http://localhost:8000/api/quotes');
+                const response = await fetch('/api/quotes');
                 const data = await response.json();
                 
                 if (data.error) {
@@ -1052,7 +1053,7 @@
                 console.error('Error loading quotes:', error);
                 document.getElementById('loading').innerHTML = `
                     <div class="error">
-                        <div class="error-text">${error.message}<br><br>Make sure the API is running on http://localhost:8000</div>
+                        <div class="error-text">${error.message}<br><br>Unable to connect to the API server.</div>
                     </div>
                 `;
             }
@@ -1286,7 +1287,7 @@
             });
 
             try {
-                const response = await authenticatedFetch('http://localhost:8000/api/quotes', {
+                const response = await authenticatedFetch('/api/quotes', {
                     method: 'POST',
                     body: JSON.stringify(formData)
                 });

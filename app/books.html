@@ -568,6 +568,7 @@
             <a class="nav-btn active" href="/books">Books</a>
             <a class="nav-btn" href="/quotes">Quotes</a>
             <a class="nav-btn" href="/albums">Albums</a>
+            <a class="nav-btn" href="/listening">Listening</a>
         </div>
     </div>
 
@@ -665,7 +666,7 @@
         // Load books from API
         async function loadBooks() {
             try {
-                const response = await fetch('http://localhost:8000/api/books');
+                const response = await fetch('/api/books');
                 const data = await response.json();
                 
                 if (data.error) {
@@ -684,7 +685,7 @@
                 console.error('Error loading books:', error);
                 document.getElementById('loading').innerHTML = `
                     <div class="error">
-                        <div class="error-text">${error.message}<br><br>Make sure the API is running on http://localhost:8000</div>
+                        <div class="error-text">${error.message}<br><br>Unable to connect to the API server.</div>
                     </div>
                 `;
             }
@@ -908,7 +909,7 @@
 
         // Load books that need country assignment
         function loadBooksNeedingCountry() {
-            fetch('http://localhost:8000/api/books/needs-country')
+            fetch('/api/books/needs-country')
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
@@ -943,7 +944,7 @@
 
         // Load countries
         function loadCountriesList() {
-            fetch('http://localhost:8000/api/countries')
+            fetch('/api/countries')
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
@@ -995,7 +996,7 @@
             messageDiv.textContent = '';
 
             try {
-                const response = await authenticatedFetch(`http://localhost:8000/api/books/${bookId}`, {
+                const response = await authenticatedFetch(`/api/books/${bookId}`, {
                     method: 'PATCH',
                     body: JSON.stringify({
                         country: countryName,

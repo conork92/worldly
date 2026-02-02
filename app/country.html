@@ -481,7 +481,7 @@
             document.getElementById('error').textContent = 'No country code provided. Please select a country from the globe.';
         } else {
             // Fetch country data
-            fetch(`http://localhost:8000/api/country-items/${isoCode.toUpperCase()}`)
+            fetch(`/api/country-items/${isoCode.toUpperCase()}`)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('loading').style.display = 'none';
@@ -592,7 +592,7 @@
         // Load artists for the country
         async function loadArtists(isoCode) {
             try {
-                const response = await fetch(`http://localhost:8000/api/artists/country/${isoCode}`);
+                const response = await fetch(`/api/artists/country/${isoCode}`);
                 const artists = await response.json();
                 
                 if (artists.error) {
@@ -695,7 +695,7 @@
                     }
                 });
 
-                const response = await window.authenticatedFetch('http://localhost:8000/api/artists', {
+                const response = await window.authenticatedFetch('/api/artists', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
