@@ -859,6 +859,7 @@
             <a class="nav-btn" href="/books">Books</a>
             <a class="nav-btn" href="/quotes">Quotes</a>
             <a class="nav-btn" href="/albums">Albums</a>
+            <a class="nav-btn" href="/listening">Listening</a>
         </div>
     </div>
 
@@ -1232,9 +1233,9 @@
             if (type === 'all') {
                 try {
                     const [booksRes, quotesRes, albumsRes] = await Promise.all([
-                        fetch('http://localhost:8000/api/books').then(r => r.json()),
-                        fetch('http://localhost:8000/api/quotes').then(r => r.json()),
-                        fetch('http://localhost:8000/api/albums/listened').then(r => r.json())
+                        fetch('/api/books').then(r => r.json()),
+                        fetch('/api/quotes').then(r => r.json()),
+                        fetch('/api/albums/listened').then(r => r.json())
                     ]);
                     
                     const allData = [
@@ -1268,7 +1269,7 @@
                            '/api/albums/listened';
             
             try {
-                const response = await fetch(`http://localhost:8000${endpoint}`);
+                const response = await fetch(endpoint);
                 const data = await response.json();
                 
                 if (data.error) {
@@ -1765,7 +1766,7 @@
                                         tooltip.classList.add('visible');
                                         
                                         try {
-                                            const url = `http://localhost:8000/api/country-items/${finalISO3}`;
+                                            const url = `/api/country-items/${finalISO3}`;
                                             console.log('[HOVER] Fetching:', url);
                                             const response = await fetch(url);
                                             const data = await response.json();
@@ -1872,7 +1873,7 @@
                                     if (items.length === 0) {
                                         try {
                                             console.log(`[CLICK] Fetching data for ${iso3}...`);
-                                            const response = await fetch(`http://localhost:8000/api/country-items/${iso3}`);
+                                            const response = await fetch(`/api/country-items/${iso3}`);
                                             const itemsData = await response.json();
                                             console.log(`[CLICK] Response for ${iso3}:`, itemsData);
                                             
@@ -1978,7 +1979,7 @@
                 })
                 .catch(err => {
                     console.error('Error loading globe:', err);
-                    showError(`${err.message}<br><br>Make sure the API is running on http://localhost:8000`);
+                    showError(`${err.message}<br><br>Unable to connect to the API server.`);
                 });
         }
 
@@ -2013,7 +2014,7 @@
                     batch.map(async (iso3) => {
                         if (!countryItemsCache[iso3]) {
                             try {
-                                const url = `http://localhost:8000/api/country-items/${iso3}`;
+                                const url = `/api/country-items/${iso3}`;
                                 const response = await fetch(url);
                                 const items = await response.json();
                                 
