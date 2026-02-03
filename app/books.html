@@ -596,6 +596,17 @@
         </div>
     </div>
 
+    <!-- Suggested Book Section -->
+    <div class="suggested-section" id="suggested-book-section" style="display: none; margin-bottom: 30px;">
+        <div class="suggested-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #8a9ef5; margin: 0;">💡 Suggested Book</h3>
+            <button onclick="loadSuggestedBook()" style="padding: 8px 16px; background: rgba(102, 126, 234, 0.15); border: 1px solid rgba(102, 126, 234, 0.35); border-radius: 8px; color: #8a9ef5; cursor: pointer; font-size: 12px; transition: all 0.3s; font-weight: 500;">🔄 Get Another</button>
+        </div>
+        <div class="suggested-card" id="suggested-book-card" style="background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(10px); border-radius: 16px; padding: 24px; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s;">
+            <!-- Content will be populated by JavaScript -->
+        </div>
+    </div>
+
     <div class="filters" id="filters">
         <div class="filter-group">
             <label for="sort-select">Sort by:</label>
@@ -1037,8 +1048,85 @@
         bookSelect.addEventListener('change', updateSubmitButton);
         countrySelect.addEventListener('change', updateSubmitButton);
 
+        // Load suggested book
+        async function loadSuggestedBook() {
+            try {
+                const response = await fetch('/api/books/suggested');
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+                
+                const card = document.getElementById('suggested-book-card');
+                const section = document.getElementById('suggested-book-section');
+                
+                if (data && Object.keys(data).length > 0) {
+                    section.style.display = 'block';
+                    
+                    const title = data.title || 'Untitled Book';
+                    const authorId = data.author_id || null;
+                    let author = 'Unknown Author';
+                    
+                    // Try to get author name if we have author_id
+                    if (authorId) {
+                        // You might want to fetch author details from another endpoint
+                        // For now, we'll just show the title
+                    }
+                    
+                    const year = data.publication_year || '';
+                    const genre = data.genre || '';
+                    const isbn = data.isbn || '';
+                    const avgRating = data.avg_rating || null;
+                    const ratingCount = data.rating_count || 0;
+                    
+                    let html = `<div style="display: flex; gap: 20px; align-items: flex-start;">`;
+                    html += `<div style="flex: 1;">`;
+                    html += `<div style="font-size: 24px; font-weight: 600; color: #8a9ef5; margin-bottom: 8px;">${escapeHtml(title)}</div>`;
+                    html += `<div style="font-size: 16px; color: rgba(255,255,255,0.7); margin-bottom: 12px;">by ${escapeHtml(author)}</div>`;
+                    
+                    if (year) {
+                        html += `<div style="margin-bottom: 8px;"><span style="color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Published:</span> <span style="color: rgba(255,255,255,0.8);">${year}</span></div>`;
+                    }
+                    
+                    if (genre) {
+                        html += `<div style="margin-bottom: 8px;"><span style="color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Genre:</span> <span style="color: rgba(255,255,255,0.8);">${escapeHtml(genre)}</span></div>`;
+                    }
+                    
+                    if (isbn) {
+                        html += `<div style="margin-bottom: 8px;"><span style="color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">ISBN:</span> <span style="color: rgba(255,255,255,0.8);">${escapeHtml(isbn)}</span></div>`;
+                    }
+                    
+                    if (avgRating !== null && ratingCount > 0) {
+                        html += `<div style="margin-bottom: 8px;"><span style="color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Rating:</span> <span style="color: rgba(255,255,255,0.8);">⭐ ${avgRating} (${ratingCount} ${ratingCount === 1 ? 'rating' : 'ratings'})</span></div>`;
+                    }
+                    
+                    html += `</div></div>`;
+                    
+                    card.innerHTML = html;
+                } else {
+                    section.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading suggested book:', error);
+                const section = document.getElementById('suggested-book-section');
+                if (section) {
+                    section.style.display = 'none';
+                }
+            }
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
         // Load books on page load
         loadBooks();
+        loadSuggestedBook();
     </script>
 </body>
 </html>

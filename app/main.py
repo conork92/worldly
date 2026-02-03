@@ -254,6 +254,134 @@ def get_albums():
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch albums"}
 
+@app.get("/api/albums/suggested")
+def get_suggested_album():
+    """Get a random suggested album from worldly_albums"""
+    try:
+        import random
+        result = supabase.table("worldly_albums").select("*").execute()
+        albums = result.data if result.data else []
+        if albums:
+            return random.choice(albums)
+        return {}
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch suggested album"}
+
+@app.get("/api/albums/suggested/{iso_code_3}")
+def get_suggested_albums_for_country(iso_code_3: str, limit: int = 5):
+    """Get suggested albums from worldly_albums for a specific country"""
+    try:
+        import random
+        iso_code_3 = iso_code_3.upper().strip()
+        result = supabase.table("worldly_albums").select("*").eq("iso_code_3", iso_code_3).execute()
+        albums = result.data if result.data else []
+        
+        if albums:
+            # Return up to 'limit' random albums
+            if len(albums) <= limit:
+                return albums
+            else:
+                return random.sample(albums, limit)
+        return []
+    except Exception as e:
+        return {"error": str(e), "message": f"Failed to fetch suggested albums for country {iso_code_3}"}
+
+@app.get("/api/albums/suggested-for-unlistened")
+def get_suggested_album_for_unlistened(iso_code_3: str = None):
+    """Get a random suggested album from worldly_albums, optionally filtered by country"""
+    try:
+        import random
+        if iso_code_3:
+            iso_code_3 = iso_code_3.upper().strip()
+            result = supabase.table("worldly_albums").select("*").eq("iso_code_3", iso_code_3).execute()
+            albums = result.data if result.data else []
+            if albums:
+                return random.choice(albums)
+        
+        # If no country or no albums for that country, get any random album
+        result = supabase.table("worldly_albums").select("*").execute()
+        albums = result.data if result.data else []
+        if albums:
+            return random.choice(albums)
+        return {}
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch suggested album"}
+
+class BatchRequest(BaseModel):
+    iso_codes: list = []
+
+@app.post("/api/albums/suggested-batch")
+def get_suggested_albums_batch(request: BatchRequest):
+    """Get suggested albums for multiple ISO codes in one request - optimized for performance"""
+    try:
+        import random
+        iso_codes = request.iso_codes if request.iso_codes else []
+        
+        # Fetch all albums once
+        albums_result = supabase.table("worldly_albums").select("*").execute()
+        all_albums = albums_result.data if albums_result.data else []
+        
+        if not all_albums:
+            return {}
+        
+        # Fetch artists to get correct country associations
+        artists_result = supabase.table("worldly_artists").select("name, iso_code_3").execute()
+        artists_by_name = {}
+        if artists_result.data:
+            for artist in artists_result.data:
+                artist_name = artist.get('name', '').lower().strip()
+                if artist_name:
+                    artists_by_name[artist_name] = artist.get('iso_code_3', '').upper().strip()
+        
+        # Known artist-country associations for validation (fallback if not in artists table)
+        known_artists = {
+            'bjork': 'ISL',  # Iceland
+            'björk': 'ISL',
+            'bob dylan': 'USA',
+            'bob dulan': 'USA',  # Common misspelling
+        }
+        
+        # Group albums by ISO code, using artist's country when available
+        albums_by_country = {}
+        for album in all_albums:
+            artist_name = album.get('artist_name', '').lower().strip()
+            album_iso = album.get('iso_code_3', '').upper().strip() if album.get('iso_code_3') else None
+            
+            # Try to get correct ISO from artists table first
+            correct_iso = None
+            if artist_name in artists_by_name:
+                correct_iso = artists_by_name[artist_name]
+            elif artist_name in known_artists:
+                correct_iso = known_artists[artist_name]
+            
+            # Use correct ISO if found, otherwise use album's ISO (but log warning)
+            iso_to_use = correct_iso if correct_iso else album_iso
+            
+            if iso_to_use:
+                # If we corrected the ISO, log it
+                if correct_iso and album_iso and correct_iso != album_iso:
+                    print(f"[INFO] Corrected {album.get('artist_name')} from {album_iso} to {correct_iso}")
+                
+                if iso_to_use not in albums_by_country:
+                    albums_by_country[iso_to_use] = []
+                albums_by_country[iso_to_use].append(album)
+        
+        # Get suggested album for each ISO code
+        suggestions = {}
+        for iso_code in iso_codes:
+            iso_code = iso_code.upper().strip() if iso_code else None
+            if iso_code and iso_code in albums_by_country and len(albums_by_country[iso_code]) > 0:
+                # Pick a random album from that country
+                suggestions[iso_code] = random.choice(albums_by_country[iso_code])
+        
+        # Also add a general "any" suggestion for albums without country
+        if all_albums:
+            suggestions['any'] = random.choice(all_albums)
+        
+        return suggestions
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch suggested albums"}
+
 @app.get("/api/albums/listened")
 def get_albums_listened():
     """Get albums from worldly_countrys_listened table"""
@@ -637,6 +765,19 @@ def get_books():
         return result.data if result.data else []
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch books"}
+
+@app.get("/api/books/suggested")
+def get_suggested_book():
+    """Get a random suggested book from worldly_books"""
+    try:
+        import random
+        result = supabase.table("worldly_books").select("*").execute()
+        books = result.data if result.data else []
+        if books:
+            return random.choice(books)
+        return {}
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch suggested book"}
 
 @app.get("/api/quotes")
 def get_quotes():
