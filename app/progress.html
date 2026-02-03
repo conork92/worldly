@@ -132,6 +132,35 @@
             color: white;
         }
 
+        .all-months-btn {
+            padding: 10px 20px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .all-months-btn:hover {
+            background: rgba(102, 126, 234, 0.35);
+            border-color: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .all-months-btn.active {
+            background: rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+            color: white;
+        }
+
         /* Progress Grid */
         .progress-grid {
             display: grid;
@@ -277,6 +306,237 @@
             color: #ff6b6b;
             font-size: 18px;
         }
+
+        /* Albums List Section */
+        .albums-list-section {
+            margin-top: 40px;
+        }
+
+        .albums-list-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .albums-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .album-card {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+            opacity: 1;
+            transform: scale(1);
+            animation: fadeInCard 0.4s ease-out;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeInCard {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .album-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(102, 126, 234, 0.5);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .album-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .album-card:hover::before {
+            opacity: 1;
+        }
+
+        .album-image-container {
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            background: rgba(102, 126, 234, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .album-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .album-card:hover .album-image {
+            transform: scale(1.05);
+        }
+
+        .album-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 48px;
+        }
+
+        .album-image-loading {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(102, 126, 234, 0.5);
+        }
+
+        .album-image-loading::after {
+            content: '';
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .album-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: white;
+            line-height: 1.3;
+        }
+
+        .album-artist {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 15px;
+        }
+
+        .album-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .meta-label {
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .meta-value {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 6px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .country-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            font-size: 11px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .country-badge.empty {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.4);
+        }
+
+        .spotify-link {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(30, 215, 96, 0.2);
+            border: 1px solid rgba(30, 215, 96, 0.4);
+            border-radius: 8px;
+            color: #1db954;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .spotify-link:hover {
+            background: rgba(30, 215, 96, 0.3);
+            border-color: #1db954;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .comments {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            font-style: italic;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .empty-albums {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255,255,255,0.5);
+        }
     </style>
     <link rel="stylesheet" href="/static/login.css">
     <script src="/static/auth.js"></script>
@@ -322,6 +582,7 @@
                 <!-- Years will be populated by JavaScript -->
             </select>
         </div>
+        <button type="button" class="all-months-btn" id="all-months-btn">Show All Months</button>
     </div>
 
     <div class="loading" id="loading">
@@ -330,6 +591,11 @@
     </div>
 
     <div class="progress-grid" id="progress-grid"></div>
+
+    <div class="albums-list-section" id="albums-list-section" style="display: none;">
+        <div class="albums-list-title">Albums Played This Month</div>
+        <div class="albums-list" id="albums-list"></div>
+    </div>
 
     <script>
         let currentMonth = new Date().getMonth() + 1; // 1-12
@@ -359,27 +625,224 @@
 
         // Load progress data
         async function loadProgressData() {
+            const allMonthsBtn = document.getElementById('all-months-btn');
+            const allMonths = allMonthsBtn.classList.contains('active');
             const month = parseInt(document.getElementById('month-select').value);
             const year = parseInt(document.getElementById('year-select').value);
 
             try {
-                const response = await fetch(`/api/progress?month=${month}&year=${year}`);
+                const url = allMonths 
+                    ? `/api/progress?year=${year}&all_months=true`
+                    : `/api/progress?month=${month}&year=${year}`;
+                
+                const response = await fetch(url);
                 const data = await response.json();
                 
                 if (data.error) {
                     throw new Error(data.message);
                 }
 
-                renderProgress(data);
+                renderProgress(data, allMonths);
+                const albumsListSection = document.getElementById('albums-list-section');
+                const albumsListTitle = document.getElementById('albums-list-title');
+                
+                if (data.albums && data.albums.length > 0) {
+                    renderAlbumsList(data.albums);
+                    if (albumsListSection) {
+                        albumsListSection.style.display = 'block';
+                    }
+                    if (albumsListTitle) {
+                        albumsListTitle.textContent = allMonths 
+                            ? `Albums Played This Year (${data.albums.length} total)`
+                            : `Albums Played This Month (${data.albums.length} total)`;
+                    }
+                } else {
+                    if (albumsListSection) {
+                        albumsListSection.style.display = 'none';
+                    }
+                }
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error('Error loading progress:', error);
-                document.getElementById('loading').innerHTML = `
-                    <div class="error">
-                        <div class="error-text">${error.message}<br><br>Unable to load progress data.</div>
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = `
+                        <div class="error">
+                            <div class="error-text">${error.message}<br><br>Unable to load progress data.</div>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // Fetch album image from Spotify oEmbed API
+        let albumImageCache = {};
+        
+        async function getSpotifyAlbumImage(spotifyLink) {
+            if (!spotifyLink) return null;
+            
+            // Check cache first
+            if (albumImageCache[spotifyLink]) {
+                return albumImageCache[spotifyLink];
+            }
+
+            try {
+                // Use Spotify oEmbed API (no authentication required)
+                const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyLink)}`;
+                const response = await fetch(oembedUrl);
+                
+                if (!response.ok) {
+                    return null;
+                }
+                
+                const data = await response.json();
+                const imageUrl = data.thumbnail_url || null;
+                
+                // Cache the result
+                if (imageUrl) {
+                    albumImageCache[spotifyLink] = imageUrl;
+                }
+                
+                return imageUrl;
+            } catch (error) {
+                console.error('Error fetching Spotify album image:', error);
+                return null;
+            }
+        }
+
+        // Load album images
+        async function loadAlbumImages() {
+            const albumsList = document.getElementById('albums-list');
+            const albumCards = albumsList.querySelectorAll('.album-card');
+            
+            for (const card of albumCards) {
+                const spotifyLink = card.dataset.spotifyLink;
+                if (spotifyLink) {
+                    const imageUrl = await getSpotifyAlbumImage(spotifyLink);
+                    const imageContainer = card.querySelector('.album-image-container');
+                    if (imageContainer) {
+                        const loadingDiv = imageContainer.querySelector('.album-image-loading');
+                        const placeholderDiv = imageContainer.querySelector('.album-image-placeholder');
+                        
+                        if (imageUrl) {
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = card.dataset.albumTitle || 'Album';
+                            img.className = 'album-image';
+                            img.onerror = function() {
+                                this.style.display = 'none';
+                                if (placeholderDiv) placeholderDiv.style.display = 'flex';
+                            };
+                            
+                            if (loadingDiv) loadingDiv.style.display = 'none';
+                            imageContainer.insertBefore(img, placeholderDiv);
+                        } else {
+                            if (loadingDiv) loadingDiv.style.display = 'none';
+                            if (placeholderDiv) placeholderDiv.style.display = 'flex';
+                        }
+                    }
+                }
+            }
+        }
+
+        // Render albums list
+        function renderAlbumsList(albums) {
+            const albumsList = document.getElementById('albums-list');
+            
+            if (!albums || albums.length === 0) {
+                albumsList.innerHTML = '<div class="empty-albums">No albums played this month</div>';
+                return;
+            }
+
+            albumsList.innerHTML = albums.map((album, index) => {
+                const rating = album.rating ? `<span class="rating">⭐ ${album.rating}</span>` : '';
+                const country = album.country_name && album.iso_alpha_3 
+                    ? `<span class="country-badge">${escapeHtml(album.country_name)}</span>`
+                    : album.country_name 
+                        ? `<span class="country-badge">${escapeHtml(album.country_name)}</span>`
+                        : '<span class="country-badge empty">No Country</span>';
+                const spotifyLink = album.spotify_link 
+                    ? `<a href="${escapeHtml(album.spotify_link)}" target="_blank" rel="noopener" class="spotify-link">🎵 Listen on Spotify</a>`
+                    : '';
+                
+                // Album image HTML
+                const albumImageHtml = album.spotify_link 
+                    ? `
+                        <div class="album-image-container">
+                            <div class="album-image-loading"></div>
+                            <div class="album-image-placeholder" style="display: none;">🎵</div>
+                        </div>
+                    `
+                    : '';
+                
+                return `
+                    <div class="album-card" style="animation-delay: ${index * 0.03}s" 
+                         data-album-id="${album.id || ''}" 
+                         data-spotify-link="${escapeHtml(album.spotify_link || '')}"
+                         data-album-title="${escapeHtml(album.album || 'Album')}">
+                        ${albumImageHtml}
+                        <div class="album-title">${escapeHtml(album.album || 'Untitled')}</div>
+                        <div class="album-artist">by ${escapeHtml(album.artist || 'Unknown Artist')}</div>
+                        ${rating ? `<div style="margin-bottom: 10px;">${rating}</div>` : ''}
+                        <div class="album-meta">
+                            ${album.listen_date ? `
+                                <div class="meta-item">
+                                    <span class="meta-label">Listened:</span>
+                                    <span class="meta-value">${formatDate(album.listen_date)}</span>
+                                </div>
+                            ` : ''}
+                            ${album.year ? `
+                                <div class="meta-item">
+                                    <span class="meta-label">Year:</span>
+                                    <span class="meta-value">${album.year}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        ${album.comments ? `
+                            <div class="comments">"${escapeHtml(album.comments)}"</div>
+                        ` : ''}
+                        ${album.fav_tracks && album.fav_tracks.length > 0 ? `
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.4); margin-bottom: 6px;">Favorite Tracks:</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    ${album.fav_tracks.map(track => `
+                                        <span style="padding: 4px 8px; background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; font-size: 11px; color: #667eea;">${escapeHtml(track)}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                            ${country}
+                            ${spotifyLink}
+                        </div>
                     </div>
                 `;
+            }).join('');
+            
+            // Load album images after rendering
+            loadAlbumImages();
+        }
+
+        // Format date helper
+        function formatDate(dateString) {
+            if (!dateString) return 'Not set';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    return dateString; // Return as-is if not a valid date
+                }
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) {
+                return dateString;
             }
+        }
+
+        // Escape HTML helper
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // Render progress cards
@@ -388,7 +851,7 @@
             
             const categories = [
                 {
-                    key: 'albums_listened',
+                    key: 'global_albums_listened',
                     title: 'Albums Listened',
                     icon: '🎵',
                     color: '#667eea'
@@ -448,11 +911,43 @@
 
         // Event listeners for date changes
         document.getElementById('month-select').addEventListener('change', () => {
+            // Deactivate all months button if a specific month is selected
+            const allMonthsBtn = document.getElementById('all-months-btn');
+            if (allMonthsBtn.classList.contains('active')) {
+                allMonthsBtn.classList.remove('active');
+                const monthSelect = document.getElementById('month-select');
+                monthSelect.disabled = false;
+                monthSelect.style.opacity = '1';
+                monthSelect.style.cursor = 'pointer';
+            }
             document.getElementById('loading').style.display = 'block';
             loadProgressData();
         });
 
         document.getElementById('year-select').addEventListener('change', () => {
+            document.getElementById('loading').style.display = 'block';
+            loadProgressData();
+        });
+
+        document.getElementById('all-months-btn').addEventListener('click', () => {
+            const allMonthsBtn = document.getElementById('all-months-btn');
+            const monthSelect = document.getElementById('month-select');
+            
+            if (allMonthsBtn.classList.contains('active')) {
+                // Deactivate
+                allMonthsBtn.classList.remove('active');
+                allMonthsBtn.textContent = 'Show All Months';
+                monthSelect.disabled = false;
+                monthSelect.style.opacity = '1';
+                monthSelect.style.cursor = 'pointer';
+            } else {
+                // Activate
+                allMonthsBtn.classList.add('active');
+                allMonthsBtn.textContent = 'Show Single Month';
+                monthSelect.disabled = true;
+                monthSelect.style.opacity = '0.5';
+                monthSelect.style.cursor = 'not-allowed';
+            }
             document.getElementById('loading').style.display = 'block';
             loadProgressData();
         });
