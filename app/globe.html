@@ -1518,29 +1518,36 @@
         }
         
         function isItemFinished(item) {
-            // Check various ways an item can be "finished"
-            if (item.is_finished === true || item.is_finished === 'true') {
-                return true;
-            }
-            if (item.finished_date) {
-                return true;
-            }
-            if (item.date_read) {
-                return true;
-            }
-            if (item.listen_date) {
-                return true;
-            }
-            // For albums, if there's no listen_date, it's not finished
-            if (item.type === 'album' && !item.listen_date && !item.finished_date) {
+            try {
+                if (!item) return false;
+                
+                // Check various ways an item can be "finished"
+                if (item.is_finished === true || item.is_finished === 'true') {
+                    return true;
+                }
+                if (item.finished_date) {
+                    return true;
+                }
+                if (item.date_read) {
+                    return true;
+                }
+                if (item.listen_date) {
+                    return true;
+                }
+                // For albums, if there's no listen_date, it's not finished
+                if (item.type === 'album' && !item.listen_date && !item.finished_date) {
+                    return false;
+                }
+                // For books, if there's no date_read, it's not finished
+                if (item.type === 'book' && !item.date_read && !item.finished_date) {
+                    return false;
+                }
+                // Default: if we can't determine, assume not finished
+                return false;
+            } catch (e) {
+                console.warn('[HOVER] Error in isItemFinished:', e, item);
                 return false;
             }
-            // For books, if there's no date_read, it's not finished
-            if (item.type === 'book' && !item.date_read && !item.finished_date) {
-                return false;
-            }
-            // Default: if we can't determine, assume not finished
-            return false;
         }
 
         if (typeof Globe === 'undefined') {
@@ -1607,9 +1614,10 @@
                         .polygonStrokeColor(() => 'rgba(102, 126, 234, 0.3)')
                         .polygonLabel('')
                         .onPolygonHover(async (polygon, prevPolygon) => {
-                            if (!tooltip) return;
-                            
-                            if (polygon) {
+                            try {
+                                if (!tooltip) return;
+                                
+                                if (polygon) {
                                 const props = polygon.properties;
                                 const countryName = props.name || props.countryName || props.NAME || props.NAME_LONG || props.ADMIN || 'Unknown Country';
                                 
@@ -1654,31 +1662,38 @@
                                     tooltipTitle.textContent = countryName;
                                     
                                     const updateTooltipContent = (items, iso3, tooltipContentEl) => {
-                                        if (!items || items.length === 0) {
-                                            // Show specific message based on data type
-                                            let noDataMessage = '';
-                                            if (currentDataType === 'all') {
-                                                noDataMessage = 'No books, albums, or quotes';
-                                            } else if (currentDataType === 'books') {
-                                                noDataMessage = '📚 No books read';
-                                            } else if (currentDataType === 'albums') {
-                                                noDataMessage = '🎵 No albums listened to';
-                                            } else if (currentDataType === 'quotes') {
-                                                noDataMessage = '💬 No quotes';
-                                            } else {
-                                                noDataMessage = 'No data available';
+                                        try {
+                                            if (!items || items.length === 0) {
+                                                // Show specific message based on data type
+                                                let noDataMessage = '';
+                                                if (currentDataType === 'all') {
+                                                    noDataMessage = 'No books, albums, or quotes';
+                                                } else if (currentDataType === 'books') {
+                                                    noDataMessage = '📚 No books read';
+                                                } else if (currentDataType === 'albums') {
+                                                    noDataMessage = '🎵 No albums listened to';
+                                                } else if (currentDataType === 'quotes') {
+                                                    noDataMessage = '💬 No quotes';
+                                                } else {
+                                                    noDataMessage = 'No data available';
+                                                }
+                                                tooltipContentEl.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
+                                                return;
                                             }
-                                            tooltipContentEl.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
-                                            return;
-                                        }
-                                        
-                                        // Filter items based on finished filter
-                                        const filteredItems = showFinishedOnly === null 
-                                            ? items // Show all if filter is null
-                                            : items.filter(item => {
-                                                const finished = isItemFinished(item);
-                                                return showFinishedOnly ? finished : !finished;
-                                            });
+                                            
+                                            // Filter items based on finished filter
+                                            const filteredItems = showFinishedOnly === null 
+                                                ? items // Show all if filter is null
+                                                : items.filter(item => {
+                                                    try {
+                                                        if (!item) return false;
+                                                        const finished = isItemFinished(item);
+                                                        return showFinishedOnly ? finished : !finished;
+                                                    } catch (e) {
+                                                        console.warn('[HOVER] Error filtering item:', e, item);
+                                                        return true; // Include item if we can't determine finished status
+                                                    }
+                                                });
                                         
                                         if (filteredItems.length === 0) {
                                             // Show specific message based on data type and filter
@@ -1729,18 +1744,24 @@
                                         content += `<tbody>`;
                                         
                                         displayItems.forEach(item => {
-                                            const itemType = item.type || 'book';
-                                            const typeIcon = itemType === 'album' ? '🎵' : itemType === 'quote' ? '💬' : '📚';
-                                            const title = item.title || 'Untitled';
-                                            const artist = item.artist || 'Unknown';
-                                            const rating = item.rating ? `⭐ ${item.rating}` : '-';
-                                            
-                                            content += `<tr>`;
-                                            content += `<td>${typeIcon}</td>`;
-                                            content += `<td><strong>${title}</strong></td>`;
-                                            content += `<td>${artist}</td>`;
-                                            content += `<td>${rating}</td>`;
-                                            content += `</tr>`;
+                                            try {
+                                                if (!item) return;
+                                                const itemType = (item && item.type) ? item.type : 'book';
+                                                const typeIcon = itemType === 'album' ? '🎵' : itemType === 'quote' ? '💬' : '📚';
+                                                const title = (item && item.title) ? item.title : 'Untitled';
+                                                const artist = (item && item.artist) ? item.artist : 'Unknown';
+                                                const rating = (item && item.rating) ? `⭐ ${item.rating}` : '-';
+                                                
+                                                content += `<tr>`;
+                                                content += `<td>${typeIcon}</td>`;
+                                                content += `<td><strong>${escapeHtml(String(title))}</strong></td>`;
+                                                content += `<td>${escapeHtml(String(artist))}</td>`;
+                                                content += `<td>${rating}</td>`;
+                                                content += `</tr>`;
+                                            } catch (e) {
+                                                console.warn('[HOVER] Error rendering item:', e, item);
+                                                // Skip this item
+                                            }
                                         });
                                         
                                         content += `</tbody></table>`;
@@ -1757,7 +1778,19 @@
                                         }
                                         
                                         tooltipContentEl.innerHTML = content;
+                                        } catch (error) {
+                                            console.error('[HOVER] Error in updateTooltipContent:', error);
+                                            tooltipContentEl.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">Error displaying data</div>`;
+                                        }
                                     };
+                                    
+                                    // Helper function to escape HTML
+                                    function escapeHtml(text) {
+                                        if (text == null) return '';
+                                        const div = document.createElement('div');
+                                        div.textContent = String(text);
+                                        return div.innerHTML;
+                                    }
                                     
                                     let items = countryItemsCache[finalISO3] || [];
                                     
@@ -1770,17 +1803,37 @@
                                             const url = `/api/country-items/${finalISO3}`;
                                             console.log('[HOVER] Fetching:', url);
                                             const response = await fetch(url);
+                                            
+                                            // Check if response is OK
+                                            if (!response.ok) {
+                                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                                            }
+                                            
                                             const data = await response.json();
                                             console.log('[HOVER] Response for', finalISO3, ':', data);
                                             
-                                            if (!data.error && Array.isArray(data)) {
+                                            // Check if response has an error
+                                            if (data && data.error) {
+                                                console.warn('[HOVER] Error in response:', data);
+                                                // Show a user-friendly message instead of the error
+                                                let noDataMessage = '';
+                                                if (currentDataType === 'books') {
+                                                    noDataMessage = '📚 No books read';
+                                                } else if (currentDataType === 'albums') {
+                                                    noDataMessage = '🎵 No albums listened to';
+                                                } else if (currentDataType === 'quotes') {
+                                                    noDataMessage = '💬 No quotes';
+                                                } else {
+                                                    noDataMessage = 'No data available';
+                                                }
+                                                tooltipContent.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
+                                                // Cache empty array to prevent repeated failed requests
+                                                countryItemsCache[finalISO3] = [];
+                                            } else if (Array.isArray(data)) {
                                                 countryItemsCache[finalISO3] = data;
                                                 items = data;
                                                 console.log(`[HOVER] Loaded ${data.length} items for ${finalISO3}`);
                                                 updateTooltipContent(items, finalISO3, tooltipContent);
-                                            } else if (data.error) {
-                                                console.warn('[HOVER] Error in response:', data);
-                                                tooltipContent.innerHTML = `<em>Error: ${data.message || data.error}</em>`;
                                             } else {
                                                 console.warn('[HOVER] Response is not an array:', data);
                                                 let noDataMessage = '';
@@ -1794,10 +1847,25 @@
                                                     noDataMessage = 'No data available';
                                                 }
                                                 tooltipContent.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
+                                                // Cache empty array
+                                                countryItemsCache[finalISO3] = [];
                                             }
                                         } catch (error) {
                                             console.error('[HOVER] Error loading country items:', error);
-                                            tooltipContent.innerHTML = `<em>Error loading data</em>`;
+                                            // Show a user-friendly message instead of error details
+                                            let noDataMessage = '';
+                                            if (currentDataType === 'books') {
+                                                noDataMessage = '📚 No books read';
+                                            } else if (currentDataType === 'albums') {
+                                                noDataMessage = '🎵 No albums listened to';
+                                            } else if (currentDataType === 'quotes') {
+                                                noDataMessage = '💬 No quotes';
+                                            } else {
+                                                noDataMessage = 'No data available';
+                                            }
+                                            tooltipContent.innerHTML = `<div style="text-align: center; padding: 20px; font-size: 14px; color: rgba(255,255,255,0.6);">${noDataMessage}</div>`;
+                                            // Cache empty array to prevent repeated failed requests
+                                            countryItemsCache[finalISO3] = [];
                                         }
                                     } else if (items.length > 0) {
                                         console.log(`[HOVER] Using cached data for ${finalISO3}: ${items.length} items`);
@@ -1820,6 +1888,15 @@
                                 }
                             } else {
                                 tooltip.classList.remove('visible');
+                            }
+                            } catch (error) {
+                                console.error('[HOVER] Error in hover handler:', error);
+                                if (tooltip) {
+                                    const tooltipContent = document.getElementById('tooltip-content');
+                                    if (tooltipContent) {
+                                        tooltipContent.innerHTML = '<em>Error displaying data</em>';
+                                    }
+                                }
                             }
                         })
                         .onPolygonClick(async (polygon) => {
@@ -1919,7 +1996,7 @@
                                             const artist = item.artist || 'Unknown';
                                             const rating = item.rating ? `⭐ ${item.rating}` : '-';
                                             const year = item.year ? item.year : (item.pages ? `${item.pages} pages` : '-');
-                                            const finishedDate = item.finished_date ? new Date(item.finished_date).toLocaleDateString() : '-';
+                                            const finishedDate = item.finished_date ? new Date(item.finished_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '-';
                                             const comments = item.comments ? item.comments : '-';
                                             
                                             content += `<tr>`;

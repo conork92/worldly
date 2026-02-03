@@ -24,8 +24,7 @@
 
 -- 2. Select only finished items from the view:
 --     SELECT * FROM country_items_view(TRUE);
-
-CREATE OR REPLACE FUNCTION country_items_view(finished_only BOOLEAN DEFAULT FALSE)
+CREATE OR REPLACE FUNCTION public.country_items_view(finished_only BOOLEAN DEFAULT FALSE)
 RETURNS TABLE(
   type text,
   country_name text,
@@ -53,15 +52,14 @@ RETURNS TABLE(
       comments,
       year,
       CASE 
-          WHEN listen_date IS NOT NULL AND listen_date != '' THEN
-            COALESCE(
-              -- Try DD/MM/YYYY format first
-              TO_DATE(listen_date, 'DD/MM/YYYY'),
-              -- Fall back to ISO format
-              listen_date::date
-            )
-          ELSE NULL
-        END AS finished_date,
+          WHEN listen_date IS NULL OR listen_date = '' THEN NULL
+          -- If it looks like 2024-01-07, cast directly
+          WHEN listen_date LIKE '%-%' THEN listen_date::date
+          -- If it looks like 07/01/2024, use TO_DATE to be explicit
+          WHEN listen_date LIKE '%/%' THEN TO_DATE(listen_date, 'DD/MM/YYYY')
+          -- Default fallback for any other string format
+          ELSE listen_date::date
+      END AS finished_date,
       CASE 
           WHEN listen_date IS NOT NULL AND listen_date != '' THEN TRUE
           ELSE FALSE
@@ -87,7 +85,7 @@ RETURNS TABLE(
           ELSE FALSE
         END AS is_finished
     FROM "public"."worldly_good_reads_books"
-    WHERE iso_code_3 IS NOT NULL AND iso_code_3 != '' AND iso_code_3 != 'N/A'  -- Only include books with valid ISO codes
+    WHERE iso_code_3 IS NOT NULL AND iso_code_3 != '' AND iso_code_3 != 'N/A'
   ) t_final
   WHERE (finished_only IS FALSE OR is_finished IS TRUE)
 $$ LANGUAGE SQL

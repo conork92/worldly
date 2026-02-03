@@ -554,7 +554,7 @@
                             const rating = item.rating ? `⭐ ${item.rating}` : '';
                             const year = item.year ? `Year: ${item.year}` : '';
                             const pages = item.pages ? `${item.pages} pages` : '';
-                            const finishedDate = item.finished_date ? new Date(item.finished_date).toLocaleDateString() : '';
+                            const finishedDate = item.finished_date ? new Date(item.finished_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
                             const comments = item.comments || item.quote || '';
 
                             return `
