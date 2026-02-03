@@ -296,6 +296,186 @@
         .success-message.show {
             display: block;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 40, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            margin: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-close {
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: #8a9ef5;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(102, 126, 234, 0.35);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .modal-body {
+            display: grid;
+            gap: 20px;
+        }
+
+        .modal-section {
+            background: rgba(10, 10, 20, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .modal-section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #8a9ef5;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-field {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .modal-field:last-child {
+            border-bottom: none;
+        }
+
+        .modal-field-label {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .modal-field-value {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            word-break: break-word;
+        }
+
+        .modal-field-value a {
+            color: #8a9ef5;
+            text-decoration: none;
+        }
+
+        .modal-field-value a:hover {
+            text-decoration: underline;
+        }
+
+        .modal-image {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .pagination-btn {
+            padding: 10px 16px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: #8a9ef5;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            min-width: 40px;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: rgba(102, 126, 234, 0.35);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .pagination-info {
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            padding: 0 10px;
+        }
     </style>
     <link rel="stylesheet" href="/static/login.css">
     <script src="/static/auth.js"></script>
@@ -320,6 +500,33 @@
     <div class="success-message" id="success-message"></div>
 
     <button class="refresh-btn" id="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+
+    <div class="filters" id="filters" style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; align-items: center; background: rgba(20, 20, 40, 0.85); backdrop-filter: blur(10px); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <label for="year-select" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.7); font-weight: 600;">Year:</label>
+            <select id="year-select" style="padding: 10px 16px; background: rgba(102, 126, 234, 0.15); border: 1px solid rgba(102, 126, 234, 0.35); border-radius: 8px; color: white; font-size: 14px; outline: none; cursor: pointer;">
+                <option value="">All Years</option>
+            </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <label for="month-select" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.7); font-weight: 600;">Month:</label>
+            <select id="month-select" style="padding: 10px 16px; background: rgba(102, 126, 234, 0.15); border: 1px solid rgba(102, 126, 234, 0.35); border-radius: 8px; color: white; font-size: 14px; outline: none; cursor: pointer;">
+                <option value="">All Months</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+    </div>
 
     <div class="stats-bar" id="stats-bar">
         <div class="stat-card">
@@ -347,23 +554,144 @@
 
     <div class="tracks-grid" id="tracks-grid"></div>
 
+    <div class="pagination" id="pagination" style="display: none;"></div>
+
+    <!-- Track Details Modal -->
+    <div class="modal-overlay" id="track-modal" onclick="closeTrackModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">Track Details</div>
+                <button class="modal-close" onclick="closeTrackModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <script>
         let allTracks = [];
+        let filteredTracks = [];
+        let currentPage = 1;
+        const tracksPerPage = 100;
+        // Default to current month and year
+        const now = new Date();
+        let currentMonth = now.getMonth() + 1; // 1-12
+        let currentYear = now.getFullYear();
+
+        // Format date in English format
+        function formatDateEnglish(dateText, dateUts) {
+            if (!dateText && !dateUts) return 'Unknown date';
+            
+            try {
+                let date;
+                if (dateUts) {
+                    // Use Unix timestamp if available
+                    date = new Date(parseInt(dateUts) * 1000);
+                } else if (dateText) {
+                    // Try to parse date_text
+                    date = new Date(dateText);
+                } else {
+                    return dateText || 'Unknown date';
+                }
+                
+                if (isNaN(date.getTime())) {
+                    return dateText || 'Unknown date';
+                }
+                
+                // Format as English date: "Jan 15, 2024"
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            } catch (e) {
+                return dateText || 'Unknown date';
+            }
+        }
+
+        // Populate year selector
+        function populateYearSelector(tracks = null) {
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            const tracksToUse = tracks || allTracks;
+            
+            // Get unique years from tracks
+            const years = new Set();
+            tracksToUse.forEach(track => {
+                if (track.date_uts) {
+                    try {
+                        const date = new Date(parseInt(track.date_uts) * 1000);
+                        if (!isNaN(date.getTime())) {
+                            years.add(date.getFullYear());
+                        }
+                    } catch (e) {
+                        // Ignore
+                    }
+                }
+            });
+            
+            // Add years from current year back to 5 years ago
+            for (let year = currentYear; year >= currentYear - 5; year--) {
+                years.add(year);
+            }
+            
+            // Clear and populate
+            yearSelect.innerHTML = '<option value="">All Years</option>';
+            Array.from(years).sort((a, b) => b - a).forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        }
 
         // Load tracks from API
         async function loadTracks() {
             try {
-                const response = await fetch('/api/listening');
+                // First, get all tracks to populate year selector (only on first load)
+                if (document.getElementById('year-select').options.length <= 1) {
+                    const allResponse = await fetch('/api/listening?limit=10000');
+                    const allData = await allResponse.json();
+                    if (Array.isArray(allData) && !allData.error) {
+                        populateYearSelector(allData);
+                        // Set default year after populating
+                        setTimeout(() => {
+                            const yearSelect = document.getElementById('year-select');
+                            if (yearSelect) {
+                                yearSelect.value = currentYear;
+                            }
+                        }, 100);
+                    }
+                }
+                
+                // Get filtered tracks (no limit - we'll paginate client-side)
+                let url = '/api/listening?limit=10000';
+                if (currentMonth && currentYear) {
+                    url += `&month=${currentMonth}&year=${currentYear}`;
+                }
+                
+                const response = await fetch(url);
                 const data = await response.json();
                 
                 if (data.error) {
                     throw new Error(data.message);
                 }
 
-                allTracks = Array.isArray(data) ? data : [];
+                // Store all filtered tracks
+                filteredTracks = Array.isArray(data) ? data : [];
+                
+                // Reset to page 1 when filters change
+                currentPage = 1;
+                
+                // Get paginated tracks for current page
+                const startIndex = (currentPage - 1) * tracksPerPage;
+                const endIndex = startIndex + tracksPerPage;
+                allTracks = filteredTracks.slice(startIndex, endIndex);
                 
                 updateStats();
                 renderTracks();
+                renderPagination();
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
                 console.error('Error loading tracks:', error);
@@ -377,19 +705,27 @@
 
         // Update statistics
         function updateStats() {
-            const uniqueArtists = new Set(allTracks.map(t => t.artist_name).filter(Boolean));
-            const uniqueAlbums = new Set(allTracks.map(t => t.album_name).filter(Boolean));
+            // Total tracks for the filtered period (all filtered tracks, not just current page)
+            const totalForPeriod = filteredTracks.length;
             
-            document.getElementById('total-tracks').textContent = allTracks.length;
-            document.getElementById('unique-artists').textContent = uniqueArtists.size;
-            document.getElementById('unique-albums').textContent = uniqueAlbums.size;
-            document.getElementById('showing-count').textContent = allTracks.length;
+            // Current page tracks
+            const pageTracks = allTracks;
+            const uniqueArtists = new Set(pageTracks.map(t => t.artist_name).filter(Boolean));
+            const uniqueAlbums = new Set(pageTracks.map(t => t.album_name).filter(Boolean));
+            
+            // For unique artists/albums, count from all filtered tracks, not just current page
+            const allUniqueArtists = new Set(filteredTracks.map(t => t.artist_name).filter(Boolean));
+            const allUniqueAlbums = new Set(filteredTracks.map(t => t.album_name).filter(Boolean));
+            
+            document.getElementById('total-tracks').textContent = totalForPeriod;
+            document.getElementById('showing-count').textContent = pageTracks.length;
+            document.getElementById('unique-artists').textContent = allUniqueArtists.size;
+            document.getElementById('unique-albums').textContent = allUniqueAlbums.size;
         }
 
-        // Format date
-        function formatDate(dateText) {
-            if (!dateText) return 'Unknown date';
-            return dateText;
+        // Format date (kept for backward compatibility, but uses formatDateEnglish)
+        function formatDate(dateText, dateUts) {
+            return formatDateEnglish(dateText, dateUts);
         }
 
         // Escape HTML to prevent XSS
@@ -400,12 +736,89 @@
             return div.innerHTML;
         }
 
+        // Render pagination
+        function renderPagination() {
+            const paginationDiv = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredTracks.length / tracksPerPage);
+            
+            if (totalPages <= 1) {
+                paginationDiv.style.display = 'none';
+                return;
+            }
+            
+            paginationDiv.style.display = 'flex';
+            
+            let paginationHTML = '';
+            
+            // Previous button
+            paginationHTML += `<button class="pagination-btn" ${currentPage === 1 ? 'disabled' : ''} onclick="goToPage(${currentPage - 1})">‹ Prev</button>`;
+            
+            // Page numbers
+            const maxVisiblePages = 7;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage < maxVisiblePages - 1) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            if (startPage > 1) {
+                paginationHTML += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) {
+                    paginationHTML += `<span class="pagination-info">...</span>`;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += `<span class="pagination-info">...</span>`;
+                }
+                paginationHTML += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+            }
+            
+            // Next button
+            paginationHTML += `<button class="pagination-btn" ${currentPage === totalPages ? 'disabled' : ''} onclick="goToPage(${currentPage + 1})">Next ›</button>`;
+            
+            // Page info
+            const startIndex = (currentPage - 1) * tracksPerPage + 1;
+            const endIndex = Math.min(currentPage * tracksPerPage, filteredTracks.length);
+            paginationHTML += `<span class="pagination-info">Page ${currentPage} of ${totalPages} (${startIndex}-${endIndex} of ${filteredTracks.length})</span>`;
+            
+            paginationDiv.innerHTML = paginationHTML;
+        }
+        
+        // Go to specific page
+        function goToPage(page) {
+            const totalPages = Math.ceil(filteredTracks.length / tracksPerPage);
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            const startIndex = (currentPage - 1) * tracksPerPage;
+            const endIndex = startIndex + tracksPerPage;
+            allTracks = filteredTracks.slice(startIndex, endIndex);
+            
+            updateStats();
+            renderTracks();
+            renderPagination();
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
         // Render tracks
         function renderTracks() {
             const grid = document.getElementById('tracks-grid');
             
             if (allTracks.length === 0) {
-                grid.innerHTML = '<div class="empty-state">No tracks found. Click "Refresh Data" to fetch from Last.fm.</div>';
+                if (filteredTracks.length === 0) {
+                    grid.innerHTML = '<div class="empty-state">No tracks found. Click "Refresh Data" to fetch from Last.fm.</div>';
+                } else {
+                    grid.innerHTML = '<div class="empty-state">No tracks on this page.</div>';
+                }
                 return;
             }
 
@@ -420,12 +833,12 @@
                 const artistLink = track.artist_url ? `<a href="${escapeHtml(track.artist_url)}" target="_blank" rel="noopener" class="track-link">👤 Artist</a>` : '';
                 
                 return `
-                    <div class="track-card" style="animation-delay: ${index * 0.03}s">
+                    <div class="track-card" style="animation-delay: ${index * 0.03}s" onclick="showTrackDetails(${index})">
                         ${imageHtml}
                         <div class="track-name">${escapeHtml(track.track_name || 'Unknown Track')}</div>
                         <div class="track-artist">by ${escapeHtml(track.artist_name || 'Unknown Artist')}</div>
                         ${track.album_name ? `<div class="track-album">from ${escapeHtml(track.album_name)}</div>` : ''}
-                        <div class="track-date">${formatDate(track.date_text)}</div>
+                        <div class="track-date">${formatDateEnglish(track.date_text, track.date_uts)}</div>
                         ${trackLink || artistLink ? `<div class="track-links">${trackLink}${artistLink}</div>` : ''}
                     </div>
                 `;
@@ -497,13 +910,164 @@
             }
         }
 
+        // Handle filter changes
+        document.getElementById('year-select').addEventListener('change', (e) => {
+            currentYear = e.target.value ? parseInt(e.target.value) : null;
+            currentPage = 1; // Reset to first page
+            document.getElementById('loading').style.display = 'block';
+            loadTracks();
+        });
+
+        document.getElementById('month-select').addEventListener('change', (e) => {
+            currentMonth = e.target.value ? parseInt(e.target.value) : null;
+            currentPage = 1; // Reset to first page
+            document.getElementById('loading').style.display = 'block';
+            loadTracks();
+        });
+        
+        // Make goToPage available globally
+        window.goToPage = goToPage;
+
+        // Show track details modal
+        function showTrackDetails(index) {
+            const track = allTracks[index];
+            if (!track) return;
+
+            const modal = document.getElementById('track-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+
+            modalTitle.textContent = track.track_name || 'Track Details';
+
+            let html = '';
+
+            // Track Information
+            html += '<div class="modal-section">';
+            html += '<div class="modal-section-title">Track Information</div>';
+            html += createField('Track Name', track.track_name);
+            html += createField('Track URL', track.track_url, true);
+            html += createField('Track MBID', track.track_mbid);
+            html += createField('Loved', track.track_loved === '1' || track.track_loved === 1 ? 'Yes' : 'No');
+            html += createField('Streamable', track.track_streamable === '1' || track.track_streamable === 1 ? 'Yes' : 'No');
+            if (track.track_image_large || track.track_image_medium || track.track_image_small) {
+                const imgUrl = track.track_image_large || track.track_image_medium || track.track_image_small;
+                html += createField('Track Image', `<img src="${escapeHtml(imgUrl)}" class="modal-image" alt="Track">`, false, true);
+            }
+            html += '</div>';
+
+            // Artist Information
+            html += '<div class="modal-section">';
+            html += '<div class="modal-section-title">Artist Information</div>';
+            html += createField('Artist Name', track.artist_name);
+            html += createField('Artist URL', track.artist_url, true);
+            html += createField('Artist MBID', track.artist_mbid);
+            if (track.artist_image_large || track.artist_image_medium || track.artist_image_small) {
+                const imgUrl = track.artist_image_large || track.artist_image_medium || track.artist_image_small;
+                html += createField('Artist Image', `<img src="${escapeHtml(imgUrl)}" class="modal-image" alt="Artist">`, false, true);
+            }
+            html += '</div>';
+
+            // Album Information
+            if (track.album_name) {
+                html += '<div class="modal-section">';
+                html += '<div class="modal-section-title">Album Information</div>';
+                html += createField('Album Name', track.album_name);
+                html += createField('Album MBID', track.album_mbid);
+                html += '</div>';
+            }
+
+            // Date Information
+            html += '<div class="modal-section">';
+            html += '<div class="modal-section-title">Date Information</div>';
+            html += createField('Date Text', track.date_text);
+            html += createField('Date UTS', track.date_uts);
+            if (track.date_uts) {
+                try {
+                    const date = new Date(parseInt(track.date_uts) * 1000);
+                    html += createField('Formatted Date', formatDateEnglish(track.date_text, track.date_uts));
+                    html += createField('ISO Date', date.toISOString());
+                } catch (e) {
+                    // Ignore
+                }
+            }
+            html += '</div>';
+
+            // All Fields (Raw Data)
+            html += '<div class="modal-section">';
+            html += '<div class="modal-section-title">All Fields (Raw Data)</div>';
+            Object.keys(track).sort().forEach(key => {
+                const value = track[key];
+                if (value !== null && value !== undefined && value !== '') {
+                    if (typeof value === 'object') {
+                        html += createField(key, JSON.stringify(value, null, 2));
+                    } else {
+                        html += createField(key, value);
+                    }
+                }
+            });
+            html += '</div>';
+
+            modalBody.innerHTML = html;
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Create a field row for the modal
+        function createField(label, value, isUrl = false, isHtml = false) {
+            if (!value && value !== 0) {
+                return `<div class="modal-field">
+                    <div class="modal-field-label">${escapeHtml(label)}</div>
+                    <div class="modal-field-value">-</div>
+                </div>`;
+            }
+
+            let displayValue = value;
+            if (isUrl && value) {
+                displayValue = `<a href="${escapeHtml(value)}" target="_blank" rel="noopener">${escapeHtml(value)}</a>`;
+            } else if (!isHtml) {
+                displayValue = escapeHtml(String(value));
+            } else {
+                displayValue = value; // Already HTML
+            }
+
+            return `<div class="modal-field">
+                <div class="modal-field-label">${escapeHtml(label)}</div>
+                <div class="modal-field-value">${displayValue}</div>
+            </div>`;
+        }
+
+        // Close track modal
+        function closeTrackModal(event) {
+            if (event && event.target !== event.currentTarget) {
+                return; // Don't close if clicking inside modal
+            }
+            const modal = document.getElementById('track-modal');
+            modal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Make functions available globally
+        window.showTrackDetails = showTrackDetails;
+        window.closeTrackModal = closeTrackModal;
+
+        // Set default month and year in selectors
+        function setDefaultMonthYear() {
+            const monthSelect = document.getElementById('month-select');
+            if (monthSelect) {
+                monthSelect.value = currentMonth;
+            }
+            // Year selector will be set after it's populated in loadTracks()
+        }
+
         // Initialize
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
+                setDefaultMonthYear();
                 loadTracks();
                 updateRefreshButtonVisibility();
             });
         } else {
+            setDefaultMonthYear();
             loadTracks();
             setTimeout(updateRefreshButtonVisibility, 100);
         }

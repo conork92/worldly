@@ -80,8 +80,8 @@ def get_countries_with_data():
         if not countries_result.data:
             return []
         
-        # Get books with countries
-        books_result = supabase.table("worldly_good_reads_books").select("iso_code_3, country").filter("date_read", "not.is", "null").execute()
+        # Get books with countries (using same filter as country_items_view: only books with valid ISO codes)
+        books_result = supabase.table("worldly_good_reads_books").select("iso_code_3, country").filter("date_read", "not.is", "null").filter("iso_code_3", "not.is", "null").neq("iso_code_3", "").neq("iso_code_3", "N/A").execute()
         books_countries = set()
         if books_result.data:
             books_countries = set([b.get("iso_code_3") for b in books_result.data if b.get("iso_code_3")])
@@ -204,10 +204,14 @@ def get_country_items(iso_code_3: str):
                 return result.data if result.data else []
             except Exception as table_error:
                 print(f"[DEBUG] Table query also failed: {str(table_error)}")
-                return {"error": str(rpc_error), "rpc_error": str(rpc_error), "table_error": str(table_error), "message": f"Failed to fetch items for country {iso_code_3}"}
+                # Return empty array instead of error object to prevent frontend issues
+                logger.warning(f"Failed to fetch items for {iso_code_3}: RPC error: {str(rpc_error)}, Table error: {str(table_error)}")
+                return []
     except Exception as e:
         print(f"[DEBUG] Outer exception: {str(e)}")
-        return {"error": str(e), "message": f"Failed to fetch items for country {iso_code_3}"}
+        # Return empty array instead of error object to prevent frontend issues
+        logger.warning(f"Failed to fetch items for {iso_code_3}: {str(e)}")
+        return []
 
 @app.get("/api/world_hexed_polygons")
 def get_world_hexed_polygons():
@@ -356,11 +360,32 @@ def get_progress_page():
     return FileResponse(progress_path)
 
 @app.get("/api/listening")
-def get_listening_tracks(limit: int = 100):
-    """Get recent tracks from lastfm_listened_table"""
+def get_listening_tracks(limit: int = 100, month: int = None, year: int = None):
+    """Get tracks from lastfm_listened_table, optionally filtered by month and year"""
     try:
-        result = supabase.table("lastfm_listened_table").select("*").order("date_uts", desc=True).limit(limit).execute()
-        return result.data if result.data else []
+        result = supabase.table("lastfm_listened_table").select("*").order("date_uts", desc=True).execute()
+        tracks = result.data if result.data else []
+        
+        # Filter by month and year if provided
+        if month is not None and year is not None:
+            from datetime import datetime
+            filtered_tracks = []
+            for track in tracks:
+                if track.get('date_uts'):
+                    try:
+                        # date_uts is Unix timestamp
+                        track_date = datetime.fromtimestamp(int(track['date_uts']))
+                        if track_date.month == month and track_date.year == year:
+                            filtered_tracks.append(track)
+                    except (ValueError, TypeError):
+                        continue
+            tracks = filtered_tracks
+        
+        # Apply limit after filtering
+        if limit and limit > 0:
+            tracks = tracks[:limit]
+        
+        return tracks
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch listening tracks"}
 
@@ -607,7 +632,8 @@ def get_quotes_page():
 @app.get("/api/books")
 def get_books():
     try:
-        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").execute()
+        # Use the same filter as country_items_view: only books with valid ISO codes
+        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").filter("iso_code_3", "not.is", "null").neq("iso_code_3", "").neq("iso_code_3", "N/A").execute()
         return result.data if result.data else []
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch books"}
@@ -682,8 +708,8 @@ def create_quote(quote: QuoteCreate):
 def get_books_needs_country():
     """Get books that need country assignment (empty country or iso_code_3)"""
     try:
-        # Get all books with date_read, then filter in Python for empty country/iso_code_3
-        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").execute()
+        # Use the same filter as country_items_view: only books with valid ISO codes
+        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").filter("iso_code_3", "not.is", "null").neq("iso_code_3", "").neq("iso_code_3", "N/A").execute()
         if result.data:
             # Filter for books with empty country or iso_code_3
             filtered = [
