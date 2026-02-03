@@ -448,6 +448,11 @@
                 <div class="items-grid" id="artists-grid"></div>
             </div>
 
+            <div class="section" id="suggested-albums-section" style="display: none;">
+                <div class="section-title">💡 Suggested Albums to Listen To</div>
+                <div class="items-grid" id="suggested-albums-grid"></div>
+            </div>
+
             <div class="section" id="items-section" style="display: none;">
                 <div class="section-title">All Items</div>
                 <div class="items-grid" id="items-grid"></div>
@@ -497,8 +502,9 @@
                         document.getElementById('country-name').textContent = 'Unknown Country';
                         document.getElementById('country-iso').textContent = `ISO: ${isoCode.toUpperCase()}`;
                         document.getElementById('items-grid').innerHTML = '<div class="no-data">No items found for this country.</div>';
-                        // Still try to load artists even if no other items
+                        // Still try to load artists and suggested albums even if no other items
                         loadArtists(isoCode.toUpperCase());
+                        loadSuggestedAlbums(isoCode.toUpperCase());
                         return;
                     }
 
@@ -528,6 +534,9 @@
 
                     // Load artists for this country
                     loadArtists(isoCode.toUpperCase());
+                    
+                    // Load suggested albums for this country
+                    loadSuggestedAlbums(isoCode.toUpperCase());
 
                     // Render items if there are any
                     if (data.length > 0) {
@@ -575,12 +584,60 @@
                     }
 
                     document.getElementById('content').style.display = 'block';
+                    
+                    // Also load suggested albums even if no other items
+                    loadSuggestedAlbums(isoCode.toUpperCase());
                 })
                 .catch(error => {
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('error').style.display = 'block';
                     document.getElementById('error').textContent = `Error loading data: ${error.message}`;
                 });
+        }
+        
+        // Load suggested albums for the country
+        async function loadSuggestedAlbums(isoCode) {
+            try {
+                const response = await fetch(`/api/albums/suggested/${isoCode}`);
+                const albums = await response.json();
+                
+                if (albums.error) {
+                    console.error('Error loading suggested albums:', albums.error);
+                    document.getElementById('suggested-albums-section').style.display = 'none';
+                    return;
+                }
+                
+                if (albums && Array.isArray(albums) && albums.length > 0) {
+                    const section = document.getElementById('suggested-albums-section');
+                    const grid = document.getElementById('suggested-albums-grid');
+                    
+                    section.style.display = 'block';
+                    
+                    grid.innerHTML = albums.map(album => {
+                        const title = album.title || 'Untitled Album';
+                        const artist = album.artist_name || 'Unknown Artist';
+                        const year = album.release_year || '';
+                        const genre = album.genre || '';
+                        const country = album.country || '';
+                        
+                        return `
+                            <div class="item-card">
+                                <div class="item-type">🎵</div>
+                                <div class="item-title">${escapeHtml(title)}</div>
+                                <div class="item-meta">by ${escapeHtml(artist)}</div>
+                                ${year ? `<div class="item-meta">Year: ${year}</div>` : ''}
+                                ${genre ? `<div class="item-meta">Genre: ${escapeHtml(genre)}</div>` : ''}
+                                ${country ? `<div class="item-meta">Country: ${escapeHtml(country)}</div>` : ''}
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    document.getElementById('suggested-albums-section').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading suggested albums:', error);
+                document.getElementById('suggested-albums-section').style.display = 'none';
+            }
         }
 
         function escapeHtml(text) {

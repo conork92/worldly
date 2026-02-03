@@ -847,11 +847,23 @@
         let filteredAlbums = [];
         let albumImageCache = {}; // Cache for album images
 
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (text == null) return '';
+            const div = document.createElement('div');
+            div.textContent = String(text);
+            return div.innerHTML;
+        }
+
         // Load albums from API
         async function loadAlbums() {
+            console.log('loadAlbums called');
             try {
+                console.log('Fetching from /api/albums/listened');
                 const response = await fetch('/api/albums/listened');
+                console.log('Response status:', response.status);
                 const data = await response.json();
+                console.log('Data received:', data);
                 
                 if (data.error) {
                     throw new Error(data.message);
@@ -859,60 +871,83 @@
 
                 allAlbums = Array.isArray(data) ? data : [];
                 filteredAlbums = [...allAlbums];
+                console.log('Albums loaded:', allAlbums.length);
                 
                 updateStats();
                 populateCountryFilter();
                 populateYearFilter();
                 renderAlbums();
-                document.getElementById('loading').style.display = 'none';
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.style.display = 'none';
+                }
             } catch (error) {
                 console.error('Error loading albums:', error);
-                document.getElementById('loading').innerHTML = `
-                    <div class="error">
-                        <div class="error-text">${error.message}<br><br>Unable to connect to the API server.</div>
-                    </div>
-                `;
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.innerHTML = `
+                        <div class="error">
+                            <div class="error-text">${error.message}<br><br>Unable to connect to the API server.</div>
+                        </div>
+                    `;
+                }
             }
         }
 
         // Update statistics
         function updateStats() {
-            const total = allAlbums.length;
-            const rated = allAlbums.filter(a => a.rating).length;
-            const notListened = allAlbums.filter(a => !a.listen_date || a.listen_date.trim() === '').length;
-            const ratings = allAlbums.filter(a => a.rating).map(a => parseFloat(a.rating));
-            const avgRating = ratings.length > 0 
-                ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
-                : '0.0';
+            try {
+                const total = allAlbums.length;
+                const rated = allAlbums.filter(a => a.rating).length;
+                const notListened = allAlbums.filter(a => !a.listen_date || a.listen_date.trim() === '').length;
+                const ratings = allAlbums.filter(a => a.rating).map(a => parseFloat(a.rating));
+                const avgRating = ratings.length > 0 
+                    ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+                    : '0.0';
 
-            document.getElementById('total-albums').textContent = total;
-            document.getElementById('rated-albums').textContent = rated;
-            document.getElementById('not-listened-albums').textContent = notListened;
-            document.getElementById('avg-rating').textContent = avgRating;
+                const totalEl = document.getElementById('total-albums');
+                const ratedEl = document.getElementById('rated-albums');
+                const notListenedEl = document.getElementById('not-listened-albums');
+                const avgRatingEl = document.getElementById('avg-rating');
+                
+                if (totalEl) totalEl.textContent = total;
+                if (ratedEl) ratedEl.textContent = rated;
+                if (notListenedEl) notListenedEl.textContent = notListened;
+                if (avgRatingEl) avgRatingEl.textContent = avgRating;
+            } catch (error) {
+                console.error('Error in updateStats:', error);
+            }
         }
 
         // Populate country filter
         function populateCountryFilter() {
-            const countries = [...new Set(allAlbums
-                .filter(a => a.country_name && a.iso_alpha_3)
-                .map(a => a.country_name)
-                .sort())];
-            
-            const select = document.getElementById('filter-country');
-            countries.forEach(country => {
-                const option = document.createElement('option');
-                option.value = country;
-                option.textContent = country;
-                select.appendChild(option);
-            });
+            try {
+                const countries = [...new Set(allAlbums
+                    .filter(a => a.country_name && a.iso_alpha_3)
+                    .map(a => a.country_name)
+                    .sort())];
+                
+                const select = document.getElementById('filter-country');
+                if (select) {
+                    countries.forEach(country => {
+                        const option = document.createElement('option');
+                        option.value = country;
+                        option.textContent = country;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error in populateCountryFilter:', error);
+            }
         }
 
         // Populate year filter
         function populateYearFilter() {
-            // Extract years from both release year and listen date
-            const years = new Set();
-            
-            allAlbums.forEach(album => {
+            try {
+                // Extract years from both release year and listen date
+                const years = new Set();
+                
+                allAlbums.forEach(album => {
                 // Add release year if available
                 if (album.year && !isNaN(album.year)) {
                     years.add(Number(album.year));
@@ -944,12 +979,17 @@
             const sortedYears = Array.from(years).sort((a, b) => b - a); // Sort descending (newest first)
             
             const select = document.getElementById('filter-year');
-            sortedYears.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                select.appendChild(option);
-            });
+            if (select) {
+                sortedYears.forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year;
+                    select.appendChild(option);
+                });
+            }
+            } catch (error) {
+                console.error('Error in populateYearFilter:', error);
+            }
         }
 
         // Format date
@@ -1056,11 +1096,19 @@
         }
 
         // Render albums with smooth transitions
-        function renderAlbums() {
+        async function renderAlbums() {
+            console.log('renderAlbums called with', filteredAlbums.length, 'albums');
             const grid = document.getElementById('albums-grid');
+            if (!grid) {
+                console.error('albums-grid element not found!');
+                return;
+            }
             
             // Update showing count
-            document.getElementById('showing-count').textContent = filteredAlbums.length;
+            const showingCountEl = document.getElementById('showing-count');
+            if (showingCountEl) {
+                showingCountEl.textContent = filteredAlbums.length;
+            }
             
             if (filteredAlbums.length === 0) {
                 grid.innerHTML = '<div class="empty-state">No albums found matching your filters.</div>';
@@ -1071,8 +1119,8 @@
             grid.classList.add('updating');
             
             // Small delay to allow transition
-            setTimeout(() => {
-                grid.innerHTML = filteredAlbums.map((album, index) => {
+            setTimeout(async () => {
+                const albumCards = await Promise.all(filteredAlbums.map(async (album, index) => {
                     const rating = album.rating ? `<span class="rating">⭐ ${album.rating}</span>` : '';
                     const country = album.country_name && album.iso_alpha_3 
                         ? `<span class="country-badge">${escapeHtml(album.country_name)}</span>`
@@ -1093,6 +1141,9 @@
                             </div>
                         `
                         : '';
+                    
+                    // If album is not listened to, we'll add suggested album later via batch loading
+                    // This is done separately to improve performance
                     
                     return `
                         <div class="album-card" style="animation-delay: ${index * 0.03}s" onclick="openEditForm(${album.id})" data-album-id="${album.id}">
@@ -1133,13 +1184,86 @@
                             </div>
                         </div>
                     `;
-                }).join('');
+                }));
+                
+                grid.innerHTML = albumCards.join('');
                 
                 grid.classList.remove('updating');
                 
                 // Load album images after rendering
                 loadAlbumImages();
+                
+                // Load suggested albums for unlistened albums in batch (after initial render for faster page load)
+                loadSuggestedAlbumsBatch();
             }, 50);
+        }
+        
+        // Cache for suggested albums to avoid repeated requests
+        const suggestedAlbumsCache = {};
+        
+        // Load suggested albums in batch for better performance
+        async function loadSuggestedAlbumsBatch() {
+            // Get all unlistened albums
+            const unlistenedAlbums = filteredAlbums.filter(album => !album.listen_date || album.listen_date.trim() === '');
+            
+            if (unlistenedAlbums.length === 0) return;
+            
+            // Collect unique ISO codes
+            const isoCodes = [...new Set(unlistenedAlbums.map(album => {
+                const iso = album.iso_alpha_3 || album.iso_code_3;
+                return iso ? iso.toUpperCase().trim() : null;
+            }).filter(Boolean))];
+            
+            // Fetch suggested albums in batch
+            try {
+                const response = await fetch('/api/albums/suggested-batch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ iso_codes: isoCodes })
+                });
+                
+                const suggestions = await response.json();
+                
+                if (suggestions && !suggestions.error) {
+                    // Update each unlistened album card with its suggested album
+                    unlistenedAlbums.forEach(album => {
+                        const iso = (album.iso_alpha_3 || album.iso_code_3 || '').toUpperCase().trim();
+                        const suggested = suggestions[iso] || suggestions['any'] || null;
+                        
+                        if (suggested && Object.keys(suggested).length > 0) {
+                            const card = document.querySelector(`[data-album-id="${album.id}"]`);
+                            if (card) {
+                                const suggestedTitle = suggested.title || 'Untitled Album';
+                                const suggestedArtist = suggested.artist_name || 'Unknown Artist';
+                                const suggestedYear = suggested.release_year || '';
+                                const suggestedGenre = suggested.genre || '';
+                                
+                                const suggestedHtml = `
+                                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(102, 126, 234, 0.3);">
+                                        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">💡 Suggested Album:</div>
+                                        <div style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 8px; padding: 12px;">
+                                            <div style="font-weight: 600; color: #8a9ef5; margin-bottom: 4px;">${escapeHtml(suggestedTitle)}</div>
+                                            <div style="font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 4px;">by ${escapeHtml(suggestedArtist)}</div>
+                                            ${suggestedYear ? `<div style="font-size: 12px; color: rgba(255,255,255,0.5);">${suggestedYear}</div>` : ''}
+                                            ${suggestedGenre ? `<div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px;">${escapeHtml(suggestedGenre)}</div>` : ''}
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                // Append to the card (before the closing div)
+                                const lastChild = card.lastElementChild;
+                                if (lastChild) {
+                                    lastChild.insertAdjacentHTML('afterend', suggestedHtml);
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading suggested albums batch:', error);
+            }
         }
 
         // Filter and sort albums
@@ -1407,7 +1531,12 @@
         });
 
         // Load albums on page load
-        loadAlbums();
+        console.log('Page loaded, calling loadAlbums');
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadAlbums);
+        } else {
+            loadAlbums();
+        }
     </script>
 </body>
 </html>
