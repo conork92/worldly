@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress - Conor's Worldly</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 40px;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .title {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-btn:hover {
+            background: rgba(102, 126, 234, 0.35);
+            border-color: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn.active {
+            background: rgba(102, 126, 234, 0.4);
+            border-color: #667eea;
+            color: white;
+        }
+
+        .top-right-nav {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Date Selector */
+        .date-selector {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-selector label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+        }
+
+        .date-selector select {
+            padding: 10px 16px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .date-selector select:hover {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+        }
+
+        .date-selector select:focus {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .date-selector select option {
+            background: rgba(20, 20, 40, 0.95);
+            color: white;
+        }
+
+        /* Progress Grid */
+        .progress-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .progress-card {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.3);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+
+        .progress-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #8a9ef5;
+        }
+
+        .progress-icon {
+            font-size: 32px;
+        }
+
+        .progress-stats {
+            margin-bottom: 20px;
+        }
+
+        .progress-count {
+            font-size: 48px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .progress-goal {
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(102, 126, 234, 0.15);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+
+        .progress-percentage {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.8);
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .progress-trend {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 12px;
+        }
+
+        .trend-up {
+            color: #66c864;
+        }
+
+        .trend-down {
+            color: #ff6b6b;
+        }
+
+        .trend-same {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 18px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .spinner {
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: #ff6b6b;
+            font-size: 18px;
+        }
+    </style>
+    <link rel="stylesheet" href="/static/login.css">
+    <script src="/static/auth.js"></script>
+    <script src="/static/login.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <div class="title">Progress</div>
+            <div class="subtitle">Track your goals and activities</div>
+        </div>
+        <div class="top-right-nav">
+            <a class="nav-btn" href="/globe">Globe</a>
+            <a class="nav-btn" href="/books">Books</a>
+            <a class="nav-btn" href="/quotes">Quotes</a>
+            <a class="nav-btn" href="/albums">Albums</a>
+            <a class="nav-btn" href="/listening">Listening</a>
+            <a class="nav-btn active" href="/progress">Progress</a>
+        </div>
+    </div>
+
+    <div class="date-selector">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <label for="month-select">Month:</label>
+            <select id="month-select">
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <label for="year-select">Year:</label>
+            <select id="year-select">
+                <!-- Years will be populated by JavaScript -->
+            </select>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">LOADING PROGRESS DATA</div>
+    </div>
+
+    <div class="progress-grid" id="progress-grid"></div>
+
+    <script>
+        let currentMonth = new Date().getMonth() + 1; // 1-12
+        let currentYear = new Date().getFullYear();
+
+        // Populate year selector (current year and 2 years back)
+        function populateYearSelector() {
+            const yearSelect = document.getElementById('year-select');
+            const currentYear = new Date().getFullYear();
+            
+            for (let year = currentYear; year >= currentYear - 2; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                if (year === currentYear) {
+                    option.selected = true;
+                }
+                yearSelect.appendChild(option);
+            }
+        }
+
+        // Set current month in selector
+        function setCurrentMonth() {
+            const monthSelect = document.getElementById('month-select');
+            monthSelect.value = currentMonth;
+        }
+
+        // Load progress data
+        async function loadProgressData() {
+            const month = parseInt(document.getElementById('month-select').value);
+            const year = parseInt(document.getElementById('year-select').value);
+
+            try {
+                const response = await fetch(`/api/progress?month=${month}&year=${year}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.message);
+                }
+
+                renderProgress(data);
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading progress:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="error">
+                        <div class="error-text">${error.message}<br><br>Unable to load progress data.</div>
+                    </div>
+                `;
+            }
+        }
+
+        // Render progress cards
+        function renderProgress(data) {
+            const grid = document.getElementById('progress-grid');
+            
+            const categories = [
+                {
+                    key: 'albums_listened',
+                    title: 'Albums Listened',
+                    icon: '🎵',
+                    color: '#667eea'
+                },
+                {
+                    key: 'books_read',
+                    title: 'Books Read',
+                    icon: '📚',
+                    color: '#764ba2'
+                },
+                {
+                    key: 'meditations_done',
+                    title: 'Meditations Done',
+                    icon: '🧘',
+                    color: '#f093fb'
+                },
+                {
+                    key: 'exercise_done',
+                    title: 'Exercise Done',
+                    icon: '💪',
+                    color: '#4facfe'
+                }
+            ];
+
+            grid.innerHTML = categories.map(category => {
+                const stats = data[category.key] || { count: 0, goal: 0, percentage: 0, trend: 'same' };
+                const trendIcon = stats.trend === 'up' ? '↑' : stats.trend === 'down' ? '↓' : '→';
+                const trendClass = `trend-${stats.trend}`;
+                
+                return `
+                    <div class="progress-card">
+                        <div class="progress-header">
+                            <div class="progress-title">${category.title}</div>
+                            <div class="progress-icon">${category.icon}</div>
+                        </div>
+                        <div class="progress-stats">
+                            <div class="progress-count">${stats.count}</div>
+                            <div class="progress-goal">of ${stats.goal} goal</div>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width: ${Math.min(stats.percentage, 100)}%;"></div>
+                        </div>
+                        <div class="progress-percentage">${stats.percentage}% Complete</div>
+                        <div class="progress-trend ${trendClass}">
+                            <span>${trendIcon}</span>
+                            <span>${stats.trend === 'up' ? 'On track' : stats.trend === 'down' ? 'Behind' : 'Steady'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Initialize
+        populateYearSelector();
+        setCurrentMonth();
+        loadProgressData();
+
+        // Event listeners for date changes
+        document.getElementById('month-select').addEventListener('change', () => {
+            document.getElementById('loading').style.display = 'block';
+            loadProgressData();
+        });
+
+        document.getElementById('year-select').addEventListener('change', () => {
+            document.getElementById('loading').style.display = 'block';
+            loadProgressData();
+        });
+    </script>
+</body>
+</html>
