@@ -348,6 +348,12 @@ def get_listening_page():
     listening_path = Path(__file__).parent / "listening.html"
     return FileResponse(listening_path)
 
+@app.get("/progress")
+def get_progress_page():
+    """Serve the progress tracking page"""
+    progress_path = Path(__file__).parent / "progress.html"
+    return FileResponse(progress_path)
+
 @app.get("/api/listening")
 def get_listening_tracks(limit: int = 100):
     """Get recent tracks from lastfm_listened_table"""
@@ -386,6 +392,59 @@ def refresh_listening_data():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start refresh: {str(e)}")
+
+@app.get("/api/auth/status")
+def get_auth_status():
+    """Check if API key authentication is configured (without revealing the key)"""
+    return {
+        "api_key_configured": API_KEY is not None and len(API_KEY) > 0,
+        "message": "API key is configured" if API_KEY else "API key is not configured. Set API_KEY in your .env file."
+    }
+
+@app.get("/api/progress")
+def get_progress_data(month: int = None, year: int = None):
+    """Get progress data for a specific month and year (dummy data for now)"""
+    try:
+        # Use current month/year if not specified
+        from datetime import datetime
+        if month is None:
+            month = datetime.now().month
+        if year is None:
+            year = datetime.now().year
+        
+        # Dummy data - will be replaced with actual database queries later
+        dummy_data = {
+            "month": month,
+            "year": year,
+            "albums_listened": {
+                "count": 15,
+                "goal": 20,
+                "percentage": 75,
+                "trend": "up"  # up, down, same
+            },
+            "books_read": {
+                "count": 3,
+                "goal": 5,
+                "percentage": 60,
+                "trend": "same"
+            },
+            "meditations_done": {
+                "count": 18,
+                "goal": 30,
+                "percentage": 60,
+                "trend": "up"
+            },
+            "exercise_done": {
+                "count": 12,
+                "goal": 20,
+                "percentage": 60,
+                "trend": "down"
+            }
+        }
+        
+        return dummy_data
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch progress data"}
 
 @app.get("/quotes")
 def get_quotes_page():

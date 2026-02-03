@@ -84,7 +84,7 @@
     };
     
     // Get API key from localStorage or prompt user
-    function getApiKey() {
+    async function getApiKey() {
         // Only prompt for API key if logged in
         if (!isLoggedIn()) {
             return null;
@@ -93,8 +93,26 @@
         let apiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
         
         if (!apiKey) {
+            // Check if API key is configured on the server
+            try {
+                const statusResponse = await fetch('/api/auth/status');
+                const status = await statusResponse.json();
+                
+                if (!status.api_key_configured) {
+                    alert('API key is not configured on the server. Please set API_KEY in your .env file and restart the server.');
+                    return null;
+                }
+            } catch (e) {
+                console.warn('Could not check API key status:', e);
+            }
+            
             // Prompt user to enter API key (only once)
-            apiKey = prompt('Enter your API key to enable write operations:');
+            const promptMessage = 'Enter your API key to enable write operations.\n\n' +
+                'This key should match the API_KEY value in your .env file.\n\n' +
+                'If you don\'t have an API key set, add it to app/.env:\n' +
+                'API_KEY=your-secret-key-here';
+            
+            apiKey = prompt(promptMessage);
             if (apiKey) {
                 localStorage.setItem(API_KEY_STORAGE_KEY, apiKey);
             } else {
@@ -106,12 +124,12 @@
     }
     
     // Helper function to add API key to fetch headers
-    window.getAuthHeaders = function() {
+    window.getAuthHeaders = async function() {
         if (!isLoggedIn()) {
             return { 'Content-Type': 'application/json' };
         }
         
-        const apiKey = getApiKey();
+        const apiKey = await getApiKey();
         const headers = {
             'Content-Type': 'application/json'
         };
@@ -136,7 +154,7 @@
             throw new Error('Guest users can only view data. Please log in as an admin to make changes.');
         }
         
-        const headers = getAuthHeaders();
+        const headers = await getAuthHeaders();
         
         // Merge with existing headers
         options.headers = {
