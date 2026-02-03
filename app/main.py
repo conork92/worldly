@@ -270,6 +270,7 @@ class AlbumUpdate(BaseModel):
     year: int = None
     spotify_link: str = None
     comments: str = None
+    fav_tracks: list[str] = None
 
 @app.patch("/api/albums/listened/{album_id}")
 def update_album_listened(album_id: int, update: AlbumUpdate):
@@ -402,47 +403,198 @@ def get_auth_status():
     }
 
 @app.get("/api/progress")
-def get_progress_data(month: int = None, year: int = None):
-    """Get progress data for a specific month and year (dummy data for now)"""
+def get_progress_data(month: int = None, year: int = None, all_months: bool = False):
+    """Get progress data for a specific month and year, or all months in a year"""
     try:
         # Use current month/year if not specified
         from datetime import datetime
-        if month is None:
-            month = datetime.now().month
+        import calendar
+        
+        # Parse all_months from query string (FastAPI converts it)
         if year is None:
             year = datetime.now().year
+        if not all_months:
+            if month is None:
+                month = datetime.now().month
+        else:
+            # When all_months is True, month is not needed
+            month = None
         
-        # Dummy data - will be replaced with actual database queries later
-        dummy_data = {
-            "month": month,
+        # Get albums listened in the specified month/year
+        albums_result = supabase.table("worldly_countrys_listened").select("*").execute()
+        albums = albums_result.data if albums_result.data else []
+        
+        # Helper function to parse dates
+        def parse_date(date_str):
+            """Parse various date formats"""
+            if not date_str:
+                return None
+            
+            if isinstance(date_str, datetime):
+                return date_str
+            
+            if not isinstance(date_str, str):
+                return None
+            
+            date_str = date_str.strip()
+            if not date_str:
+                return None
+            
+            # Try multiple date formats
+            formats = [
+                '%Y-%m-%d',                    # 2024-01-15
+                '%d %b %Y',                    # 15 Jan 2024
+                '%d %B %Y',                    # 15 January 2024
+                '%Y-%m-%d %H:%M:%S',          # 2024-01-15 12:30:45
+                '%Y-%m-%dT%H:%M:%S',          # 2024-01-15T12:30:45
+                '%Y-%m-%dT%H:%M:%SZ',         # 2024-01-15T12:30:45Z
+                '%d/%m/%Y',                    # 15/01/2024
+                '%m/%d/%Y',                    # 01/15/2024
+                '%d-%m-%Y',                    # 15-01-2024
+            ]
+            
+            for fmt in formats:
+                try:
+                    return datetime.strptime(date_str.split(',')[0].strip(), fmt)
+                except:
+                    continue
+            
+            # Try ISO format
+            try:
+                return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+            except:
+                pass
+            
+            return None
+        
+        # Filter albums by month and year based on listen_date
+        filtered_albums = []
+        for album in albums:
+            if album.get('listen_date'):
+                try:
+                    listen_date = album['listen_date']
+                    date_obj = parse_date(listen_date)
+                    
+                    if date_obj:
+                        if all_months:
+                            # Include all albums from the year
+                            if date_obj.year == year:
+                                filtered_albums.append(album)
+                        else:
+                            # Include albums from specific month
+                            if date_obj.month == month and date_obj.year == year:
+                                filtered_albums.append(album)
+                except Exception as e:
+                    # Skip albums with unparseable dates
+                    continue
+        
+        # Sort albums by listen_date (most recent first)
+        def get_sort_date(album):
+            listen_date = album.get('listen_date')
+            parsed = parse_date(listen_date)
+            return parsed if parsed else datetime.min
+        
+        filtered_albums.sort(key=get_sort_date, reverse=True)
+        
+        # Calculate global albums listened stats
+        albums_count = len(filtered_albums)
+        
+        if all_months:
+            # For all months view: goal is 6 albums per month * 12 months = 72
+            albums_goal = 6 * 12  # 72 albums per year
+            albums_percentage = int((albums_count / albums_goal * 100)) if albums_goal > 0 else 0
+            
+            # Compare with previous year for trend
+            prev_year_albums = []
+            for album in albums:
+                if album.get('listen_date'):
+                    try:
+                        listen_date = album['listen_date']
+                        date_obj = parse_date(listen_date)
+                        if date_obj and date_obj.year == year - 1:
+                            prev_year_albums.append(album)
+                    except:
+                        continue
+            
+            prev_count = len(prev_year_albums)
+            if albums_count > prev_count:
+                albums_trend = "up"
+            elif albums_count < prev_count:
+                albums_trend = "down"
+            else:
+                albums_trend = "same"
+            
+            # For all months: meditation goal is total days in the year
+            days_in_period = 366 if calendar.isleap(year) else 365
+            books_goal = 6 * 12  # 72 books per year
+            exercise_goal = 20 * 12  # 240 exercises per year
+        else:
+            # For single month view
+            albums_goal = 6  # 6 albums per month
+            albums_percentage = int((albums_count / albums_goal * 100)) if albums_goal > 0 else 0
+            
+            # Calculate trend (compare with previous month)
+            prev_month = month - 1 if month > 1 else 12
+            prev_year = year if month > 1 else year - 1
+            
+            prev_month_albums = []
+            for album in albums:
+                if album.get('listen_date'):
+                    try:
+                        listen_date = album['listen_date']
+                        date_obj = parse_date(listen_date)
+                        
+                        if date_obj and date_obj.month == prev_month and date_obj.year == prev_year:
+                            prev_month_albums.append(album)
+                    except:
+                        continue
+            
+            prev_count = len(prev_month_albums)
+            if albums_count > prev_count:
+                albums_trend = "up"
+            elif albums_count < prev_count:
+                albums_trend = "down"
+            else:
+                albums_trend = "same"
+            
+            # Calculate number of days in the month for meditation goal
+            days_in_period = calendar.monthrange(year, month)[1]
+            books_goal = 6  # 6 books per month
+            exercise_goal = 20  # 20 exercises per month
+        
+        # Dummy data for other categories (can be updated later)
+        progress_data = {
+            "month": month if not all_months else None,
             "year": year,
-            "albums_listened": {
-                "count": 15,
-                "goal": 20,
-                "percentage": 75,
-                "trend": "up"  # up, down, same
+            "all_months": all_months,
+            "global_albums_listened": {
+                "count": albums_count,
+                "goal": albums_goal,
+                "percentage": albums_percentage,
+                "trend": albums_trend
             },
             "books_read": {
                 "count": 3,
-                "goal": 5,
-                "percentage": 60,
+                "goal": books_goal,
+                "percentage": int((3 / books_goal * 100)) if books_goal > 0 else 0,
                 "trend": "same"
             },
             "meditations_done": {
                 "count": 18,
-                "goal": 30,
-                "percentage": 60,
+                "goal": days_in_period,  # Goal equals number of days in the period
+                "percentage": int((18 / days_in_period * 100)) if days_in_period > 0 else 0,
                 "trend": "up"
             },
             "exercise_done": {
                 "count": 12,
-                "goal": 20,
-                "percentage": 60,
+                "goal": exercise_goal,
+                "percentage": int((12 / exercise_goal * 100)) if exercise_goal > 0 else 0,
                 "trend": "down"
-            }
+            },
+            "albums": filtered_albums  # Include the albums list
         }
         
-        return dummy_data
+        return progress_data
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch progress data"}
 

@@ -201,6 +201,9 @@
             opacity: 1;
             transform: scale(1);
             animation: fadeInCard 0.4s ease-out;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes fadeInCard {
@@ -214,14 +217,63 @@
             }
         }
 
-        .album-card {
-            cursor: pointer;
-        }
-
         .album-card:hover {
             transform: translateY(-4px);
             border-color: rgba(102, 126, 234, 0.5);
             box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+        }
+
+        .album-image-container {
+            width: 100%;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            background: rgba(102, 126, 234, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .album-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .album-card:hover .album-image {
+            transform: scale(1.05);
+        }
+
+        .album-image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 48px;
+        }
+
+        .album-image-loading {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(102, 126, 234, 0.5);
+        }
+
+        .album-image-loading::after {
+            content: '';
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         .album-card::before {
@@ -480,6 +532,83 @@
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
+        /* Favorite Tracks */
+        .fav-tracks-container {
+            margin-bottom: 15px;
+        }
+
+        .fav-tracks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .fav-track-item {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .fav-track-item input {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.35);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .fav-track-item input:focus {
+            background: rgba(102, 126, 234, 0.25);
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .fav-track-item input::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+
+        .remove-track-btn {
+            padding: 8px 12px;
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.4);
+            border-radius: 8px;
+            color: #f44336;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .remove-track-btn:hover {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: #f44336;
+            color: white;
+        }
+
+        .add-track-btn {
+            padding: 8px 16px;
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            border-radius: 8px;
+            color: #4caf50;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+
+        .add-track-btn:hover {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4caf50;
+            color: white;
+        }
+
         /* Loading & Error States */
         .loading {
             text-align: center;
@@ -695,6 +824,11 @@
                 <label for="edit-album-comments">Comments</label>
                 <textarea id="edit-album-comments" name="comments" placeholder="Your thoughts on this album..."></textarea>
             </div>
+            <div class="form-group-full fav-tracks-container">
+                <label>Favorite Tracks</label>
+                <div class="fav-tracks-list" id="fav-tracks-list"></div>
+                <button type="button" class="add-track-btn" onclick="addFavTrack()">+ Add Track</button>
+            </div>
             <button type="submit" class="form-submit-btn" id="submit-btn">Update Album</button>
             <button type="button" class="form-submit-btn" id="cancel-btn" onclick="closeEditForm()" style="background: rgba(102, 126, 234, 0.2); margin-top: 10px;">Cancel</button>
             <div class="form-message" id="form-message"></div>
@@ -711,6 +845,7 @@
     <script>
         let allAlbums = [];
         let filteredAlbums = [];
+        let albumImageCache = {}; // Cache for album images
 
         // Load albums from API
         async function loadAlbums() {
@@ -836,6 +971,90 @@
             return div.innerHTML;
         }
 
+        // Fetch album image from Spotify oEmbed API
+        async function getSpotifyAlbumImage(spotifyLink) {
+            if (!spotifyLink) return null;
+            
+            // Check cache first
+            if (albumImageCache[spotifyLink]) {
+                return albumImageCache[spotifyLink];
+            }
+
+            try {
+                // Use Spotify oEmbed API (no authentication required)
+                const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(spotifyLink)}`;
+                const response = await fetch(oembedUrl);
+                
+                if (!response.ok) {
+                    return null;
+                }
+                
+                const data = await response.json();
+                const imageUrl = data.thumbnail_url || null;
+                
+                // Cache the result
+                if (imageUrl) {
+                    albumImageCache[spotifyLink] = imageUrl;
+                }
+                
+                return imageUrl;
+            } catch (error) {
+                console.error('Error fetching Spotify album image:', error);
+                return null;
+            }
+        }
+
+        // Load album images for all albums with Spotify links
+        async function loadAlbumImages() {
+            const albumsWithSpotify = filteredAlbums.filter(album => album.spotify_link && !album.album_image);
+            
+            // Load images for visible albums
+            const promises = albumsWithSpotify.map(async (album) => {
+                const imageUrl = await getSpotifyAlbumImage(album.spotify_link);
+                if (imageUrl) {
+                    // Update the album object
+                    album.album_image = imageUrl;
+                    
+                    // Update the DOM element if it exists
+                    const albumCard = document.querySelector(`[data-album-id="${album.id}"]`);
+                    if (albumCard) {
+                        const imageContainer = albumCard.querySelector('.album-image-container');
+                        if (imageContainer) {
+                            const loadingDiv = imageContainer.querySelector('.album-image-loading');
+                            const placeholderDiv = imageContainer.querySelector('.album-image-placeholder');
+                            
+                            // Create and insert image
+                            const img = document.createElement('img');
+                            img.src = imageUrl;
+                            img.alt = album.album || 'Album';
+                            img.className = 'album-image';
+                            img.onerror = function() {
+                                this.style.display = 'none';
+                                if (placeholderDiv) placeholderDiv.style.display = 'flex';
+                            };
+                            
+                            if (loadingDiv) loadingDiv.style.display = 'none';
+                            imageContainer.insertBefore(img, placeholderDiv);
+                        }
+                    }
+                } else {
+                    // If no image found, show placeholder
+                    const albumCard = document.querySelector(`[data-album-id="${album.id}"]`);
+                    if (albumCard) {
+                        const imageContainer = albumCard.querySelector('.album-image-container');
+                        if (imageContainer) {
+                            const loadingDiv = imageContainer.querySelector('.album-image-loading');
+                            const placeholderDiv = imageContainer.querySelector('.album-image-placeholder');
+                            if (loadingDiv) loadingDiv.style.display = 'none';
+                            if (placeholderDiv) placeholderDiv.style.display = 'flex';
+                        }
+                    }
+                }
+            });
+            
+            await Promise.all(promises);
+        }
+
         // Render albums with smooth transitions
         function renderAlbums() {
             const grid = document.getElementById('albums-grid');
@@ -862,8 +1081,22 @@
                         ? `<a href="${escapeHtml(album.spotify_link)}" target="_blank" rel="noopener" class="spotify-link" onclick="event.stopPropagation()">🎵 Listen on Spotify</a>`
                         : '';
                     
+                    // Album image HTML
+                    const albumImageHtml = album.spotify_link 
+                        ? `
+                            <div class="album-image-container">
+                                ${album.album_image 
+                                    ? `<img src="${escapeHtml(album.album_image)}" alt="${escapeHtml(album.album || 'Album')}" class="album-image" onerror="this.style.display='none'; this.parentElement.querySelector('.album-image-placeholder').style.display='flex';">`
+                                    : '<div class="album-image-loading"></div>'
+                                }
+                                <div class="album-image-placeholder" style="display: none;">🎵</div>
+                            </div>
+                        `
+                        : '';
+                    
                     return `
                         <div class="album-card" style="animation-delay: ${index * 0.03}s" onclick="openEditForm(${album.id})" data-album-id="${album.id}">
+                            ${albumImageHtml}
                             <div class="album-title">${escapeHtml(album.album || 'Untitled')}</div>
                             <div class="album-artist">by ${escapeHtml(album.artist || 'Unknown Artist')}</div>
                             ${rating ? `<div style="margin-bottom: 10px;">${rating}</div>` : ''}
@@ -884,6 +1117,16 @@
                             ${album.comments ? `
                                 <div class="comments">"${escapeHtml(album.comments)}"</div>
                             ` : ''}
+                            ${album.fav_tracks && album.fav_tracks.length > 0 ? `
+                                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.4); margin-bottom: 6px;">Favorite Tracks:</div>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                        ${album.fav_tracks.map(track => `
+                                            <span style="padding: 4px 8px; background: rgba(102, 126, 234, 0.2); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 6px; font-size: 11px; color: #667eea;">${escapeHtml(track)}</span>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
                             <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                                 ${country}
                                 ${spotifyLink}
@@ -893,6 +1136,9 @@
                 }).join('');
                 
                 grid.classList.remove('updating');
+                
+                // Load album images after rendering
+                loadAlbumImages();
             }, 50);
         }
 
@@ -1025,6 +1271,19 @@
             document.getElementById('edit-album-year').value = album.year || '';
             document.getElementById('edit-album-spotify').value = album.spotify_link || '';
             document.getElementById('edit-album-comments').value = album.comments || '';
+            
+            // Populate fav_tracks
+            const favTracksList = document.getElementById('fav-tracks-list');
+            favTracksList.innerHTML = '';
+            const favTracks = album.fav_tracks || [];
+            if (favTracks.length > 0) {
+                favTracks.forEach(track => {
+                    addFavTrack(track);
+                });
+            } else {
+                // Add one empty track input by default
+                addFavTrack();
+            }
 
             // Show form
             const formContainer = document.getElementById('edit-album-form-container');
@@ -1036,11 +1295,30 @@
             }, 100);
         }
 
+        // Add favorite track input
+        function addFavTrack(trackValue = '') {
+            const favTracksList = document.getElementById('fav-tracks-list');
+            const trackItem = document.createElement('div');
+            trackItem.className = 'fav-track-item';
+            const trackId = Date.now() + Math.random();
+            trackItem.innerHTML = `
+                <input type="text" class="fav-track-input" placeholder="Track name..." value="${escapeHtml(trackValue)}">
+                <button type="button" class="remove-track-btn" onclick="removeFavTrack(this)">Remove</button>
+            `;
+            favTracksList.appendChild(trackItem);
+        }
+
+        // Remove favorite track input
+        function removeFavTrack(btn) {
+            btn.parentElement.remove();
+        }
+
         // Close edit form
         function closeEditForm() {
             const formContainer = document.getElementById('edit-album-form-container');
             formContainer.classList.remove('visible');
             document.getElementById('edit-album-form').reset();
+            document.getElementById('fav-tracks-list').innerHTML = '';
             document.getElementById('form-message').className = 'form-message';
             document.getElementById('form-message').textContent = '';
         }
@@ -1065,6 +1343,11 @@
             messageDiv.textContent = '';
 
             // Collect form data
+            const favTracksInputs = document.querySelectorAll('.fav-track-input');
+            const favTracks = Array.from(favTracksInputs)
+                .map(input => input.value.trim())
+                .filter(track => track !== '');
+
             const formData = {
                 album: document.getElementById('edit-album-name').value.trim(),
                 artist: document.getElementById('edit-album-artist').value.trim(),
@@ -1075,15 +1358,21 @@
                 iso_alpha_3: document.getElementById('edit-album-iso').value.trim().toUpperCase() || null,
                 year: document.getElementById('edit-album-year').value ? parseInt(document.getElementById('edit-album-year').value) : null,
                 spotify_link: document.getElementById('edit-album-spotify').value.trim() || null,
-                comments: document.getElementById('edit-album-comments').value.trim() || null
+                comments: document.getElementById('edit-album-comments').value.trim() || null,
+                fav_tracks: favTracks.length > 0 ? favTracks : null
             };
 
-            // Remove null/empty values
+            // Remove null/empty values (but keep empty arrays)
             Object.keys(formData).forEach(key => {
                 if (formData[key] === null || formData[key] === '') {
                     delete formData[key];
                 }
             });
+            
+            // If fav_tracks is an empty array, set it to null or remove it
+            if (formData.fav_tracks && formData.fav_tracks.length === 0) {
+                delete formData.fav_tracks;
+            }
 
             try {
                 const response = await authenticatedFetch(`/api/albums/listened/${albumId}`, {
