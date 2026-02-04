@@ -102,11 +102,27 @@
                     alert('API key is not configured on the server. Please set API_KEY in your .env file and restart the server.');
                     return null;
                 }
+                
+                // If API key is configured on server but not in localStorage,
+                // check if we're in a production/deployed environment
+                // In production (like Koyeb), skip the prompt
+                const isProduction = window.location.hostname !== 'localhost' && 
+                                    window.location.hostname !== '127.0.0.1' &&
+                                    !window.location.hostname.startsWith('192.168.');
+                
+                if (isProduction && status.api_key_configured) {
+                    // In production with server-side API key configured, skip the prompt
+                    // The user can manually set it in localStorage if needed via browser console:
+                    // localStorage.setItem('worldly_api_key', 'your-key-here')
+                    console.log('API key configured on server. Skipping prompt in production environment.');
+                    console.log('To enable write operations, set API key in browser console: localStorage.setItem("worldly_api_key", "your-key")');
+                    return null; // Skip prompting in production
+                }
             } catch (e) {
                 console.warn('Could not check API key status:', e);
             }
             
-            // Prompt user to enter API key (only once)
+            // Only prompt in development/local environments
             const promptMessage = 'Enter your API key to enable write operations.\n\n' +
                 'This key should match the API_KEY value in your .env file.\n\n' +
                 'If you don\'t have an API key set, add it to app/.env:\n' +
