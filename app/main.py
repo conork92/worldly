@@ -32,7 +32,7 @@ def verify_api_key(x_api_key: str = Header(None)):
     return True
 
 # Mount static files directory
-static_dir = Path(__file__).parent
+static_dir = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 # Enable CORS if needed
@@ -48,19 +48,19 @@ app.add_middleware(
 @app.get("/globe")
 def get_globe():
     """Serve the globe visualization HTML page (React version)"""
-    globe_path = Path(__file__).parent / "globe.html"
+    globe_path = Path(__file__).parent / "templates" / "globe.html"
     return FileResponse(globe_path)
 
 @app.get("/country")
 def get_country():
     """Serve the country details HTML page"""
-    country_path = Path(__file__).parent / "country.html"
+    country_path = Path(__file__).parent / "templates" / "country.html"
     return FileResponse(country_path)
 
 @app.get("/globe-simple")
 def get_globe_simple():
     """Serve the simple globe visualization HTML page (globe.gl version)"""
-    globe_path = Path(__file__).parent / "globe-simple.html"
+    globe_path = Path(__file__).parent / "templates" / "globe.html"
     return FileResponse(globe_path)
 
 @app.get("/api/countries")
@@ -243,7 +243,7 @@ def get_world_hexed_polygons():
 @app.get("/albums")
 def get_albums_page():
     """Serve the albums HTML page"""
-    albums_path = Path(__file__).parent / "albums.html"
+    albums_path = Path(__file__).parent / "templates" / "albums.html"
     return FileResponse(albums_path)
 
 @app.get("/api/albums")
@@ -472,19 +472,19 @@ def create_artist(artist: ArtistCreate):
 @app.get("/books")
 def get_books_page():
     """Serve the books HTML page"""
-    books_path = Path(__file__).parent / "books.html"
+    books_path = Path(__file__).parent / "templates" / "books.html"
     return FileResponse(books_path)
 
 @app.get("/listening")
 def get_listening_page():
     """Serve the Last.fm listening page"""
-    listening_path = Path(__file__).parent / "listening.html"
+    listening_path = Path(__file__).parent / "templates" / "listening.html"
     return FileResponse(listening_path)
 
 @app.get("/progress")
 def get_progress_page():
     """Serve the progress tracking page"""
-    progress_path = Path(__file__).parent / "progress.html"
+    progress_path = Path(__file__).parent / "templates" / "progress.html"
     return FileResponse(progress_path)
 
 @app.get("/api/listening")
@@ -577,6 +577,10 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
         albums_result = supabase.table("worldly_countrys_listened").select("*").execute()
         albums = albums_result.data if albums_result.data else []
         
+        # Get books read from worldly_good_reads_books
+        books_result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").execute()
+        books = books_result.data if books_result.data else []
+        
         # Helper function to parse dates
         def parse_date(date_str):
             """Parse various date formats"""
@@ -641,6 +645,33 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                     # Skip albums with unparseable dates
                     continue
         
+        # Filter books by month and year based on date_read
+        filtered_books = []
+        for book in books:
+            if book.get('date_read'):
+                try:
+                    date_read = book['date_read']
+                    # date_read might be a datetime object or string
+                    if isinstance(date_read, str):
+                        date_obj = parse_date(date_read)
+                    elif isinstance(date_read, datetime):
+                        date_obj = date_read
+                    else:
+                        continue
+                    
+                    if date_obj:
+                        if all_months:
+                            # Include all books from the year
+                            if date_obj.year == year:
+                                filtered_books.append(book)
+                        else:
+                            # Include books from specific month
+                            if date_obj.month == month and date_obj.year == year:
+                                filtered_books.append(book)
+                except Exception as e:
+                    # Skip books with unparseable dates
+                    continue
+        
         # Sort albums by listen_date (most recent first)
         def get_sort_date(album):
             listen_date = album.get('listen_date')
@@ -648,6 +679,19 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
             return parsed if parsed else datetime.min
         
         filtered_albums.sort(key=get_sort_date, reverse=True)
+        
+        # Sort books by date_read (most recent first)
+        def get_book_sort_date(book):
+            date_read = book.get('date_read')
+            if isinstance(date_read, str):
+                parsed = parse_date(date_read)
+            elif isinstance(date_read, datetime):
+                parsed = date_read
+            else:
+                parsed = None
+            return parsed if parsed else datetime.min
+        
+        filtered_books.sort(key=get_book_sort_date, reverse=True)
         
         # Calculate global albums listened stats
         albums_count = len(filtered_albums)
@@ -680,6 +724,36 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
             # For all months: meditation goal is total days in the year
             days_in_period = 366 if calendar.isleap(year) else 365
             books_goal = 6 * 12  # 72 books per year
+            
+            # Calculate books read in the year
+            books_count = len(filtered_books)
+            
+            # Compare with previous year for books trend
+            prev_year_books = []
+            for book in books:
+                if book.get('date_read'):
+                    try:
+                        date_read = book['date_read']
+                        if isinstance(date_read, str):
+                            date_obj = parse_date(date_read)
+                        elif isinstance(date_read, datetime):
+                            date_obj = date_read
+                        else:
+                            continue
+                        if date_obj and date_obj.year == year - 1:
+                            prev_year_books.append(book)
+                    except:
+                        continue
+            
+            prev_books_count = len(prev_year_books)
+            if books_count > prev_books_count:
+                books_trend = "up"
+            elif books_count < prev_books_count:
+                books_trend = "down"
+            else:
+                books_trend = "same"
+            
+            books_percentage = int((books_count / books_goal * 100)) if books_goal > 0 else 0
             exercise_goal = 20 * 12  # 240 exercises per year
         else:
             # For single month view
@@ -713,6 +787,39 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
             # Calculate number of days in the month for meditation goal
             days_in_period = calendar.monthrange(year, month)[1]
             books_goal = 6  # 6 books per month
+            
+            # Calculate books read in the month
+            books_count = len(filtered_books)
+            
+            # Calculate trend (compare with previous month)
+            prev_month = month - 1 if month > 1 else 12
+            prev_year = year if month > 1 else year - 1
+            
+            prev_month_books = []
+            for book in books:
+                if book.get('date_read'):
+                    try:
+                        date_read = book['date_read']
+                        if isinstance(date_read, str):
+                            date_obj = parse_date(date_read)
+                        elif isinstance(date_read, datetime):
+                            date_obj = date_read
+                        else:
+                            continue
+                        if date_obj and date_obj.month == prev_month and date_obj.year == prev_year:
+                            prev_month_books.append(book)
+                    except:
+                        continue
+            
+            prev_books_count = len(prev_month_books)
+            if books_count > prev_books_count:
+                books_trend = "up"
+            elif books_count < prev_books_count:
+                books_trend = "down"
+            else:
+                books_trend = "same"
+            
+            books_percentage = int((books_count / books_goal * 100)) if books_goal > 0 else 0
             exercise_goal = 20  # 20 exercises per month
         
         # Dummy data for other categories (can be updated later)
@@ -727,10 +834,10 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                 "trend": albums_trend
             },
             "books_read": {
-                "count": 3,
+                "count": books_count,
                 "goal": books_goal,
-                "percentage": int((3 / books_goal * 100)) if books_goal > 0 else 0,
-                "trend": "same"
+                "percentage": books_percentage,
+                "trend": books_trend
             },
             "meditations_done": {
                 "count": 18,
@@ -754,7 +861,7 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
 @app.get("/quotes")
 def get_quotes_page():
     """Serve the quotes HTML page"""
-    quotes_path = Path(__file__).parent / "quotes.html"
+    quotes_path = Path(__file__).parent / "templates" / "quotes.html"
     return FileResponse(quotes_path)
 
 @app.get("/api/books")
@@ -787,10 +894,34 @@ def get_quotes():
         
         # Filter out quotes from CK, Conor, or Conor Kennedy (case-insensitive)
         excluded_authors = ['ck', 'conor', 'conor kennedy']
-        filtered_quotes = [
-            quote for quote in quotes
-            if not quote.get('author') or quote.get('author', '').strip().lower() not in excluded_authors
-        ]
+        
+        # Keywords to identify alcohol-related quotes
+        alcohol_keywords = ['alcohol', 'drink', 'drunk', 'beer', 'wine', 'whiskey', 'whisky', 'vodka', 
+                           'rum', 'gin', 'cocktail', 'bar', 'pub', 'drinking', 'intoxicated', 'sober',
+                           'hangover', 'booze', 'liquor', 'champagne', 'tequila', 'brandy']
+        
+        filtered_quotes = []
+        for quote in quotes:
+            # Skip quotes from excluded authors
+            author = quote.get('author', '').strip().lower() if quote.get('author') else ''
+            if author in excluded_authors:
+                continue
+            
+            # Skip alcohol-related quotes
+            quote_text = (quote.get('quote') or '').lower()
+            quote_category = (quote.get('category') or '').lower()
+            quote_tags = quote.get('tags') or []
+            quote_tags_lower = [str(tag).lower() for tag in quote_tags] if isinstance(quote_tags, list) else []
+            
+            # Check if quote contains alcohol keywords
+            contains_alcohol = any(keyword in quote_text for keyword in alcohol_keywords) or \
+                            any(keyword in quote_category for keyword in alcohol_keywords) or \
+                            any(any(keyword in str(tag).lower() for keyword in alcohol_keywords) for tag in quote_tags_lower)
+            
+            if contains_alcohol:
+                continue
+            
+            filtered_quotes.append(quote)
         
         return filtered_quotes
     except Exception as e:
@@ -798,17 +929,41 @@ def get_quotes():
 
 @app.get("/api/quotes/random")
 def get_random_quote():
-    """Get a random quote (excluding quotes from CK, Conor, or Conor Kennedy)"""
+    """Get a random quote (excluding quotes from CK, Conor, or Conor Kennedy, and alcohol-related quotes)"""
     try:
         result = supabase.table("worldly_quotes").select("*").execute()
         quotes = result.data if result.data else []
         
         # Filter out quotes from CK, Conor, or Conor Kennedy (case-insensitive)
         excluded_authors = ['ck', 'conor', 'conor kennedy']
-        filtered_quotes = [
-            quote for quote in quotes
-            if not quote.get('author') or quote.get('author', '').strip().lower() not in excluded_authors
-        ]
+        
+        # Keywords to identify alcohol-related quotes
+        alcohol_keywords = ['alcohol', 'drink', 'drunk', 'beer', 'wine', 'whiskey', 'whisky', 'vodka', 
+                           'rum', 'gin', 'cocktail', 'bar', 'pub', 'drinking', 'intoxicated', 'sober',
+                           'hangover', 'booze', 'liquor', 'champagne', 'tequila', 'brandy']
+        
+        filtered_quotes = []
+        for quote in quotes:
+            # Skip quotes from excluded authors
+            author = quote.get('author', '').strip().lower() if quote.get('author') else ''
+            if author in excluded_authors:
+                continue
+            
+            # Skip alcohol-related quotes
+            quote_text = (quote.get('quote') or '').lower()
+            quote_category = (quote.get('category') or '').lower()
+            quote_tags = quote.get('tags') or []
+            quote_tags_lower = [str(tag).lower() for tag in quote_tags] if isinstance(quote_tags, list) else []
+            
+            # Check if quote contains alcohol keywords
+            contains_alcohol = any(keyword in quote_text for keyword in alcohol_keywords) or \
+                            any(keyword in quote_category for keyword in alcohol_keywords) or \
+                            any(any(keyword in str(tag).lower() for keyword in alcohol_keywords) for tag in quote_tags_lower)
+            
+            if contains_alcohol:
+                continue
+            
+            filtered_quotes.append(quote)
         
         if filtered_quotes and len(filtered_quotes) > 0:
             import random
@@ -894,7 +1049,7 @@ def get_country_by_iso(iso_code: str):
     # Validate ISO code format (should be 3 uppercase letters)
     iso_code_upper = iso_code.upper()
     if len(iso_code_upper) == 3 and iso_code_upper.isalpha():
-        country_path = Path(__file__).parent / "country.html"
+        country_path = Path(__file__).parent / "templates" / "country.html"
         return FileResponse(country_path)
     else:
         raise HTTPException(status_code=404, detail="Invalid country code format. Expected 3-letter ISO code (e.g., NGA, USA, FRA)")

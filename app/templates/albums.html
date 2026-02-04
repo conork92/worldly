@@ -688,9 +688,9 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="/static/login.css">
-    <script src="/static/auth.js"></script>
-    <script src="/static/login.js"></script>
+    <link rel="stylesheet" href="/static/css/login.css">
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/login.js"></script>
 </head>
 <body>
     <div class="header">
@@ -735,6 +735,8 @@
         <div class="filter-group">
             <label for="sort-select">Sort by:</label>
             <select id="sort-select">
+                <option value="country_asc" selected>Country (A-Z)</option>
+                <option value="country_desc">Country (Z-A)</option>
                 <option value="listen_date_desc">Listen Date (Newest)</option>
                 <option value="listen_date_asc">Listen Date (Oldest)</option>
                 <option value="album_asc">Album (A-Z)</option>
@@ -856,8 +858,21 @@
         }
 
         // Load albums from API
-        async function loadAlbums() {
-            console.log('loadAlbums called');
+        async function loadAlbums(preserveFilters = false) {
+            console.log('loadAlbums called', preserveFilters ? '(preserving filters)' : '');
+            
+            // Save current filter state if preserving
+            let savedFilters = null;
+            if (preserveFilters) {
+                savedFilters = {
+                    search: document.getElementById('search-input').value,
+                    country: document.getElementById('filter-country').value,
+                    year: document.getElementById('filter-year').value,
+                    listened: document.getElementById('filter-listened').value,
+                    sort: document.getElementById('sort-select').value
+                };
+            }
+            
             try {
                 console.log('Fetching from /api/albums/listened');
                 const response = await fetch('/api/albums/listened');
@@ -876,7 +891,21 @@
                 updateStats();
                 populateCountryFilter();
                 populateYearFilter();
-                renderAlbums();
+                
+                // Restore filter state if preserving
+                if (preserveFilters && savedFilters) {
+                    document.getElementById('search-input').value = savedFilters.search;
+                    document.getElementById('filter-country').value = savedFilters.country;
+                    document.getElementById('filter-year').value = savedFilters.year;
+                    document.getElementById('filter-listened').value = savedFilters.listened;
+                    document.getElementById('sort-select').value = savedFilters.sort;
+                    // Apply filters and sort
+                    filterAndSort();
+                } else {
+                    // Apply default sort (Country A-Z) on initial load
+                    filterAndSort();
+                }
+                
                 const loadingEl = document.getElementById('loading');
                 if (loadingEl) {
                     loadingEl.style.display = 'none';
@@ -1338,6 +1367,36 @@
                         return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0);
                     case 'rating_asc':
                         return (parseFloat(a.rating) || 0) - (parseFloat(b.rating) || 0);
+                    case 'country_asc':
+                        // Sort by country name alphabetically
+                        const countryA = (a.country_name || '').trim();
+                        const countryB = (b.country_name || '').trim();
+                        // Empty countries go to the end
+                        if (!countryA && !countryB) return 0;
+                        if (!countryA) return 1;
+                        if (!countryB) return -1;
+                        // Direct alphabetical comparison (case-insensitive)
+                        const compare = countryA.localeCompare(countryB, 'en', { sensitivity: 'base', numeric: true });
+                        // If countries are the same, sort by album name as secondary sort
+                        if (compare === 0) {
+                            return (a.album || '').localeCompare(b.album || '');
+                        }
+                        return compare;
+                    case 'country_desc':
+                        // Sort by country name reverse alphabetically
+                        const countryADesc = (a.country_name || '').trim();
+                        const countryBDesc = (b.country_name || '').trim();
+                        // Empty countries go to the end
+                        if (!countryADesc && !countryBDesc) return 0;
+                        if (!countryADesc) return 1;
+                        if (!countryBDesc) return -1;
+                        // Direct reverse alphabetical comparison (case-insensitive)
+                        const compareDesc = countryBDesc.localeCompare(countryADesc, 'en', { sensitivity: 'base', numeric: true });
+                        // If countries are the same, sort by album name as secondary sort
+                        if (compareDesc === 0) {
+                            return (b.album || '').localeCompare(a.album || '');
+                        }
+                        return compareDesc;
                     default:
                         return 0;
                 }
@@ -1514,9 +1573,9 @@
                 messageDiv.className = 'form-message success';
                 messageDiv.textContent = 'Album updated successfully!';
                 
-                // Reload albums to show the updated data
+                // Reload albums to show the updated data (preserving filters)
                 setTimeout(() => {
-                    loadAlbums();
+                    loadAlbums(true); // Pass true to preserve filters
                     closeEditForm();
                 }, 1500);
 
