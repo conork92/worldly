@@ -449,19 +449,8 @@
             color: rgba(255,255,255,0.95);
             margin-bottom: 12px;
             position: relative;
-            padding-left: 25px;
+            padding-left: 0;
             font-weight: 300;
-        }
-
-        .random-quote-text::before {
-            content: '"';
-            position: absolute;
-            left: 0;
-            top: -8px;
-            font-size: 40px;
-            color: #667eea;
-            opacity: 0.4;
-            font-family: Georgia, serif;
         }
 
         .random-quote-author {
@@ -893,7 +882,7 @@
     <!-- Random Quote Display -->
     <div class="random-quote" id="random-quote">
         <div class="random-quote-header">
-            <div class="random-quote-title">Quote of the Moment</div>
+            <div class="random-quote-title">Random Quote</div>
             <button class="refresh-btn" onclick="loadRandomQuote()">New Quote</button>
         </div>
         <div class="random-quote-text" id="random-quote-text">Loading...</div>
