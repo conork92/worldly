@@ -10,8 +10,9 @@ import subprocess
 import sys
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from project root .env
+_load_env = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(_load_env)
 
 app = FastAPI()
 
