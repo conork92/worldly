@@ -13,8 +13,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Load environment variables from .env file located at app/.env
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+# Load environment variables from project root .env (single source of truth)
+_app_dir = os.path.dirname(os.path.dirname(__file__))
+_root_dir = os.path.dirname(_app_dir)
+dotenv_path = os.path.join(_root_dir, '.env')
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
 

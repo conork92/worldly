@@ -242,6 +242,31 @@
             opacity: 1;
         }
 
+        .book-cover {
+            width: 100%;
+            margin-bottom: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+            aspect-ratio: 2/3;
+            max-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .book-cover:has(img.broken) {
+            display: none;
+            margin: 0;
+        }
+
         .book-title {
             font-size: 20px;
             font-weight: 600;
@@ -784,9 +809,13 @@
                 const country = book.country && book.iso_code_3 
                     ? `<span class="country-badge">${book.country}</span>`
                     : '<span class="country-badge empty">No Country</span>';
-                
+                const isbn = (book.isbn || '').toString().replace(/\D/g, '');
+                const coverHtml = isbn
+                    ? `<div class="book-cover"><img src="https://covers.openlibrary.org/b/isbn/${escapeHtml(isbn)}-M.jpg" alt="" loading="lazy" onerror="this.classList.add('broken')"></div>`
+                    : '';
                     return `
                         <div class="book-card" style="animation-delay: ${index * 0.03}s">
+                            ${coverHtml}
                             <div class="book-title">${escapeHtml(book.title || 'Untitled')}</div>
                             <div class="book-author">by ${escapeHtml(book.author || 'Unknown Author')}</div>
                             ${rating ? `<div style="margin-bottom: 10px;">${rating}</div>` : ''}
