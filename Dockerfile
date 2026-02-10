@@ -32,5 +32,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('PORT', '8000') + '/api/books')" || exit 1
 
-# Run the application (shell form so $PORT is expanded at runtime)
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Run the application. Cloud Run sets PORT=8080; must use shell so it's expanded at runtime.
+CMD ["/bin/sh", "-c", "exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
