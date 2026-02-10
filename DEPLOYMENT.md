@@ -47,6 +47,98 @@ docker run -d \
 
 ## Deploying to PaaS Providers
 
+### Google Cloud Run (deploy on push to main)
+
+Deploys automatically when you push to the `main` branch. The workflow (`.github/workflows/deploy-cloudrun.yml`) builds from the repo Dockerfile and deploys to Cloud Run.
+
+**Steps at a glance**
+
+1. Create a GCP project and enable Cloud Run, Cloud Build, and Artifact Registry APIs.
+2. Create a service account with Cloud Run Admin + Service Account User + Storage Admin; download its JSON key.
+3. In GitHub: Settings → Secrets and variables → Actions → add `GCP_PROJECT_ID`, `GCP_SA_KEY`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `API_KEY`.
+4. Push (or merge) to `main`; the workflow builds and deploys. Get the URL from the Cloud Run console or the workflow run.
+
+---
+
+**1. GCP setup**
+
+- Create a [Google Cloud project](https://console.cloud.google.com/) (or use an existing one).
+- Enable APIs:
+  - [Cloud Run API](https://console.cloud.google.com/apis/library/run.googleapis.com)
+  - [Cloud Build API](https://console.cloud.google.com/apis/library/cloudbuild.googleapis.com)
+  - [Artifact Registry API](https://console.cloud.google.com/apis/library/artifactregistry.googleapis.com) (used by Cloud Build).
+- Create a **service account** for GitHub Actions:
+  - IAM & Admin → Service Accounts → Create.
+  - Name it e.g. `github-actions-cloudrun`.
+  - Grant roles: **Cloud Run Admin**, **Service Account User**, **Storage Admin** (or **Artifact Registry Writer**).
+  - Create a **JSON key**: Keys → Add key → JSON, download the file.
+
+**2. GitHub secrets**
+
+In your repo: **Settings → Secrets and variables → Actions**. Add:
+
+| Secret        | Description |
+|---------------|-------------|
+| `GCP_PROJECT_ID` | Your GCP project ID (e.g. `my-project-123`) |
+| `GCP_SA_KEY`     | Full contents of the service account JSON key file |
+| `SUPABASE_URL`   | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Supabase anon key |
+| `API_KEY`       | API key for app write operations |
+
+**3. Optional: repo variables**
+
+Under **Settings → Secrets and variables → Actions → Variables** you can set:
+
+- `GCP_REGION` – e.g. `europe-west1` (default if unset).
+- `CLOUD_RUN_SERVICE` – Cloud Run service name (default: `worldly`).
+
+**4. Deploy**
+
+Push to `main`. The workflow will build the image with Cloud Build and deploy to Cloud Run. The first run may take a few minutes. The service URL will appear in the workflow summary and in the Cloud Run console.
+
+**Initial deploy from CLI**
+
+Do the first deploy from your machine so the service (and any GCP resources) exist; after that, pushes to `main` will update it.
+
+1. **Install and log in** (if needed):
+   ```bash
+   # Install: https://cloud.google.com/sdk/docs/install
+   gcloud auth login
+   gcloud config set project YOUR_PROJECT_ID
+   ```
+
+2. **Enable required APIs**:
+   ```bash
+   gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+   ```
+
+3. **Deploy from the repo root** (where the Dockerfile is):
+   ```bash
+   cd /path/to/worldly
+   gcloud run deploy worldly \
+     --source . \
+     --region europe-west1 \
+     --platform managed \
+     --allow-unauthenticated \
+     --set-env-vars "SUPABASE_URL=your_supabase_url,SUPABASE_ANON_KEY=your_anon_key,API_KEY=your_api_key"
+   ```
+   Replace `your_supabase_url`, `your_anon_key`, and `your_api_key` with your real values (no spaces after commas).
+
+   **Or** use your `.env` file directly (gcloud accepts `KEY=VALUE` per line):
+   ```bash
+   gcloud run deploy worldly \
+     --source . \
+     --region europe-west1 \
+     --platform managed \
+     --allow-unauthenticated \
+     --env-vars-file .env
+   ```
+   If you get errors (e.g. from `#` comment lines), remove those lines from `.env` or run `python3 env_to_yaml.py` and use `--env-vars-file env.cloudrun.yaml` instead.
+
+4. When the deploy finishes, the CLI prints the service URL. Open it in a browser to confirm the app is running.
+
+---
+
 ### Railway
 
 1. Connect your GitHub repository to Railway
