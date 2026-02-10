@@ -85,6 +85,8 @@ In your repo: **Settings → Secrets and variables → Actions**. Add:
 | `SUPABASE_ANON_KEY` | Supabase anon key |
 | `API_KEY`       | API key for app write operations |
 
+**Optional – same env as CLI:** To give the container the exact same env as when you deploy with `--env-vars-file .env`, add a secret **`CLOUD_RUN_ENV`** and paste your full `.env` contents (one `KEY=VALUE` per line). The workflow will use it as the env file for the service. If `CLOUD_RUN_ENV` is not set, it falls back to the three vars above.
+
 **3. Optional: repo variables**
 
 Under **Settings → Secrets and variables → Actions → Variables** you can set:
