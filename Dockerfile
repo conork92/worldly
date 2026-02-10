@@ -24,12 +24,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ .
 
-# Expose port
+# Cloud Run sets PORT=8080; default 8000 for local/Docker
+ENV PORT=8000
 EXPOSE 8000
 
-# Health check (using curl if available, otherwise skip)
+# Health check uses PORT so it works on Cloud Run (8080) and locally (8000)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/books')" || exit 1
+    CMD python -c "import os, urllib.request; urllib.request.urlopen('http://localhost:' + os.environ.get('PORT', '8000') + '/api/books')" || exit 1
 
-# Run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application (shell form so $PORT is expanded at runtime)
+CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}

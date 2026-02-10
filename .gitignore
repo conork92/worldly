@@ -2,3 +2,5 @@ venv
 app/.env
 .env
 worldly-sa-key.json
+env.yaml
+env.cloudrun.yaml
