@@ -31,22 +31,39 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
 
-      # Use full .env from secret (same as CLI: --env-vars-file .env) so container gets identical env
-      - name: Create env file for Cloud Run
+      # gcloud expects YAML for --env-vars-file; convert .env (KEY=VALUE) to YAML
+      - name: Create env file for Cloud Run (YAML)
         env:
           CLOUD_RUN_ENV: ${{ secrets.CLOUD_RUN_ENV }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
         run: |
-          if [ -n "$CLOUD_RUN_ENV" ]; then
-            printf '%s\n' "$CLOUD_RUN_ENV" > env.txt
-            echo "Using CLOUD_RUN_ENV secret (same as your .env)"
-          else
-            {
-              echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}"
-              echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}"
-              echo "API_KEY=${{ secrets.API_KEY }}"
-            } > env.txt
-            echo "Using individual secrets"
-          fi
+          python3 << 'PY'
+          import os
+          out = []
+          raw = os.environ.get("CLOUD_RUN_ENV", "")
+          if raw:
+            for line in raw.splitlines():
+              line = line.strip()
+              if not line or line.startswith("#"): continue
+              if "=" not in line: continue
+              k, _, v = line.partition("=")
+              k, v = k.strip(), v.strip()
+              if v.startswith('"') and v.endswith('"'): v = v[1:-1].replace('\\"', '"')
+              elif v.startswith("'") and v.endswith("'"): v = v[1:-1]
+              v = v.replace("\\", "\\\\").replace('"', '\\"')
+              out.append(f'{k}: "{v}"')
+            print("Using CLOUD_RUN_ENV secret (converted to YAML)")
+          else:
+            for key in ["SUPABASE_URL", "SUPABASE_ANON_KEY", "API_KEY"]:
+              val = os.environ.get(key, "") or ""
+              val = val.replace("\\", "\\\\").replace('"', '\\"')
+              if val: out.append(f'{key}: "{val}"')
+            print("Using individual secrets")
+          with open("env.yaml", "w") as f:
+            f.write("\n".join(out) + "\n")
+          PY
 
       - name: Deploy to Cloud Run
         run: |
@@ -55,7 +72,7 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --env-vars-file env.txt \
+            --env-vars-file env.yaml \
             --timeout=300 \
             --cpu-boost
         env:

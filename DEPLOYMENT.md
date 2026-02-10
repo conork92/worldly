@@ -126,16 +126,17 @@ Do the first deploy from your machine so the service (and any GCP resources) exi
    ```
    Replace `your_supabase_url`, `your_anon_key`, and `your_api_key` with your real values (no spaces after commas).
 
-   **Or** use your `.env` file directly (gcloud accepts `KEY=VALUE` per line):
+   **Or** use your `.env` via YAML (gcloud requires YAML for `--env-vars-file`, not raw .env):
    ```bash
+   python3 env_to_yaml.py
    gcloud run deploy worldly \
      --source . \
      --region europe-west1 \
      --platform managed \
      --allow-unauthenticated \
-     --env-vars-file .env
+     --env-vars-file env.cloudrun.yaml
    ```
-   If you get errors (e.g. from `#` comment lines), remove those lines from `.env` or run `python3 env_to_yaml.py` and use `--env-vars-file env.cloudrun.yaml` instead.
+   `env_to_yaml.py` reads `.env` and writes `env.cloudrun.yaml` in the format gcloud expects.
 
 4. When the deploy finishes, the CLI prints the service URL. Open it in a browser to confirm the app is running.
 
