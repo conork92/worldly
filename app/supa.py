@@ -3,9 +3,10 @@ from supabase import create_client, Client
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Project root .env (same as main.py)
+# Load .env if present (local/dev). In Cloud Run, env vars are set by the platform.
 _load_env = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(_load_env)
+if _load_env.exists():
+    load_dotenv(_load_env)
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_ANON_KEY")
