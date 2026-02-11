@@ -878,8 +878,12 @@
 
             grid.innerHTML = categories.map(category => {
                 const stats = data[category.key] || { count: 0, goal: 0, percentage: 0, trend: 'same' };
-                const trendIcon = stats.trend === 'up' ? '↑' : stats.trend === 'down' ? '↓' : '→';
-                const trendClass = `trend-${stats.trend}`;
+                // Use goal_so_far when set (e.g. meditations: "one per day" = on track if count >= days elapsed)
+                const target = stats.goal_so_far != null ? stats.goal_so_far : stats.goal;
+                const onTrack = stats.goal > 0 && stats.count >= target;
+                const statusLabel = onTrack ? 'On track' : 'Behind';
+                const statusIcon = onTrack ? '↑' : '↓';
+                const statusClass = onTrack ? 'trend-up' : 'trend-down';
                 
                 return `
                     <div class="progress-card">
@@ -895,9 +899,9 @@
                             <div class="progress-bar" style="width: ${Math.min(stats.percentage, 100)}%;"></div>
                         </div>
                         <div class="progress-percentage">${stats.percentage}% Complete</div>
-                        <div class="progress-trend ${trendClass}">
-                            <span>${trendIcon}</span>
-                            <span>${stats.trend === 'up' ? 'On track' : stats.trend === 'down' ? 'Behind' : 'Steady'}</span>
+                        <div class="progress-trend ${statusClass}">
+                            <span>${statusIcon}</span>
+                            <span>${statusLabel}</span>
                         </div>
                     </div>
                 `;

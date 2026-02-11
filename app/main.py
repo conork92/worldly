@@ -673,6 +673,43 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                     # Skip books with unparseable dates
                     continue
         
+        # Get meditation count from ck_meditation using [Started At] for the period
+        meditations_count = 0
+        meditations_prev_count = 0
+        meditations_trend = "same"
+        try:
+            med_result = supabase.table("ck_meditation").select("*").execute()
+            med_rows = med_result.data if med_result.data else []
+            started_key = next(
+                (k for k in ("Started At", "[Started At]", "started_at") if any(r.get(k) for r in med_rows)),
+                "started_at"
+            )
+            for r in med_rows:
+                started = r.get(started_key)
+                date_obj = parse_date(started) if isinstance(started, str) else (started if isinstance(started, datetime) else None)
+                if not date_obj:
+                    continue
+                if all_months:
+                    if date_obj.year == year:
+                        meditations_count += 1
+                    if date_obj.year == year - 1:
+                        meditations_prev_count += 1
+                else:
+                    if date_obj.month == month and date_obj.year == year:
+                        meditations_count += 1
+                    prev_m = month - 1 if month > 1 else 12
+                    prev_y = year if month > 1 else year - 1
+                    if date_obj.month == prev_m and date_obj.year == prev_y:
+                        meditations_prev_count += 1
+            if meditations_prev_count < meditations_count:
+                meditations_trend = "up"
+            elif meditations_prev_count > meditations_count:
+                meditations_trend = "down"
+            else:
+                meditations_trend = "same"
+        except Exception:
+            meditations_trend = "same"
+        
         # Sort albums by listen_date (most recent first)
         def get_sort_date(album):
             listen_date = album.get('listen_date')
@@ -823,6 +860,22 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
             books_percentage = int((books_count / books_goal * 100)) if books_goal > 0 else 0
             exercise_goal = 20  # 20 exercises per month
         
+        # Meditation goal is "one per day". For current month/year, "on track" = count >= days elapsed so far.
+        def _meditations_progress(count, goal_days, trend, month_val, year_val, all_months_val):
+            now = datetime.now()
+            if all_months_val:
+                days_elapsed = (now - datetime(year_val, 1, 1)).days + 1 if year_val == now.year else goal_days
+            else:
+                days_elapsed = now.day if (year_val == now.year and month_val == now.month) else goal_days
+            days_elapsed = min(days_elapsed, goal_days)
+            return {
+                "count": count,
+                "goal": goal_days,
+                "goal_so_far": days_elapsed,
+                "percentage": int((count / goal_days * 100)) if goal_days > 0 else 0,
+                "trend": trend
+            }
+        
         # Dummy data for other categories (can be updated later)
         progress_data = {
             "month": month if not all_months else None,
@@ -840,12 +893,7 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                 "percentage": books_percentage,
                 "trend": books_trend
             },
-            "meditations_done": {
-                "count": 18,
-                "goal": days_in_period,  # Goal equals number of days in the period
-                "percentage": int((18 / days_in_period * 100)) if days_in_period > 0 else 0,
-                "trend": "up"
-            },
+            "meditations_done": _meditations_progress(meditations_count, days_in_period, meditations_trend, month, year, all_months),
             "exercise_done": {
                 "count": 12,
                 "goal": exercise_goal,
