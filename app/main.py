@@ -476,6 +476,67 @@ def get_books_page():
     books_path = Path(__file__).parent / "templates" / "books.html"
     return FileResponse(books_path)
 
+@app.get("/movies")
+def get_movies_page():
+    """Serve the Letterboxd movies page (watched + watchlist)"""
+    movies_path = Path(__file__).parent / "templates" / "movies.html"
+    return FileResponse(movies_path)
+
+@app.get("/api/movies")
+def get_movies(filter: str = "all", posters: bool = True):
+    """Get movies from letterboxd_watched and letterboxd_watchlist. filter: all | watched | watchlist."""
+    try:
+        import requests
+        watched = []
+        watchlist = []
+        if filter in ("all", "watched"):
+            r = supabase.table("letterboxd_watched").select("date,name,year,letterboxd_uri").order("date", desc=True).execute()
+            watched = [{"date": x.get("date"), "name": x.get("name"), "year": x.get("year"), "letterboxd_uri": x.get("letterboxd_uri"), "source": "watched"} for x in (r.data or [])]
+        if filter in ("all", "watchlist"):
+            r = supabase.table("letterboxd_watchlist").select("date,name,year,letterboxd_uri").order("date", desc=True).execute()
+            watchlist = [{"date": x.get("date"), "name": x.get("name"), "year": x.get("year"), "letterboxd_uri": x.get("letterboxd_uri"), "source": "watchlist"} for x in (r.data or [])]
+        combined = watched + watchlist
+        # Sort by date desc when combined
+        combined.sort(key=lambda m: (m.get("date") or ""), reverse=True)
+        # Optional: TMDb poster lookup (set TMDB_API_KEY in .env)
+        tmdb_key = os.getenv("TMDB_API_KEY")
+        if posters and tmdb_key and combined:
+            _tmdb_cache = getattr(get_movies, "_tmdb_cache", None)
+            if _tmdb_cache is None:
+                get_movies._tmdb_cache = {}
+            cache = get_movies._tmdb_cache
+            for m in combined:
+                name, year = m.get("name"), m.get("year")
+                if not name:
+                    continue
+                key = f"{name}|{year or ''}"
+                if key in cache:
+                    m["poster_url"] = cache[key]
+                    continue
+                try:
+                    params = {"api_key": tmdb_key, "query": name, "language": "en-US"}
+                    if year:
+                        params["year"] = str(year).strip()
+                    resp = requests.get("https://api.themoviedb.org/3/search/movie", params=params, timeout=5)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        results = data.get("results") or []
+                        if results and results[0].get("poster_path"):
+                            m["poster_url"] = "https://image.tmdb.org/t/p/w500" + results[0]["poster_path"]
+                        else:
+                            m["poster_url"] = None
+                    else:
+                        m["poster_url"] = None
+                except Exception:
+                    m["poster_url"] = None
+                cache[key] = m.get("poster_url")
+        else:
+            for m in combined:
+                m["poster_url"] = None
+        return combined
+    except Exception as e:
+        return []
+
 @app.get("/listening")
 def get_listening_page():
     """Serve the Last.fm listening page"""
