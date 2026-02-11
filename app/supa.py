@@ -4,9 +4,11 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Load .env if present (local/dev). In Cloud Run, env vars are set by the platform.
-_load_env = Path(__file__).resolve().parent.parent / ".env"
-if _load_env.exists():
-    load_dotenv(_load_env)
+_app_dir = Path(__file__).resolve().parent
+_root_dir = _app_dir.parent
+for _env_path in (_root_dir / ".env", _app_dir / ".env"):
+    if _env_path.exists():
+        load_dotenv(_env_path)
 
 url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_ANON_KEY")

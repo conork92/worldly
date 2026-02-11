@@ -8,3 +8,7 @@ pull-books:
 # Pull from CSV instead: export from Goodreads, save to app/data/, then run this
 pull-books-csv:
 	cd $(dir $(MAKEFILE_LIST)) && ./venv/bin/python scripts/load_goodreads.py
+
+# Load Letterboxd CSVs: truncate then full load first-level files from app/data/letterboxd/
+load-letterboxd:
+	cd $(dir $(MAKEFILE_LIST)) && ./venv/bin/python scripts/load_letterboxd.py
