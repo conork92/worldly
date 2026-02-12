@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise - Conor's Worldly</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 40px;
+        }
+        .header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .title {
+            font-size: 42px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle { font-size: 16px; color: rgba(255,255,255,0.6); letter-spacing: 1px; margin-top: 8px; }
+        .nav-btn {
+            padding: 10px 20px;
+            background: rgba(79, 172, 254, 0.15);
+            border: 1px solid rgba(79, 172, 254, 0.4);
+            border-radius: 8px;
+            color: #4facfe;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .nav-btn:hover {
+            background: rgba(79, 172, 254, 0.35);
+            border-color: #4facfe;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .nav-btn.active { background: rgba(79, 172, 254, 0.4); border-color: #4facfe; color: white; }
+        .top-right-nav { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .refresh-btn {
+            padding: 12px 24px;
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid rgba(79, 172, 254, 0.5);
+            border-radius: 8px;
+            color: #4facfe;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.25s;
+        }
+        .refresh-btn:hover:not(:disabled) {
+            background: rgba(79, 172, 254, 0.4);
+            color: white;
+        }
+        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .refresh-btn.refresh-main {
+            padding: 14px 28px;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .controls-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            padding: 16px 20px;
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .control-group { display: flex; flex-direction: column; gap: 6px; }
+        .control-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); }
+        .control-group select {
+            padding: 8px 12px;
+            min-width: 120px;
+            background: rgba(10, 10, 25, 0.9);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+        }
+        .view-toggle {
+            display: flex;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(10, 10, 25, 0.6);
+        }
+        .view-toggle label {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.55);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin: 0;
+            border: 1px solid transparent;
+        }
+        .view-toggle label:hover { color: rgba(255,255,255,0.85); }
+        .view-toggle input { display: none; }
+        .view-toggle input:checked + label {
+            background: rgba(79, 172, 254, 0.3);
+            color: #4facfe;
+            border-color: rgba(79, 172, 254, 0.45);
+        }
+        .view-toggle label:first-of-type { border-radius: 8px 0 0 8px; border-right: none; }
+        .view-toggle label:last-of-type { border-radius: 0 8px 8px 0; }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .stat-card .label { font-size: 12px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+        .stat-card .value { font-size: 24px; font-weight: 600; color: #4facfe; }
+        .stat-card .sublabel { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 4px; }
+        .activity-types { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6; }
+        .chart-section {
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 28px 32px;
+            margin-bottom: 28px;
+        }
+        .chart-section h3 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.55);
+            margin-bottom: 24px;
+            font-weight: 600;
+        }
+        .chart-section h3 .period { color: #4facfe; font-weight: 500; }
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            min-height: 220px;
+            padding-bottom: 48px;
+        }
+        .chart-y-axis {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 180px;
+            padding-right: 12px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+        }
+        .chart-bars-wrap { flex: 1; display: flex; gap: 10px; align-items: flex-end; min-height: 180px; }
+        .chart-bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 28px;
+            max-width: 56px;
+        }
+        .chart-bar {
+            width: 100%;
+            min-height: 6px;
+            max-height: 180px;
+            background: linear-gradient(180deg, #00f2fe 0%, #4facfe 100%);
+            border-radius: 8px 8px 0 0;
+            transition: height 0.3s ease;
+            box-shadow: 0 -2px 12px rgba(79, 172, 254, 0.25);
+        }
+        .chart-bar-wrap .bar-value {
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .chart-bar-wrap .bar-label {
+            font-size: 11px;
+            color: rgba(255,255,255,0.45);
+            margin-top: 4px;
+            text-align: center;
+        }
+        .loading { text-align: center; padding: 60px; font-size: 18px; color: rgba(255,255,255,0.6); }
+        .activity-table-wrap {
+            overflow-x: auto;
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); }
+        th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); font-weight: 600; }
+        tr:hover { background: rgba(79, 172, 254, 0.06); }
+    </style>
+    <link rel="stylesheet" href="/static/css/login.css">
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/login.js"></script>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1 class="title">Exercise</h1>
+            <p class="subtitle">Strava activities</p>
+        </div>
+        <div class="top-right-nav">
+            <a class="nav-btn" href="/globe">Globe</a>
+            <a class="nav-btn" href="/books">Books</a>
+            <a class="nav-btn" href="/movies">Movies</a>
+            <a class="nav-btn" href="/quotes">Quotes</a>
+            <a class="nav-btn" href="/albums">Albums</a>
+            <a class="nav-btn" href="/listening">Listening</a>
+            <a class="nav-btn" href="/exercise">Exercise</a>
+            <a class="nav-btn" href="/progress">Progress</a>
+        </div>
+    </div>
+
+    <div class="controls-wrap">
+        <div class="controls">
+            <div class="control-group">
+                <label for="year-select">Year</label>
+                <select id="year-select"></select>
+            </div>
+            <div class="control-group" id="month-group">
+                <label for="month-select">Month</label>
+                <select id="month-select"></select>
+            </div>
+            <div class="control-group">
+                <label>View</label>
+                <div class="view-toggle">
+                    <input type="radio" name="view-range" id="view-month" value="month" checked />
+                    <label for="view-month">Month</label>
+                    <input type="radio" name="view-range" id="view-whole-year" value="year" />
+                    <label for="view-whole-year">Whole year</label>
+                </div>
+            </div>
+            <div class="control-group">
+                <label for="type-filter">Activity type</label>
+                <select id="type-filter">
+                    <option value="">All types</option>
+                </select>
+            </div>
+        </div>
+        <button type="button" class="refresh-btn refresh-main" id="refresh-btn" onclick="refreshData()">Refresh data from Strava</button>
+    </div>
+
+    <div id="stats-cards" class="stats-cards"></div>
+    <div id="chart-section" class="chart-section" style="display: none;">
+        <h3>Distance (km) — <span class="period" id="chart-period-label"></span></h3>
+        <div class="chart-container">
+            <div class="chart-y-axis" id="chart-y-axis"></div>
+            <div id="chart-bars" class="chart-bars-wrap"></div>
+        </div>
+    </div>
+    <div id="loading" class="loading">Loading activities…</div>
+    <div id="activity-table-wrap" class="activity-table-wrap" style="display: none;"></div>
+
+    <script>
+        let allActivities = [];
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+        function escapeHtml(s) {
+            if (s == null || s === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(s);
+            return div.innerHTML;
+        }
+        function formatDate(iso) {
+            if (!iso) return '—';
+            const s = String(iso);
+            return s.slice(0, 10) + (s.length > 10 ? ' ' + s.slice(11, 16) : '');
+        }
+        function formatDuration(seconds) {
+            if (seconds == null) return '—';
+            const m = Math.floor(Number(seconds) / 60);
+            const h = Math.floor(m / 60);
+            if (h) return h + 'h ' + (m % 60) + 'm';
+            return m + ' min';
+        }
+        function formatDistance(meters) {
+            if (meters == null) return '—';
+            const km = Number(meters) / 1000;
+            return km.toFixed(2) + ' km';
+        }
+        function formatSpeed(mps) {
+            if (mps == null) return '—';
+            const kmh = (Number(mps) * 3.6).toFixed(2);
+            return kmh + ' km/h';
+        }
+        function formatCadence(cadence) {
+            if (cadence == null) return '—';
+            return Number(cadence).toFixed(0) + ' rpm';
+        }
+        function getActivityDate(a) {
+            const sd = a.start_date_local || a.start_date;
+            if (!sd) return null;
+            const s = String(sd);
+            return s.slice(0, 10);
+        }
+        function getActivityMonthYear(a) {
+            const d = getActivityDate(a);
+            if (!d || d.length < 7) return null;
+            const [y, m] = d.split('-').map(Number);
+            return { year: y, month: m };
+        }
+        function isWholeYear() { return document.getElementById('view-whole-year').checked; }
+        function filterActivities() {
+            const month = parseInt(document.getElementById('month-select').value, 10);
+            const year = parseInt(document.getElementById('year-select').value, 10);
+            const typeFilter = (document.getElementById('type-filter').value || '').trim();
+            const wholeYear = isWholeYear();
+            return allActivities.filter(a => {
+                const my = getActivityMonthYear(a);
+                if (!my || my.year !== year) return false;
+                if (!wholeYear && my.month !== month) return false;
+                if (typeFilter) {
+                    const t = (a.sport_type || a.type || '').trim();
+                    if (t !== typeFilter) return false;
+                }
+                return true;
+            });
+        }
+        function renderStats(filtered) {
+            const totalDistance = filtered.reduce((sum, a) => sum + (Number(a.distance) || 0), 0);
+            const typeCount = {};
+            filtered.forEach(a => {
+                const t = a.sport_type || a.type || 'Other';
+                typeCount[t] = (typeCount[t] || 0) + 1;
+            });
+            const typesList = Object.entries(typeCount).sort((a, b) => b[1] - a[1]).map(([name, count]) => name + ': ' + count).join(' · ');
+            const sublabel = isWholeYear() ? 'this year' : 'this month';
+            const cards = document.getElementById('stats-cards');
+            cards.innerHTML = [
+                '<div class="stat-card"><div class="label">Activities</div><div class="value">' + filtered.length + '</div><div class="sublabel">' + sublabel + '</div></div>',
+                '<div class="stat-card"><div class="label">Total distance</div><div class="value">' + formatDistance(totalDistance) + '</div></div>',
+                '<div class="stat-card"><div class="label">By type</div><div class="activity-types">' + (typesList || '—') + '</div></div>'
+            ].join('');
+        }
+        function getWeekOfMonth(dateStr) {
+            if (!dateStr || dateStr.length < 10) return 0;
+            const d = new Date(dateStr.slice(0, 10));
+            const day = d.getDate();
+            return Math.min(5, Math.ceil(day / 7));
+        }
+        function renderChart(filtered) {
+            const section = document.getElementById('chart-section');
+            const labelEl = document.getElementById('chart-period-label');
+            const yAxisEl = document.getElementById('chart-y-axis');
+            const barsEl = document.getElementById('chart-bars');
+            const wholeYear = isWholeYear();
+            const year = parseInt(document.getElementById('year-select').value, 10);
+            const month = wholeYear ? null : parseInt(document.getElementById('month-select').value, 10);
+            let buckets = [];
+            if (wholeYear) {
+                labelEl.textContent = year;
+                for (let m = 1; m <= 12; m++) {
+                    const km = filtered.filter(a => {
+                        const my = getActivityMonthYear(a);
+                        return my && my.month === m;
+                    }).reduce((s, a) => s + (Number(a.distance) || 0) / 1000, 0);
+                    buckets.push({ label: monthNames[m - 1].slice(0, 3), value: km });
+                }
+            } else {
+                labelEl.textContent = monthNames[month - 1] + ' ' + year;
+                for (let w = 1; w <= 5; w++) {
+                    const km = filtered.filter(a => getWeekOfMonth(getActivityDate(a)) === w).reduce((s, a) => s + (Number(a.distance) || 0) / 1000, 0);
+                    buckets.push({ label: 'Week ' + w, value: km });
+                }
+            }
+            const maxKm = Math.max(1, ...buckets.map(b => b.value));
+            const barMaxHeight = 180;
+            let step = maxKm <= 5 ? 1 : maxKm <= 20 ? 5 : maxKm <= 100 ? 20 : Math.ceil(maxKm / 5 / 10) * 10;
+            let yTicks = [];
+            for (let k = 0; k <= maxKm; k += step) yTicks.push(k);
+            if (yTicks[yTicks.length - 1] < maxKm) yTicks.push(yTicks[yTicks.length - 1] + step);
+            yAxisEl.innerHTML = yTicks.slice().reverse().map(t => t + ' km').join('<br>');
+            barsEl.innerHTML = buckets.map(b => {
+                const pct = maxKm > 0 ? (b.value / maxKm) * 100 : 0;
+                const heightPx = Math.round((pct / 100) * barMaxHeight);
+                const valStr = b.value > 0 ? b.value.toFixed(1) + ' km' : '0';
+                return '<div class="chart-bar-wrap"><div class="chart-bar" style="height: ' + heightPx + 'px"></div><span class="bar-value">' + valStr + '</span><span class="bar-label">' + escapeHtml(b.label) + '</span></div>';
+            }).join('');
+            section.style.display = 'block';
+        }
+        function renderTable(filtered) {
+            const wrap = document.getElementById('activity-table-wrap');
+            if (filtered.length === 0) {
+                wrap.innerHTML = '<p class="loading" style="padding: 24px;">No activities for this month and filter.</p>';
+                wrap.style.display = 'block';
+                return;
+            }
+            const headers = ['Name', 'Type', 'Date', 'Distance', 'Moving time', 'Avg speed', 'Avg cadence'];
+            let table = '<table><thead><tr>' + headers.map(h => '<th>' + escapeHtml(h) + '</th>').join('') + '</tr></thead><tbody>';
+            filtered.forEach(a => {
+                const name = escapeHtml(a.name || '—');
+                const type = escapeHtml(a.sport_type || a.type || '—');
+                const date = formatDate(a.start_date_local || a.start_date);
+                const dist = formatDistance(a.distance);
+                const time = formatDuration(a.moving_time);
+                const speed = formatSpeed(a.average_speed);
+                const cadence = formatCadence(a.average_cadence);
+                table += '<tr><td>' + name + '</td><td>' + type + '</td><td>' + date + '</td><td>' + dist + '</td><td>' + time + '</td><td>' + speed + '</td><td>' + cadence + '</td></tr>';
+            });
+            table += '</tbody></table>';
+            wrap.innerHTML = table;
+            wrap.style.display = 'block';
+        }
+        function populateControls() {
+            const years = new Set();
+            const types = new Set();
+            allActivities.forEach(a => {
+                const my = getActivityMonthYear(a);
+                if (my) years.add(my.year);
+                const t = (a.sport_type || a.type || '').trim();
+                if (t) types.add(t);
+            });
+            const yearSelect = document.getElementById('year-select');
+            const monthSelect = document.getElementById('month-select');
+            const typeSelect = document.getElementById('type-filter');
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+            yearSelect.innerHTML = Array.from(years).sort((a, b) => b - a).map(y => '<option value="' + y + '"' + (y === currentYear ? ' selected' : '') + '>' + y + '</option>').join('') || '<option value="' + currentYear + '">' + currentYear + '</option>';
+            monthSelect.innerHTML = monthNames.map((name, i) => '<option value="' + (i + 1) + '"' + (i + 1 === currentMonth ? ' selected' : '') + '>' + name + '</option>').join('');
+            typeSelect.innerHTML = '<option value="">All types</option>' + Array.from(types).sort().map(t => '<option value="' + escapeHtml(t) + '">' + escapeHtml(t) + '</option>').join('');
+        }
+        function updateView() {
+            var wholeYear = isWholeYear();
+            document.getElementById('month-group').style.opacity = wholeYear ? '0.5' : '1';
+            document.getElementById('month-select').disabled = wholeYear;
+            const filtered = filterActivities();
+            renderStats(filtered);
+            renderChart(filtered);
+            renderTable(filtered);
+        }
+        function loadActivities() {
+            const loading = document.getElementById('loading');
+            loading.style.display = 'block';
+            document.getElementById('activity-table-wrap').style.display = 'none';
+            document.getElementById('stats-cards').innerHTML = '';
+            fetch('/api/exercise?limit=2000')
+                .then(r => r.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    if (data.error) {
+                        document.getElementById('activity-table-wrap').innerHTML = '<p class="loading">' + escapeHtml(data.message || data.error) + '</p>';
+                        document.getElementById('activity-table-wrap').style.display = 'block';
+                        return;
+                    }
+                    allActivities = Array.isArray(data) ? data : [];
+                    if (allActivities.length === 0) {
+                        document.getElementById('activity-table-wrap').innerHTML = '<p class="loading">No activities yet. Click "Pull latest from Strava" to sync (requires admin).</p>';
+                        document.getElementById('activity-table-wrap').style.display = 'block';
+                        return;
+                    }
+                    allActivities.sort((a, b) => (getActivityDate(b) || '').localeCompare(getActivityDate(a) || ''));
+                    populateControls();
+                    updateView();
+                })
+                .catch(() => {
+                    loading.style.display = 'none';
+                    document.getElementById('activity-table-wrap').innerHTML = '<p class="loading">Failed to load activities.</p>';
+                    document.getElementById('activity-table-wrap').style.display = 'block';
+                });
+        }
+        async function refreshData() {
+            try {
+                if (!window.isLoggedIn || !window.isLoggedIn()) {
+                    alert('You must be logged in to pull from Strava.');
+                    return;
+                }
+                if (!window.canWrite || !window.canWrite()) {
+                    alert('Guest users can only view. Log in as admin to pull latest data.');
+                    return;
+                }
+                const btn = document.getElementById('refresh-btn');
+                btn.disabled = true;
+                const response = await window.authenticatedFetch('/api/exercise/refresh', { method: 'POST' });
+                const result = await response.json();
+                btn.disabled = false;
+                alert(result.message || 'Pull started. Data may take a minute to update.');
+                setTimeout(loadActivities, 3000);
+            } catch (e) {
+                document.getElementById('refresh-btn').disabled = false;
+                alert('Error: ' + (e.message || 'Failed to refresh'));
+            }
+        }
+        document.getElementById('month-select').addEventListener('change', updateView);
+        document.getElementById('year-select').addEventListener('change', updateView);
+        document.getElementById('view-month').addEventListener('change', updateView);
+        document.getElementById('view-whole-year').addEventListener('change', updateView);
+        document.getElementById('type-filter').addEventListener('change', updateView);
+        loadActivities();
+    </script>
+</body>
+</html>
