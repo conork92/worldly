@@ -38,6 +38,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: |
           python3 << 'PY'
           import os
@@ -56,7 +58,7 @@ jobs:
               out.append(f'{k}: "{v}"')
             print("Using CLOUD_RUN_ENV secret (converted to YAML)")
           else:
-            for key in ["SUPABASE_URL", "SUPABASE_ANON_KEY", "API_KEY"]:
+            for key in ["SUPABASE_URL", "SUPABASE_ANON_KEY", "API_KEY", "TMDB_ACCESS_TOKEN", "TMDB_API_KEY"]:
               val = os.environ.get(key, "") or ""
               val = val.replace("\\", "\\\\").replace('"', '\\"')
               if val: out.append(f'{key}: "{val}"')

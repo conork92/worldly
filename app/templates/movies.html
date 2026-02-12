@@ -101,7 +101,7 @@
 
         .movies-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 24px;
         }
 
@@ -170,7 +170,14 @@
         .movie-year {
             font-size: 13px;
             color: rgba(255,255,255,0.6);
-            margin-bottom: 10px;
+            margin-bottom: 6px;
+        }
+
+        .movie-details {
+            font-size: 12px;
+            color: rgba(255,255,255,0.55);
+            line-height: 1.4;
+            margin-bottom: 8px;
         }
 
         .movie-meta {
@@ -202,9 +209,90 @@
             border: 1px solid rgba(245, 158, 11, 0.4);
         }
 
+        .source-badge.enrichment {
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
         .movie-date {
             font-size: 11px;
             color: rgba(255,255,255,0.45);
+        }
+
+        .movie-votes {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            margin-top: 4px;
+        }
+
+        .movie-overview {
+            font-size: 11px;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.35;
+            margin-top: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .filters-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .filter-group label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .filter-group select,
+        .filter-group input[type="number"] {
+            padding: 8px 12px;
+            min-width: 120px;
+            background: rgba(10, 10, 25, 0.9);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+        }
+
+        .filter-group input[type="number"] {
+            min-width: 80px;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: rgba(229, 9, 20, 0.5);
+        }
+
+        .filter-group select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .sort-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
         }
 
         .loading {
@@ -246,6 +334,59 @@
         <button type="button" class="filter-btn" data-filter="watchlist">Watchlist</button>
     </div>
 
+    <div class="filters-panel">
+        <div class="filter-group">
+            <label for="f-genre">Genre</label>
+            <select id="f-genre">
+                <option value="">Any</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="f-length-min">Length (min)</label>
+            <input type="number" id="f-length-min" min="0" placeholder="min" step="5">
+        </div>
+        <div class="filter-group">
+            <label for="f-length-max">Length (max)</label>
+            <input type="number" id="f-length-max" min="0" placeholder="max" step="5">
+        </div>
+        <div class="filter-group">
+            <label for="f-year">Year</label>
+            <select id="f-year">
+                <option value="">Any</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="f-country">Production country</label>
+            <select id="f-country">
+                <option value="">Any</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="f-lang">Spoken language</label>
+            <select id="f-lang">
+                <option value="">Any</option>
+            </select>
+        </div>
+        <div class="sort-row">
+            <div class="filter-group">
+                <label for="f-order">Sort by</label>
+                <select id="f-order">
+                    <option value="release_date">Release date</option>
+                    <option value="vote_average">Vote average</option>
+                    <option value="vote_count">Vote count</option>
+                    <option value="name">Name</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="f-dir">Order</label>
+                <select id="f-dir">
+                    <option value="desc">Desc</option>
+                    <option value="asc">Asc</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
     <div class="stats-row" id="stats"></div>
     <div id="loading" class="loading">Loading movies…</div>
     <div id="grid" class="movies-grid" style="display: none;"></div>
@@ -254,20 +395,50 @@
         const gridEl = document.getElementById('grid');
         const loadingEl = document.getElementById('loading');
         const statsEl = document.getElementById('stats');
+        let filterOpts = { genres: [], years: [], production_countries: [], spoken_languages: [], runtime_min: null, runtime_max: null };
+
+        function getListFilter() {
+            const btn = document.querySelector('.filter-btn.active');
+            return (btn && btn.getAttribute('data-filter')) || 'all';
+        }
+
+        function buildMoviesUrl() {
+            const listFilter = getListFilter();
+            const params = new URLSearchParams();
+            params.set('filter', listFilter);
+            params.set('posters', '1');
+            const genre = document.getElementById('f-genre').value;
+            if (genre) params.set('genre', genre);
+            const lengthMin = document.getElementById('f-length-min').value;
+            if (lengthMin) params.set('length_min', lengthMin);
+            const lengthMax = document.getElementById('f-length-max').value;
+            if (lengthMax) params.set('length_max', lengthMax);
+            const year = document.getElementById('f-year').value;
+            if (year) params.set('year', year);
+            const country = document.getElementById('f-country').value;
+            if (country) params.set('production_country', country);
+            const lang = document.getElementById('f-lang').value;
+            if (lang) params.set('spoken_languages', lang);
+            const orderBy = document.getElementById('f-order').value;
+            if (orderBy) params.set('order_by', orderBy);
+            const orderDir = document.getElementById('f-dir').value;
+            if (orderDir) params.set('order_dir', orderDir);
+            return '/api/movies?' + params.toString();
+        }
 
         function setFilter(filter) {
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
             });
-            loadMovies(filter);
+            loadMovies();
         }
 
-        function loadMovies(filter) {
+        function loadMovies() {
             gridEl.style.display = 'none';
             loadingEl.style.display = 'block';
             statsEl.textContent = '';
 
-            fetch('/api/movies?filter=' + encodeURIComponent(filter) + '&posters=1')
+            fetch(buildMoviesUrl())
                 .then(r => r.json())
                 .then(items => {
                     loadingEl.style.display = 'none';
@@ -276,25 +447,38 @@
                         gridEl.style.display = 'block';
                         return;
                     }
+                    const listFilter = getListFilter();
                     const watched = items.filter(m => m.source === 'watched').length;
                     const watchlist = items.filter(m => m.source === 'watchlist').length;
-                    if (filter === 'all') {
+                    if (listFilter === 'all') {
                         statsEl.innerHTML = '<strong>' + items.length + '</strong> total &nbsp;|&nbsp; <strong>' + watched + '</strong> watched &nbsp;|&nbsp; <strong>' + watchlist + '</strong> watchlist';
                     } else {
-                        statsEl.innerHTML = '<strong>' + items.length + '</strong> ' + filter;
+                        statsEl.innerHTML = '<strong>' + items.length + '</strong> ' + listFilter;
                     }
                     gridEl.innerHTML = items.map(m => {
                         const title = escapeHtml(m.name || 'Unknown');
-                        const year = m.year ? escapeHtml(m.year) : '—';
+                        const year = m.year ? escapeHtml(m.year) : (m.release_date ? escapeHtml(String(m.release_date).slice(0, 4)) : '—');
                         const date = m.date ? escapeHtml(m.date) : '';
                         const url = (m.letterboxd_uri || '#').trim();
                         const poster = m.poster_url
                             ? '<div class="movie-poster-wrap"><img class="movie-poster" src="' + escapeHtml(m.poster_url) + '" alt="" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><div class="movie-poster-placeholder" style="display:none;">🎬</div></div>'
                             : '<div class="movie-poster-wrap"><div class="movie-poster-placeholder">🎬</div></div>';
-                        const badge = m.source === 'watched'
-                            ? '<span class="source-badge watched">Watched</span>'
-                            : '<span class="source-badge watchlist">Watchlist</span>';
-                        return '<div class="movie-card"><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + poster + '<div class="movie-info"><div class="movie-title">' + title + '</div><div class="movie-year">' + year + '</div><div class="movie-meta">' + badge + '<span class="movie-date">' + date + '</span></div></div></a></div>';
+                        let badge = '<span class="source-badge enrichment">—</span>';
+                        if (m.source === 'watched') badge = '<span class="source-badge watched">Watched</span>';
+                        else if (m.source === 'watchlist') badge = '<span class="source-badge watchlist">Watchlist</span>';
+                        const parts = [];
+                        if (m.runtime_minutes) parts.push(m.runtime_minutes + ' min');
+                        if (m.genres && m.genres.length) parts.push(m.genres.slice(0, 3).join(', '));
+                        if (m.director) parts.push('Dir: ' + escapeHtml(m.director));
+                        const details = parts.length ? '<div class="movie-details">' + parts.join(' · ') + '</div>' : '';
+                        const votes = (m.vote_average != null || m.vote_count != null)
+                            ? '<div class="movie-votes">★ ' + (m.vote_average != null ? Number(m.vote_average).toFixed(1) : '—') + (m.vote_count != null ? ' · ' + m.vote_count + ' votes' : '') + '</div>'
+                            : '';
+                        const overview = (m.overview && m.overview.trim())
+                            ? '<div class="movie-overview">' + escapeHtml(m.overview.trim()) + '</div>'
+                            : '';
+                        const extra = (votes || overview) ? (votes + overview) : '';
+                        return '<div class="movie-card"><a href="' + escapeHtml(url) + '" target="_blank" rel="noopener">' + poster + '<div class="movie-info"><div class="movie-title">' + title + '</div><div class="movie-year">' + year + '</div>' + details + extra + '<div class="movie-meta">' + badge + '<span class="movie-date">' + date + '</span></div></div></a></div>';
                     }).join('');
                     gridEl.style.display = 'grid';
                 })
@@ -311,10 +495,40 @@
             return div.innerHTML;
         }
 
+        function populateFilterOptions() {
+            fetch('/api/movies/filters')
+                .then(r => r.json())
+                .then(opts => {
+                    filterOpts = opts;
+                    const genreSel = document.getElementById('f-genre');
+                    genreSel.innerHTML = '<option value="">Any</option>' + (opts.genres || []).map(g => '<option value="' + escapeHtml(g) + '">' + escapeHtml(g) + '</option>').join('');
+                    const yearSel = document.getElementById('f-year');
+                    yearSel.innerHTML = '<option value="">Any</option>' + (opts.years || []).map(y => '<option value="' + escapeHtml(y) + '">' + escapeHtml(y) + '</option>').join('');
+                    const countrySel = document.getElementById('f-country');
+                    countrySel.innerHTML = '<option value="">Any</option>' + (opts.production_countries || []).map(c => '<option value="' + escapeHtml(c) + '">' + escapeHtml(c) + '</option>').join('');
+                    const langSel = document.getElementById('f-lang');
+                    langSel.innerHTML = '<option value="">Any</option>' + (opts.spoken_languages || []).map(l => '<option value="' + escapeHtml(l) + '">' + escapeHtml(l) + '</option>').join('');
+                    const minIn = document.getElementById('f-length-min');
+                    const maxIn = document.getElementById('f-length-max');
+                    if (opts.runtime_min != null) minIn.placeholder = opts.runtime_min;
+                    if (opts.runtime_max != null) maxIn.placeholder = opts.runtime_max;
+                })
+                .catch(() => {});
+        }
+
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => setFilter(btn.getAttribute('data-filter')));
         });
+        document.getElementById('f-genre').addEventListener('change', loadMovies);
+        document.getElementById('f-length-min').addEventListener('change', loadMovies);
+        document.getElementById('f-length-max').addEventListener('change', loadMovies);
+        document.getElementById('f-year').addEventListener('change', loadMovies);
+        document.getElementById('f-country').addEventListener('change', loadMovies);
+        document.getElementById('f-lang').addEventListener('change', loadMovies);
+        document.getElementById('f-order').addEventListener('change', loadMovies);
+        document.getElementById('f-dir').addEventListener('change', loadMovies);
 
+        populateFilterOptions();
         setFilter('all');
     </script>
 </body>
