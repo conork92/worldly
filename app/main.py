@@ -647,6 +647,12 @@ def get_progress_page():
     progress_path = Path(__file__).parent / "templates" / "progress.html"
     return FileResponse(progress_path)
 
+@app.get("/exercise")
+def get_exercise_page():
+    """Serve the Exercise (Strava) page"""
+    exercise_path = Path(__file__).parent / "templates" / "exercise.html"
+    return FileResponse(exercise_path)
+
 @app.get("/api/listening")
 def get_listening_tracks(limit: int = 100, month: int = None, year: int = None):
     """Get tracks from lastfm_listened_table, optionally filtered by month and year"""
@@ -703,6 +709,58 @@ def refresh_listening_data():
             "success": True,
             "message": "Last.fm data refresh started",
             "pid": process.pid
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start refresh: {str(e)}")
+
+@app.get("/api/exercise")
+def get_exercise_data(month: int = None, year: int = None, limit: int = 500):
+    """Get Strava activities from worldly_strava, optionally filtered by month/year"""
+    try:
+        q = supabase.table("worldly_strava").select("*").order("start_date_local", desc=True)
+        if limit and limit > 0:
+            q = q.limit(limit)
+        r = q.execute()
+        rows = list(r.data or [])
+        if month is not None and year is not None:
+            from datetime import datetime
+            filtered = []
+            for row in rows:
+                sd = row.get("start_date_local") or row.get("start_date")
+                if not sd:
+                    continue
+                if isinstance(sd, str):
+                    try:
+                        dt = datetime.fromisoformat(sd.replace("Z", "+00:00"))
+                    except Exception:
+                        continue
+                else:
+                    dt = sd
+                if dt.month == month and dt.year == year:
+                    filtered.append(row)
+            rows = filtered
+        return rows
+    except Exception as e:
+        return {"error": str(e), "message": "Failed to fetch exercise data"}
+
+@app.post("/api/exercise/refresh", dependencies=[Depends(verify_api_key)])
+def refresh_exercise_data():
+    """Trigger Strava pull script to sync activities into worldly_strava"""
+    try:
+        script_path = Path(__file__).parent / "scripts" / "pull_strava.py"
+        if not script_path.exists():
+            raise HTTPException(status_code=404, detail="Strava pull script not found")
+        python_path = sys.executable
+        process = subprocess.Popen(
+            [python_path, str(script_path)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=str(Path(__file__).parent),
+        )
+        return {
+            "success": True,
+            "message": "Strava data refresh started",
+            "pid": process.pid,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to start refresh: {str(e)}")
@@ -951,7 +1009,7 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                 books_trend = "same"
             
             books_percentage = int((books_count / books_goal * 100)) if books_goal > 0 else 0
-            exercise_goal = 20 * 12  # 240 exercises per year
+            exercise_goal = 10 * 12  # 120 exercises per year
         else:
             # For single month view
             albums_goal = 6  # 6 albums per month
@@ -1017,7 +1075,38 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                 books_trend = "same"
             
             books_percentage = int((books_count / books_goal * 100)) if books_goal > 0 else 0
-            exercise_goal = 20  # 20 exercises per month
+            exercise_goal = 10  # 10 exercises per month
+        
+        # Exercise count from worldly_strava (Strava activities)
+        exercise_count = 0
+        exercise_prev_count = 0
+        exercise_trend = "same"
+        try:
+            strava_result = supabase.table("worldly_strava").select("start_date_local,start_date").execute()
+            strava_rows = strava_result.data if strava_result.data else []
+            for row in strava_rows:
+                sd = row.get("start_date_local") or row.get("start_date")
+                date_obj = parse_date(sd) if sd and isinstance(sd, str) else (sd if isinstance(sd, datetime) else None)
+                if not date_obj:
+                    continue
+                if all_months:
+                    if date_obj.year == year:
+                        exercise_count += 1
+                    if date_obj.year == year - 1:
+                        exercise_prev_count += 1
+                else:
+                    if date_obj.month == month and date_obj.year == year:
+                        exercise_count += 1
+                    prev_m = month - 1 if month > 1 else 12
+                    prev_y = year if month > 1 else year - 1
+                    if date_obj.month == prev_m and date_obj.year == prev_y:
+                        exercise_prev_count += 1
+            if exercise_prev_count < exercise_count:
+                exercise_trend = "up"
+            elif exercise_prev_count > exercise_count:
+                exercise_trend = "down"
+        except Exception:
+            pass
         
         # Meditation goal is "one per day". For current month/year, "on track" = count >= days elapsed so far.
         def _meditations_progress(count, goal_days, trend, month_val, year_val, all_months_val):
@@ -1035,7 +1124,6 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                 "trend": trend
             }
         
-        # Dummy data for other categories (can be updated later)
         progress_data = {
             "month": month if not all_months else None,
             "year": year,
@@ -1054,10 +1142,10 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
             },
             "meditations_done": _meditations_progress(meditations_count, days_in_period, meditations_trend, month, year, all_months),
             "exercise_done": {
-                "count": 12,
+                "count": exercise_count,
                 "goal": exercise_goal,
-                "percentage": int((12 / exercise_goal * 100)) if exercise_goal > 0 else 0,
-                "trend": "down"
+                "percentage": int((exercise_count / exercise_goal * 100)) if exercise_goal > 0 else 0,
+                "trend": exercise_trend
             },
             "albums": filtered_albums  # Include the albums list
         }
