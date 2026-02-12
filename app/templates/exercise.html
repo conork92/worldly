@@ -78,6 +78,34 @@
             align-items: center;
             gap: 10px;
         }
+        .strava-sync-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.85);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            height: 36px;
+        }
+        .strava-sync-btn:hover:not(:disabled) {
+            background: rgba(79, 172, 254, 0.15);
+            border-color: rgba(79, 172, 254, 0.35);
+            color: #4facfe;
+        }
+        .strava-sync-btn:active:not(:disabled) { transform: scale(0.98); }
+        .strava-sync-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .strava-sync-btn .btn-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.85;
+        }
         .controls-wrap {
             display: flex;
             flex-wrap: wrap;
@@ -214,6 +242,51 @@
             margin-top: 4px;
             text-align: center;
         }
+        .mini-charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 640px) { .mini-charts-row { grid-template-columns: 1fr; } }
+        .mini-chart {
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px 24px;
+        }
+        .mini-chart h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+        .mini-chart .mini-bars {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 120px;
+        }
+        .mini-chart .mini-bar-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            min-width: 20px;
+        }
+        .mini-chart .mini-bar {
+            width: 100%;
+            min-height: 4px;
+            max-height: 100px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.2s;
+        }
+        .mini-chart .mini-bar.count { background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%); }
+        .mini-chart .mini-bar.mins { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }
+        .mini-chart .mini-bar-wrap span { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 6px; }
         .loading { text-align: center; padding: 60px; font-size: 18px; color: rgba(255,255,255,0.6); }
         .activity-table-wrap {
             overflow-x: auto;
@@ -273,8 +346,14 @@
                     <option value="">All types</option>
                 </select>
             </div>
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button type="button" class="strava-sync-btn" id="strava-sync-btn" onclick="refreshData()">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Refresh Strava
+                </button>
+            </div>
         </div>
-        <button type="button" class="refresh-btn refresh-main" id="refresh-btn" onclick="refreshData()">Refresh data from Strava</button>
     </div>
 
     <div id="stats-cards" class="stats-cards"></div>
@@ -283,6 +362,16 @@
         <div class="chart-container">
             <div class="chart-y-axis" id="chart-y-axis"></div>
             <div id="chart-bars" class="chart-bars-wrap"></div>
+        </div>
+    </div>
+    <div id="mini-charts-row" class="mini-charts-row" style="display: none;">
+        <div class="mini-chart">
+            <h4 id="mini-chart-count-title">Workouts per week</h4>
+            <div id="mini-chart-count" class="mini-bars"></div>
+        </div>
+        <div class="mini-chart">
+            <h4 id="mini-chart-mins-title">Minutes per week</h4>
+            <div id="mini-chart-mins" class="mini-bars"></div>
         </div>
     </div>
     <div id="loading" class="loading">Loading activities…</div>
@@ -415,6 +504,45 @@
             }).join('');
             section.style.display = 'block';
         }
+        function renderMiniCharts(filtered) {
+            const row = document.getElementById('mini-charts-row');
+            const countEl = document.getElementById('mini-chart-count');
+            const minsEl = document.getElementById('mini-chart-mins');
+            const countTitle = document.getElementById('mini-chart-count-title');
+            const minsTitle = document.getElementById('mini-chart-mins-title');
+            const wholeYear = isWholeYear();
+            if (countTitle) countTitle.textContent = wholeYear ? 'Workouts per month' : 'Workouts per week';
+            if (minsTitle) minsTitle.textContent = wholeYear ? 'Minutes per month' : 'Minutes per week';
+            const year = parseInt(document.getElementById('year-select').value, 10);
+            const month = wholeYear ? null : parseInt(document.getElementById('month-select').value, 10);
+            let countBuckets = [], minsBuckets = [];
+            if (wholeYear) {
+                for (let m = 1; m <= 12; m++) {
+                    const inMonth = filtered.filter(a => { const my = getActivityMonthYear(a); return my && my.month === m; });
+                    countBuckets.push({ label: monthNames[m - 1].slice(0, 3), value: inMonth.length });
+                    minsBuckets.push({ label: monthNames[m - 1].slice(0, 3), value: inMonth.reduce((s, a) => s + (Number(a.moving_time) || Number(a.elapsed_time) || 0) / 60, 0) });
+                }
+            } else {
+                for (let w = 1; w <= 5; w++) {
+                    const inWeek = filtered.filter(a => getWeekOfMonth(getActivityDate(a)) === w);
+                    countBuckets.push({ label: 'W' + w, value: inWeek.length });
+                    minsBuckets.push({ label: 'W' + w, value: inWeek.reduce((s, a) => s + (Number(a.moving_time) || Number(a.elapsed_time) || 0) / 60, 0) });
+                }
+            }
+            const maxCount = Math.max(1, ...countBuckets.map(b => b.value));
+            const maxMins = Math.max(1, ...minsBuckets.map(b => b.value));
+            const h = 100;
+            countEl.innerHTML = countBuckets.map(b => {
+                const heightPx = Math.round((b.value / maxCount) * h);
+                return '<div class="mini-bar-wrap"><div class="mini-bar count" style="height: ' + heightPx + 'px"></div><span>' + b.value + '</span><span>' + escapeHtml(b.label) + '</span></div>';
+            }).join('');
+            minsEl.innerHTML = minsBuckets.map(b => {
+                const heightPx = Math.round((b.value / maxMins) * h);
+                const minsStr = b.value >= 60 ? (b.value / 60).toFixed(1) + 'h' : Math.round(b.value) + 'm';
+                return '<div class="mini-bar-wrap"><div class="mini-bar mins" style="height: ' + heightPx + 'px"></div><span>' + minsStr + '</span><span>' + escapeHtml(b.label) + '</span></div>';
+            }).join('');
+            row.style.display = 'grid';
+        }
         function renderTable(filtered) {
             const wrap = document.getElementById('activity-table-wrap');
             if (filtered.length === 0) {
@@ -464,6 +592,7 @@
             const filtered = filterActivities();
             renderStats(filtered);
             renderChart(filtered);
+            renderMiniCharts(filtered);
             renderTable(filtered);
         }
         function loadActivities() {
@@ -471,6 +600,8 @@
             loading.style.display = 'block';
             document.getElementById('activity-table-wrap').style.display = 'none';
             document.getElementById('stats-cards').innerHTML = '';
+            var miniRow = document.getElementById('mini-charts-row');
+            if (miniRow) miniRow.style.display = 'none';
             fetch('/api/exercise?limit=2000')
                 .then(r => r.json())
                 .then(data => {
@@ -499,22 +630,23 @@
         async function refreshData() {
             try {
                 if (!window.isLoggedIn || !window.isLoggedIn()) {
-                    alert('You must be logged in to pull from Strava.');
+                    alert('Please log in to refresh data from Strava.');
                     return;
                 }
                 if (!window.canWrite || !window.canWrite()) {
-                    alert('Guest users can only view. Log in as admin to pull latest data.');
+                    alert('Admin only. Log in as admin to pull latest data from Strava.');
                     return;
                 }
-                const btn = document.getElementById('refresh-btn');
-                btn.disabled = true;
+                var btn = document.getElementById('strava-sync-btn');
+                if (btn) btn.disabled = true;
                 const response = await window.authenticatedFetch('/api/exercise/refresh', { method: 'POST' });
                 const result = await response.json();
-                btn.disabled = false;
-                alert(result.message || 'Pull started. Data may take a minute to update.');
+                if (btn) btn.disabled = false;
+                alert(result.message || 'Refresh started. Data may take a minute to update.');
                 setTimeout(loadActivities, 3000);
             } catch (e) {
-                document.getElementById('refresh-btn').disabled = false;
+                var b = document.getElementById('strava-sync-btn');
+                if (b) b.disabled = false;
                 alert('Error: ' + (e.message || 'Failed to refresh'));
             }
         }
