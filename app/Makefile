@@ -12,3 +12,7 @@ pull-books-csv:
 # Load Letterboxd CSVs: truncate then full load first-level files from app/data/letterboxd/
 load-letterboxd:
 	cd $(dir $(MAKEFILE_LIST)) && ./venv/bin/python scripts/load_letterboxd.py
+
+# Enrich Letterboxd watched + watchlist with TMDB (runtime, genre, director). Requires TMDB_API_KEY. Run letterboxd_tmdb_enrichment.sql first.
+enrich-letterboxd-tmdb:
+	cd $(dir $(MAKEFILE_LIST)) && ./venv/bin/python scripts/enrich_letterboxd_tmdb.py

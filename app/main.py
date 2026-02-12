@@ -482,59 +482,157 @@ def get_movies_page():
     movies_path = Path(__file__).parent / "templates" / "movies.html"
     return FileResponse(movies_path)
 
-@app.get("/api/movies")
-def get_movies(filter: str = "all", posters: bool = True):
-    """Get movies from letterboxd_watched and letterboxd_watchlist. filter: all | watched | watchlist."""
+def _movies_enrichment_rows():
+    """Fetch all rows from letterboxd_tmdb_enrichment with poster/backdrop as full URLs."""
+    r = supabase.table("letterboxd_tmdb_enrichment").select(
+        "name,year,runtime_minutes,genres,director,overview,poster_path,backdrop_path,tagline,"
+        "vote_average,vote_count,release_date,production_countries,spoken_languages"
+    ).execute()
+    rows = []
+    for row in (r.data or []):
+        p = (row.get("poster_path") or "").strip()
+        b = (row.get("backdrop_path") or "").strip()
+        row = dict(row)
+        row["poster_url"] = p if (p and p.startswith("http")) else ("https://image.tmdb.org/t/p/w500" + p if p else None)
+        row["backdrop_url"] = b if (b and b.startswith("http")) else ("https://image.tmdb.org/t/p/w780" + b if b else None)
+        rows.append(row)
+    return rows
+
+
+@app.get("/api/movies/filters")
+def get_movies_filters():
+    """Return distinct genres, years, production_countries, spoken_languages and runtime range for filter UI."""
     try:
-        import requests
-        watched = []
-        watchlist = []
+        rows = _movies_enrichment_rows()
+        genres = set()
+        years = set()
+        countries = set()
+        languages = set()
+        runtimes = []
+        for row in rows:
+            for g in row.get("genres") or []:
+                if g:
+                    genres.add(g)
+            rd = row.get("release_date") or ""
+            if len(rd) >= 4:
+                years.add(rd[:4])
+            for c in row.get("production_countries") or []:
+                if c:
+                    countries.add(c)
+            sl = (row.get("spoken_languages") or "").strip()
+            if sl:
+                for part in sl.replace(",", " ").split():
+                    part = part.strip()
+                    if part:
+                        languages.add(part)
+            rt = row.get("runtime_minutes")
+            if rt is not None:
+                runtimes.append(rt)
+        return {
+            "genres": sorted(genres),
+            "years": sorted(years, reverse=True),
+            "production_countries": sorted(countries),
+            "spoken_languages": sorted(languages),
+            "runtime_min": min(runtimes) if runtimes else None,
+            "runtime_max": max(runtimes) if runtimes else None,
+        }
+    except Exception:
+        return {"genres": [], "years": [], "production_countries": [], "spoken_languages": [], "runtime_min": None, "runtime_max": None}
+
+
+@app.get("/api/movies")
+def get_movies(
+    filter: str = "all",
+    posters: bool = True,
+    genre: str = None,
+    length_min: int = None,
+    length_max: int = None,
+    year: str = None,
+    production_country: str = None,
+    spoken_languages: str = None,
+    order_by: str = None,
+    order_dir: str = "desc",
+):
+    """Get movies from letterboxd_tmdb_enrichment, with optional join to watched/watchlist for source/date/uri. Supports filters and ordering."""
+    try:
+        # Letterboxd lookup: (name, year) -> date, letterboxd_uri, source
+        watched_key_to_meta = {}
+        watchlist_key_to_meta = {}
         if filter in ("all", "watched"):
             r = supabase.table("letterboxd_watched").select("date,name,year,letterboxd_uri").order("date", desc=True).execute()
-            watched = [{"date": x.get("date"), "name": x.get("name"), "year": x.get("year"), "letterboxd_uri": x.get("letterboxd_uri"), "source": "watched"} for x in (r.data or [])]
+            for x in (r.data or []):
+                key = ((x.get("name") or "").strip(), (x.get("year") or "").strip())
+                watched_key_to_meta[key] = {"date": x.get("date"), "letterboxd_uri": x.get("letterboxd_uri"), "source": "watched"}
         if filter in ("all", "watchlist"):
             r = supabase.table("letterboxd_watchlist").select("date,name,year,letterboxd_uri").order("date", desc=True).execute()
-            watchlist = [{"date": x.get("date"), "name": x.get("name"), "year": x.get("year"), "letterboxd_uri": x.get("letterboxd_uri"), "source": "watchlist"} for x in (r.data or [])]
-        combined = watched + watchlist
-        # Sort by date desc when combined
-        combined.sort(key=lambda m: (m.get("date") or ""), reverse=True)
-        # Optional: TMDb poster lookup (set TMDB_API_KEY in .env)
-        tmdb_key = os.getenv("TMDB_API_KEY")
-        if posters and tmdb_key and combined:
-            _tmdb_cache = getattr(get_movies, "_tmdb_cache", None)
-            if _tmdb_cache is None:
-                get_movies._tmdb_cache = {}
-            cache = get_movies._tmdb_cache
-            for m in combined:
-                name, year = m.get("name"), m.get("year")
-                if not name:
-                    continue
-                key = f"{name}|{year or ''}"
-                if key in cache:
-                    m["poster_url"] = cache[key]
-                    continue
-                try:
-                    params = {"api_key": tmdb_key, "query": name, "language": "en-US"}
-                    if year:
-                        params["year"] = str(year).strip()
-                    resp = requests.get("https://api.themoviedb.org/3/search/movie", params=params, timeout=5)
-                    if resp.status_code == 200:
-                        data = resp.json()
-                        results = data.get("results") or []
-                        if results and results[0].get("poster_path"):
-                            m["poster_url"] = "https://image.tmdb.org/t/p/w500" + results[0]["poster_path"]
-                        else:
-                            m["poster_url"] = None
-                    else:
-                        m["poster_url"] = None
-                except Exception:
-                    m["poster_url"] = None
-                cache[key] = m.get("poster_url")
-        else:
-            for m in combined:
+            for x in (r.data or []):
+                key = ((x.get("name") or "").strip(), (x.get("year") or "").strip())
+                watchlist_key_to_meta[key] = {"date": x.get("date"), "letterboxd_uri": x.get("letterboxd_uri"), "source": "watchlist"}
+
+        rows = _movies_enrichment_rows()
+        # Restrict by list filter: only include (name,year) that exist in watched and/or watchlist when filter is watched/watchlist
+        if filter == "watched":
+            rows = [m for m in rows if (m.get("name") or "").strip() and ((m.get("name") or "").strip(), (m.get("year") or "").strip()) in watched_key_to_meta]
+        elif filter == "watchlist":
+            rows = [m for m in rows if (m.get("name") or "").strip() and ((m.get("name") or "").strip(), (m.get("year") or "").strip()) in watchlist_key_to_meta]
+
+        for m in rows:
+            key = ((m.get("name") or "").strip(), (m.get("year") or "").strip())
+            meta = watched_key_to_meta.get(key) or watchlist_key_to_meta.get(key)
+            if meta:
+                m["date"] = meta.get("date")
+                m["letterboxd_uri"] = meta.get("letterboxd_uri")
+                m["source"] = meta.get("source")
+            else:
+                m["date"] = None
+                m["letterboxd_uri"] = None
+                m["source"] = "enrichment"
+
+        # Filters
+        if genre:
+            genre_lower = genre.strip().lower()
+            rows = [m for m in rows if (m.get("genres") or []) and any((g or "").strip().lower() == genre_lower for g in m.get("genres"))]
+        if length_min is not None:
+            rows = [m for m in rows if m.get("runtime_minutes") is not None and m["runtime_minutes"] >= length_min]
+        if length_max is not None:
+            rows = [m for m in rows if m.get("runtime_minutes") is not None and m["runtime_minutes"] <= length_max]
+        if year:
+            year_s = str(year).strip()
+            rows = [m for m in rows if (m.get("release_date") or "")[:4] == year_s]
+        if production_country:
+            pc = production_country.strip()
+            rows = [m for m in rows if (m.get("production_countries") or []) and any((c or "").strip() == pc for c in m.get("production_countries"))]
+        if spoken_languages:
+            sl_param = spoken_languages.strip().lower()
+            rows = [m for m in rows if sl_param in ((m.get("spoken_languages") or "").lower())]
+
+        # Order
+        order_by = (order_by or "release_date").strip().lower()
+        order_dir = (order_dir or "desc").strip().lower()
+        reverse = order_dir == "desc"
+
+        def sort_key(m):
+            if order_by == "vote_average":
+                v = m.get("vote_average")
+                return (v is None, v if v is not None else 0)
+            if order_by == "vote_count":
+                v = m.get("vote_count")
+                return (v is None, v if v is not None else 0)
+            if order_by == "release_date":
+                return (m.get("release_date") or "")
+            if order_by == "name":
+                return (m.get("name") or "").lower()
+            return (m.get("release_date") or "")
+
+        rows.sort(key=sort_key, reverse=reverse)
+
+        if not posters:
+            for m in rows:
                 m["poster_url"] = None
-        return combined
-    except Exception as e:
+                m["backdrop_url"] = None
+
+        return rows
+    except Exception:
         return []
 
 @app.get("/listening")
