@@ -97,7 +97,7 @@ def movie_details(tmdb_id: int) -> Optional[dict]:
 def main():
     # Distinct (name, year) from watched + watchlist
     seen = set()
-    rows = []
+    all_rows = []
     for table in ("letterboxd_watched", "letterboxd_watchlist"):
         r = supabase.table(table).select("name, year").execute()
         for x in (r.data or []):
@@ -109,9 +109,22 @@ def main():
             if key in seen:
                 continue
             seen.add(key)
-            rows.append({"name": name, "year": year})
+            all_rows.append({"name": name, "year": year})
 
-    print(f"Found {len(rows)} distinct films to enrich.")
+    # Skip films already in enrichment so we can resume after a stop
+    existing_keys = set()
+    try:
+        er = supabase.table("letterboxd_tmdb_enrichment").select("name, year").execute()
+        for x in (er.data or []):
+            existing_keys.add(((x.get("name") or "").strip(), (x.get("year") or "").strip()))
+    except Exception as e:
+        print(f"Could not load existing enrichment (will process all): {e}", file=sys.stderr)
+
+    rows = [r for r in all_rows if (r["name"], r["year"]) not in existing_keys]
+    skipped = len(all_rows) - len(rows)
+    if skipped:
+        print(f"Skipping {skipped} already-enriched films (resuming from last run).")
+    print(f"Found {len(rows)} films left to enrich (of {len(all_rows)} total).")
     updated = 0
     for i, row in enumerate(rows):
         name, year = row["name"], row["year"]
