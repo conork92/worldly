@@ -4,161 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Progress - Conor's Worldly</title>
+    <link rel="stylesheet" href="/static/css/worldly.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            padding: 40px;
-        }
-
-        /* Header */
-        .header {
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .title {
-            font-size: 42px;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            font-size: 16px;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 1px;
-            margin-top: 8px;
-        }
-
-        .nav-btn {
-            padding: 10px 20px;
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.35);
-            border-radius: 8px;
-            color: #667eea;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .nav-btn:hover {
-            background: rgba(102, 126, 234, 0.35);
-            border-color: #667eea;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .nav-btn.active {
-            background: rgba(102, 126, 234, 0.4);
-            border-color: #667eea;
-            color: white;
-        }
-
-        .top-right-nav {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        /* Date Selector */
         .date-selector {
-            background: rgba(20, 20, 40, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 24px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 30px;
+            background: rgba(255,255,255,0.03);
+            padding: 22px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            margin-bottom: 28px;
             display: flex;
-            gap: 20px;
+            gap: 18px;
             align-items: center;
             flex-wrap: wrap;
         }
-
         .date-selector label {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: rgba(255,255,255,0.7);
+            font-size: 0.72rem;
             font-weight: 600;
-        }
-
-        .date-selector select {
-            padding: 10px 16px;
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.35);
-            border-radius: 8px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .date-selector select:hover {
-            background: rgba(102, 126, 234, 0.25);
-            border-color: #667eea;
-        }
-
-        .date-selector select:focus {
-            background: rgba(102, 126, 234, 0.25);
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-
-        .date-selector select option {
-            background: rgba(20, 20, 40, 0.95);
-            color: white;
-        }
-
-        .all-months-btn {
-            padding: 10px 20px;
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.35);
-            border-radius: 8px;
-            color: #667eea;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.5);
+        }
+        .date-selector select {
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px;
+            color: #e8e8ec;
+            font-size: 0.88rem;
+            outline: none;
+            cursor: pointer;
+        }
+        .date-selector select:focus { border-color: rgba(88, 101, 242, 0.5); }
+        .date-selector select option { background: #16161d; color: #e8e8ec; }
+        .all-months-btn {
+            padding: 10px 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: rgba(255,255,255,0.85);
+            cursor: pointer;
+            font-size: 0.85rem;
             font-weight: 500;
             font-family: inherit;
             outline: none;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
-
         .all-months-btn:hover {
-            background: rgba(102, 126, 234, 0.35);
-            border-color: #667eea;
-            color: white;
-            transform: translateY(-2px);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.14);
+            color: #fff;
         }
-
         .all-months-btn.active {
-            background: rgba(102, 126, 234, 0.4);
-            border-color: #667eea;
-            color: white;
+            background: rgba(88, 101, 242, 0.25);
+            border-color: rgba(88, 101, 242, 0.4);
+            color: #a5b4fc;
         }
 
         /* Progress Grid */
@@ -170,20 +69,19 @@
         }
 
         .progress-card {
-            background: rgba(20, 20, 40, 0.85);
-            backdrop-filter: blur(10px);
-            padding: 30px;
+            background: rgba(255,255,255,0.04);
+            padding: 28px;
             border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.07);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
             position: relative;
             overflow: hidden;
         }
 
         .progress-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.3);
-            border-color: rgba(102, 126, 234, 0.4);
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
         }
 
         .progress-card::before {
@@ -193,7 +91,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: rgba(88, 101, 242, 0.6);
         }
 
         .progress-header {

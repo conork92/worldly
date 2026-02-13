@@ -4,73 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exercise - Conor's Worldly</title>
+    <link rel="stylesheet" href="/static/css/worldly.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            padding: 40px;
-        }
-        .header {
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        .title {
-            font-size: 42px;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .subtitle { font-size: 16px; color: rgba(255,255,255,0.6); letter-spacing: 1px; margin-top: 8px; }
-        .nav-btn {
-            padding: 10px 20px;
-            background: rgba(79, 172, 254, 0.15);
-            border: 1px solid rgba(79, 172, 254, 0.4);
-            border-radius: 8px;
-            color: #4facfe;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .nav-btn:hover {
-            background: rgba(79, 172, 254, 0.35);
-            border-color: #4facfe;
-            color: white;
-            transform: translateY(-2px);
-        }
-        .nav-btn.active { background: rgba(79, 172, 254, 0.4); border-color: #4facfe; color: white; }
-        .top-right-nav { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .refresh-btn {
-            padding: 12px 24px;
-            background: rgba(79, 172, 254, 0.2);
-            border: 1px solid rgba(79, 172, 254, 0.5);
-            border-radius: 8px;
-            color: #4facfe;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.25s;
-        }
-        .refresh-btn:hover:not(:disabled) {
-            background: rgba(79, 172, 254, 0.4);
-            color: white;
-        }
-        .refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .refresh-btn.refresh-main {
             padding: 14px 28px;
             font-size: 15px;
@@ -82,30 +17,25 @@
             padding: 8px 14px;
             font-size: 12px;
             font-weight: 500;
-            letter-spacing: 0.2px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             background: rgba(255,255,255,0.06);
             color: rgba(255,255,255,0.85);
             border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
             height: 36px;
         }
         .strava-sync-btn:hover:not(:disabled) {
-            background: rgba(79, 172, 254, 0.15);
-            border-color: rgba(79, 172, 254, 0.35);
-            color: #4facfe;
+            background: rgba(88, 101, 242, 0.15);
+            border-color: rgba(88, 101, 242, 0.35);
+            color: #a5b4fc;
         }
         .strava-sync-btn:active:not(:disabled) { transform: scale(0.98); }
         .strava-sync-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .strava-sync-btn .btn-icon {
-            width: 14px;
-            height: 14px;
-            opacity: 0.85;
-        }
+        .strava-sync-btn .btn-icon { width: 14px; height: 14px; opacity: 0.85; }
         .controls-wrap {
             display: flex;
             flex-wrap: wrap;
@@ -119,34 +49,35 @@
             flex-wrap: wrap;
             gap: 16px;
             align-items: flex-end;
-            padding: 16px 20px;
-            background: rgba(20, 20, 40, 0.6);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
+            padding: 18px 22px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
         .control-group { display: flex; flex-direction: column; gap: 6px; }
-        .control-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.5); }
+        .control-group label { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
         .control-group select {
-            padding: 8px 12px;
+            padding: 10px 14px;
             min-width: 120px;
-            background: rgba(10, 10, 25, 0.9);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
-            color: white;
-            font-size: 13px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px;
+            color: #e8e8ec;
+            font-size: 0.88rem;
         }
+        .control-group select:focus { border-color: rgba(88, 101, 242, 0.5); outline: none; }
         .view-toggle {
             display: flex;
             border-radius: 10px;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(10, 10, 25, 0.6);
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
         }
         .view-toggle label {
             display: flex;
             align-items: center;
             padding: 10px 20px;
-            font-size: 13px;
+            font-size: 0.85rem;
             font-weight: 500;
             color: rgba(255,255,255,0.55);
             cursor: pointer;
@@ -157,9 +88,9 @@
         .view-toggle label:hover { color: rgba(255,255,255,0.85); }
         .view-toggle input { display: none; }
         .view-toggle input:checked + label {
-            background: rgba(79, 172, 254, 0.3);
-            color: #4facfe;
-            border-color: rgba(79, 172, 254, 0.45);
+            background: rgba(88, 101, 242, 0.25);
+            color: #a5b4fc;
+            border-color: rgba(88, 101, 242, 0.4);
         }
         .view-toggle label:first-of-type { border-radius: 8px 0 0 8px; border-right: none; }
         .view-toggle label:last-of-type { border-radius: 0 8px 8px 0; }
@@ -316,7 +247,7 @@
             <a class="nav-btn" href="/quotes">Quotes</a>
             <a class="nav-btn" href="/albums">Albums</a>
             <a class="nav-btn" href="/listening">Listening</a>
-            <a class="nav-btn" href="/exercise">Exercise</a>
+            <a class="nav-btn active" href="/exercise">Exercise</a>
             <a class="nav-btn" href="/progress">Progress</a>
         </div>
     </div>

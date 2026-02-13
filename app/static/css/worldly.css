@@ -1,0 +1,249 @@
+/* Worldly design system – shared across all tabs */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    min-height: 100vh;
+    background: #0a0a0f;
+    background-image: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(88, 101, 242, 0.12), transparent),
+                      radial-gradient(ellipse 60% 50% at 100% 50%, rgba(139, 92, 246, 0.06), transparent);
+    font-family: 'Outfit', system-ui, sans-serif;
+    color: #e8e8ec;
+    padding: 40px 48px 56px;
+    line-height: 1.5;
+}
+
+/* Header */
+.header {
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+}
+
+.subtitle {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.5);
+    margin-top: 6px;
+    font-weight: 400;
+}
+
+.top-right-nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.nav-btn {
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.14);
+    color: #fff;
+}
+
+.nav-btn.active {
+    background: rgba(88, 101, 242, 0.25);
+    border-color: rgba(88, 101, 242, 0.4);
+    color: #a5b4fc;
+}
+
+/* Stats */
+.stats-bar {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    background: rgba(255,255,255,0.04);
+    padding: 18px 22px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.07);
+    flex: 1;
+    min-width: 130px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.stat-card:hover {
+    border-color: rgba(255,255,255,0.12);
+    transform: translateY(-1px);
+}
+
+.stat-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+
+/* Filters */
+.filters {
+    background: rgba(255,255,255,0.03);
+    padding: 18px 22px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 32px;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group { display: flex; align-items: center; gap: 10px; }
+
+.filter-group label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.5);
+}
+
+.filter-group select,
+.filter-group input {
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 10px;
+    color: #e8e8ec;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.filter-group select:hover,
+.filter-group input:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.14);
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(88, 101, 242, 0.5);
+}
+
+.filter-group select option { background: #16161d; color: #e8e8ec; }
+
+.filter-group input::placeholder { color: rgba(255,255,255,0.4); }
+
+/* Filter bar (button-style filters e.g. movies) */
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: rgba(255,255,255,0.85);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.14);
+    color: #fff;
+}
+
+.filter-btn.active {
+    background: rgba(88, 101, 242, 0.25);
+    border-color: rgba(88, 101, 242, 0.4);
+    color: #a5b4fc;
+}
+
+/* Primary action button */
+.refresh-btn,
+.btn-primary {
+    padding: 12px 22px;
+    background: rgba(88, 101, 242, 0.25);
+    border: 1px solid rgba(88, 101, 242, 0.4);
+    border-radius: 10px;
+    color: #a5b4fc;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.refresh-btn:hover:not(:disabled),
+.btn-primary:hover {
+    background: rgba(88, 101, 242, 0.35);
+    border-color: rgba(88, 101, 242, 0.5);
+}
+
+.refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Loading & error states */
+.loading { text-align: center; padding: 56px 20px; }
+.spinner {
+    width: 44px;
+    height: 44px;
+    border: 2px solid rgba(255,255,255,0.08);
+    border-top-color: rgba(88, 101, 242, 0.6);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 18px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 0.9rem; font-weight: 500; color: rgba(255,255,255,0.5); }
+
+.error {
+    background: rgba(255,255,255,0.04);
+    padding: 36px;
+    border-radius: 14px;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    text-align: center;
+    max-width: 420px;
+    margin: 36px auto;
+}
+.error-text { color: #f87171; font-size: 0.95rem; line-height: 1.5; }
+
+.empty-state {
+    text-align: center;
+    padding: 56px 20px;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    body { padding: 24px 20px 40px; }
+    .title { font-size: 1.6rem; }
+    .stats-bar { gap: 12px; }
+    .filters { flex-direction: column; align-items: stretch; }
+    .filter-group { flex-direction: column; align-items: stretch; }
+}

@@ -4,101 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movies - Conor's Worldly</title>
+    <link rel="stylesheet" href="/static/css/worldly.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            padding: 40px;
-        }
-
-        .header {
-            margin-bottom: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .title {
-            font-size: 42px;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #e50914 0%, #b20710 50%, #831010 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .subtitle {
-            font-size: 16px;
-            color: rgba(255,255,255,0.6);
-            letter-spacing: 1px;
-            margin-top: 8px;
-        }
-
-        .nav-btn {
-            padding: 10px 20px;
-            background: rgba(229, 9, 20, 0.15);
-            border: 1px solid rgba(229, 9, 20, 0.4);
-            border-radius: 8px;
-            color: #e50914;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .nav-btn:hover {
-            background: rgba(229, 9, 20, 0.35);
-            border-color: #e50914;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Filter buttons */
-        .filter-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 32px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 12px 24px;
-            background: rgba(20, 20, 40, 0.85);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 10px;
-            color: rgba(255,255,255,0.8);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.25s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .filter-btn:hover {
-            background: rgba(229, 9, 20, 0.2);
-            border-color: rgba(229, 9, 20, 0.5);
-            color: white;
-        }
-
-        .filter-btn.active {
-            background: rgba(229, 9, 20, 0.35);
-            border-color: #e50914;
-            color: white;
-        }
-
         .movies-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -106,19 +13,17 @@
         }
 
         .movie-card {
-            background: rgba(20, 20, 40, 0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.07);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
         }
 
         .movie-card:hover {
             transform: translateY(-4px);
-            border-color: rgba(229, 9, 20, 0.5);
-            box-shadow: 0 12px 40px rgba(229, 9, 20, 0.15);
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
         }
 
         .movie-card a {
@@ -242,51 +147,16 @@
             flex-wrap: wrap;
             gap: 16px;
             align-items: flex-end;
-            margin-bottom: 24px;
-            padding: 20px;
-            background: rgba(20, 20, 40, 0.6);
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 28px;
+            padding: 18px 22px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
         }
 
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .filter-group label {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: rgba(255,255,255,0.5);
-        }
-
-        .filter-group select,
-        .filter-group input[type="number"] {
-            padding: 8px 12px;
-            min-width: 120px;
-            background: rgba(10, 10, 25, 0.9);
-            border: 1px solid rgba(255,255,255,0.15);
-            border-radius: 8px;
-            color: white;
-            font-size: 13px;
-        }
-
-        .filter-group input[type="number"] {
-            min-width: 80px;
-        }
-
-        .filter-group select:focus,
-        .filter-group input:focus {
-            outline: none;
-            border-color: rgba(229, 9, 20, 0.5);
-        }
-
-        .filter-group select option {
-            background: #1a1a2e;
-            color: white;
-        }
+        .filters-panel .filter-group select,
+        .filters-panel .filter-group input[type="number"] { min-width: 120px; }
+        .filters-panel .filter-group input[type="number"] { min-width: 80px; }
 
         .sort-row {
             display: flex;
@@ -295,20 +165,13 @@
             margin-left: auto;
         }
 
-        .loading {
-            text-align: center;
-            padding: 60px;
-            font-size: 18px;
-            color: rgba(255,255,255,0.6);
-        }
-
         .stats-row {
             margin-bottom: 24px;
             font-size: 14px;
             color: rgba(255,255,255,0.6);
         }
 
-        .stats-row strong { color: #e50914; }
+        .stats-row strong { color: #a5b4fc; }
     </style>
 </head>
 <body>
@@ -317,7 +180,7 @@
             <h1 class="title">Movies</h1>
             <p class="subtitle">Letterboxd watched &amp; watchlist</p>
         </div>
-        <div>
+        <div class="top-right-nav">
             <a href="/globe" class="nav-btn">Globe</a>
             <a href="/books" class="nav-btn">Books</a>
             <a href="/movies" class="nav-btn active">Movies</a>
