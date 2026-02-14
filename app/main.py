@@ -10,9 +10,12 @@ import subprocess
 import sys
 from dotenv import load_dotenv
 
-# Load environment variables from project root .env
-_load_env = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(_load_env)
+# Load environment variables: project root and app directory
+_app_dir = Path(__file__).resolve().parent
+_root_dir = _app_dir.parent
+for _env_path in (_root_dir / ".env", _app_dir / ".env"):
+    if _env_path.exists():
+        load_dotenv(_env_path)
 
 app = FastAPI()
 
@@ -390,7 +393,10 @@ def get_albums_listened():
         result = supabase.table("worldly_countrys_listened").select("*").execute()
         return result.data if result.data else []
     except Exception as e:
-        return {"error": str(e), "message": "Failed to fetch listened albums"}
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to fetch listened albums: {str(e)}"
+        )
 
 class AlbumUpdate(BaseModel):
     album: str = None

@@ -4,18 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conor's Worldly Globe</title>
+    <link rel="stylesheet" href="/static/css/worldly.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             overflow: hidden;
-            background: linear-gradient(135deg, #0a0a1f 0%, #1a0a2e 50%, #0f0f23 100%);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            color: white;
+            padding: 0;
+            background: #0a0a0f;
+            background-image: radial-gradient(ellipse 120% 80% at 50% -20%, rgba(88, 101, 242, 0.12), transparent),
+                              radial-gradient(ellipse 60% 50% at 100% 50%, rgba(139, 92, 246, 0.06), transparent);
+            font-family: 'Outfit', system-ui, sans-serif;
+            color: #e8e8ec;
         }
 
         #globe-container {
@@ -44,11 +42,10 @@
             position: absolute;
             top: 100px;
             left: 40px;
-            background: rgba(20, 20, 40, 0.9);
-            backdrop-filter: blur(20px);
+            background: rgba(255,255,255,0.04);
             padding: 12px 20px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.07);
             z-index: 100;
             pointer-events: auto;
             display: flex;
@@ -107,75 +104,41 @@
         }
 
         .data-type-btn {
-            padding: 10px 20px;
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.3);
+            padding: 10px 18px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px;
-            color: #8a9ef5;
+            color: rgba(255,255,255,0.85);
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .data-type-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(102, 126, 234, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .data-type-btn:hover::before {
-            width: 300px;
-            height: 300px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
         }
 
         .data-type-btn:hover {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: rgba(102, 126, 234, 0.6);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.14);
+            color: #fff;
         }
-
         .data-type-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: transparent;
-            color: white;
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            background: rgba(88, 101, 242, 0.25);
+            border-color: rgba(88, 101, 242, 0.4);
+            color: #a5b4fc;
         }
 
-        .title {
-            font-size: 32px;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 5px;
+        .header .title {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #fff;
+            margin-bottom: 6px;
             pointer-events: auto;
         }
-
-        .subtitle {
-            font-size: 13px;
+        .header .subtitle {
+            font-size: 0.95rem;
             color: rgba(255,255,255,0.5);
-            letter-spacing: 1.5px;
             pointer-events: auto;
-            font-weight: 400;
         }
-
-        /* Top-right nav buttons */
         .top-right-nav {
             display: flex;
             gap: 8px;
@@ -185,30 +148,7 @@
             pointer-events: auto;
             z-index: 101;
         }
-
-        .top-right-nav .nav-btn {
-            padding: 10px 18px;
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            border-radius: 10px;
-            color: #8a9ef5;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            text-decoration: none;
-            outline: none;
-        }
-
-        .top-right-nav .nav-btn:hover {
-            background: rgba(102, 126, 234, 0.3);
-            border-color: rgba(102, 126, 234, 0.6);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-        }
+        .top-right-nav .nav-btn.active { background: rgba(88, 101, 242, 0.25); border-color: rgba(88, 101, 242, 0.4); color: #a5b4fc; }
 
         /* Control Panel */
         .controls {
@@ -856,6 +796,7 @@
         </div>
         <!-- Top right nav buttons -->
         <div class="top-right-nav">
+            <a class="nav-btn active" href="/globe">Globe</a>
             <a class="nav-btn" href="/books">Books</a>
             <a class="nav-btn" href="/movies">Movies</a>
             <a class="nav-btn" href="/quotes">Quotes</a>
