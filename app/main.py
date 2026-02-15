@@ -1087,8 +1087,9 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
         exercise_count = 0
         exercise_prev_count = 0
         exercise_trend = "same"
+        strava_rows = []
         try:
-            strava_result = supabase.table("worldly_strava").select("start_date_local,start_date").execute()
+            strava_result = supabase.table("worldly_strava").select("*").order("start_date_local", desc=True).execute()
             strava_rows = strava_result.data if strava_result.data else []
             for row in strava_rows:
                 sd = row.get("start_date_local") or row.get("start_date")
@@ -1130,6 +1131,31 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                 "trend": trend
             }
         
+        # Build exercise list for the period (for "what was done" on progress tab)
+        exercise_list = []
+        for row in strava_rows:
+            sd = row.get("start_date_local") or row.get("start_date")
+            date_obj = parse_date(sd) if sd and isinstance(sd, str) else (sd if isinstance(sd, datetime) else None)
+            if not date_obj:
+                continue
+            if all_months:
+                if date_obj.year != year:
+                    continue
+            else:
+                if date_obj.month != month or date_obj.year != year:
+                    continue
+            exercise_list.append({
+                "name": row.get("name") or "Activity",
+                "type": row.get("type") or row.get("sport_type") or "Workout",
+                "sport_type": row.get("sport_type"),
+                "start_date_local": sd,
+                "distance": row.get("distance"),
+                "moving_time": row.get("moving_time"),
+                "elapsed_time": row.get("elapsed_time"),
+            })
+        # Sort exercise list by date descending
+        exercise_list.sort(key=lambda x: (x.get("start_date_local") or ""), reverse=True)
+
         progress_data = {
             "month": month if not all_months else None,
             "year": year,
@@ -1153,7 +1179,9 @@ def get_progress_data(month: int = None, year: int = None, all_months: bool = Fa
                 "percentage": int((exercise_count / exercise_goal * 100)) if exercise_goal > 0 else 0,
                 "trend": exercise_trend
             },
-            "albums": filtered_albums  # Include the albums list
+            "albums": filtered_albums,
+            "books": filtered_books,
+            "exercises": exercise_list,
         }
         
         return progress_data

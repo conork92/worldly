@@ -94,12 +94,13 @@
         }
         .view-toggle label:first-of-type { border-radius: 8px 0 0 8px; border-right: none; }
         .view-toggle label:last-of-type { border-radius: 0 8px 8px 0; }
-        .stats-cards {
+        .top-row {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 16px;
             margin-bottom: 24px;
         }
+        @media (max-width: 900px) { .top-row { grid-template-columns: 1fr; } }
         .stat-card {
             background: rgba(20, 20, 40, 0.6);
             border-radius: 12px;
@@ -110,13 +111,24 @@
         .stat-card .value { font-size: 24px; font-weight: 600; color: #4facfe; }
         .stat-card .sublabel { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 4px; }
         .activity-types { font-size: 13px; color: rgba(255,255,255,0.7); line-height: 1.6; }
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 900px) { .charts-row { grid-template-columns: 1fr; } }
         .chart-section {
             background: rgba(20, 20, 40, 0.7);
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.1);
-            padding: 28px 32px;
-            margin-bottom: 28px;
+            padding: 20px 24px;
+            margin-bottom: 0;
         }
+        .charts-row .chart-section .chart-container { min-height: 160px; padding-bottom: 36px; }
+        .charts-row .chart-section h3 { margin-bottom: 16px; }
+        .charts-row .chart-y-axis { height: 140px; }
+        .charts-row .chart-bars-wrap { min-height: 140px; }
         .chart-section h3 {
             font-size: 13px;
             text-transform: uppercase;
@@ -173,13 +185,6 @@
             margin-top: 4px;
             text-align: center;
         }
-        .mini-charts-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
-            margin-bottom: 28px;
-        }
-        @media (max-width: 640px) { .mini-charts-row { grid-template-columns: 1fr; } }
         .mini-chart {
             background: rgba(20, 20, 40, 0.7);
             border-radius: 16px;
@@ -218,6 +223,57 @@
         .mini-chart .mini-bar.count { background: linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%); }
         .mini-chart .mini-bar.mins { background: linear-gradient(180deg, #34d399 0%, #059669 100%); }
         .mini-chart .mini-bar-wrap span { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 6px; }
+        .pie-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(20, 20, 40, 0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 20px;
+        }
+        .pie-section h3 {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .pie-wrap {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .pie-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 12px;
+            font-size: 11px;
+        }
+        .pie-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.85);
+        }
+        .pie-legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .pie-legend-item span:last-child {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+        }
+        .pie-section.empty .pie-wrap { background: rgba(255,255,255,0.06); }
         .loading { text-align: center; padding: 60px; font-size: 18px; color: rgba(255,255,255,0.6); }
         .activity-table-wrap {
             overflow-x: auto;
@@ -287,15 +343,16 @@
         </div>
     </div>
 
-    <div id="stats-cards" class="stats-cards"></div>
-    <div id="chart-section" class="chart-section" style="display: none;">
-        <h3>Distance (km) — <span class="period" id="chart-period-label"></span></h3>
-        <div class="chart-container">
-            <div class="chart-y-axis" id="chart-y-axis"></div>
-            <div id="chart-bars" class="chart-bars-wrap"></div>
+    <div class="top-row" id="top-row" style="display: none;">
+        <div id="stat-activities" class="stat-card"></div>
+        <div id="stat-distance" class="stat-card"></div>
+        <div id="pie-section" class="pie-section" style="display: none;">
+            <h3>Activities by type</h3>
+            <div class="pie-wrap" id="pie-chart"></div>
+            <div class="pie-legend" id="pie-legend"></div>
         </div>
     </div>
-    <div id="mini-charts-row" class="mini-charts-row" style="display: none;">
+    <div class="charts-row" id="charts-row" style="display: none;">
         <div class="mini-chart">
             <h4 id="mini-chart-count-title">Workouts per week</h4>
             <div id="mini-chart-count" class="mini-bars"></div>
@@ -303,6 +360,13 @@
         <div class="mini-chart">
             <h4 id="mini-chart-mins-title">Minutes per week</h4>
             <div id="mini-chart-mins" class="mini-bars"></div>
+        </div>
+        <div id="chart-section" class="chart-section" style="display: none;">
+            <h3>Distance (km) — <span class="period" id="chart-period-label"></span></h3>
+            <div class="chart-container">
+                <div class="chart-y-axis" id="chart-y-axis"></div>
+                <div id="chart-bars" class="chart-bars-wrap"></div>
+            </div>
         </div>
     </div>
     <div id="loading" class="loading">Loading activities…</div>
@@ -373,21 +437,54 @@
                 return true;
             });
         }
-        function renderStats(filtered) {
-            const totalDistance = filtered.reduce((sum, a) => sum + (Number(a.distance) || 0), 0);
+        const PIE_COLORS = ['#6366f1','#22d3ee','#a78bfa','#34d399','#f59e0b','#f472b6','#60a5fa','#4ade80','#c084fc','#fb923c'];
+        function getTypeCounts(filtered) {
             const typeCount = {};
             filtered.forEach(a => {
-                const t = a.sport_type || a.type || 'Other';
+                const t = (a.sport_type || a.type || 'Other').trim() || 'Other';
                 typeCount[t] = (typeCount[t] || 0) + 1;
             });
-            const typesList = Object.entries(typeCount).sort((a, b) => b[1] - a[1]).map(([name, count]) => name + ': ' + count).join(' · ');
+            return Object.entries(typeCount).sort((a, b) => b[1] - a[1]);
+        }
+        function renderPieChart(filtered) {
+            const section = document.getElementById('pie-section');
+            const pieEl = document.getElementById('pie-chart');
+            const legendEl = document.getElementById('pie-legend');
+            const typeCounts = getTypeCounts(filtered);
+            if (typeCounts.length === 0) {
+                section.classList.add('empty');
+                section.style.display = 'block';
+                pieEl.style.background = 'rgba(255,255,255,0.06)';
+                legendEl.innerHTML = '<span style="color: rgba(255,255,255,0.5);">No activities</span>';
+                return;
+            }
+            section.classList.remove('empty');
+            const total = filtered.length;
+            let cum = 0;
+            const gradientParts = typeCounts.map(([, count], i) => {
+                const pct = (count / total) * 100;
+                const start = cum;
+                cum += pct;
+                const color = PIE_COLORS[i % PIE_COLORS.length];
+                return color + ' ' + start.toFixed(2) + '% ' + cum.toFixed(2) + '%';
+            });
+            pieEl.style.background = 'conic-gradient(' + gradientParts.join(', ') + ')';
+            legendEl.innerHTML = typeCounts.map(([name, count], i) => {
+                const pct = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+                const color = PIE_COLORS[i % PIE_COLORS.length];
+                return '<div class="pie-legend-item"><span class="pie-legend-swatch" style="background:' + color + '"></span><span>' + escapeHtml(name) + '</span><span>' + count + ' (' + pct + '%)</span></div>';
+            }).join('');
+            section.style.display = 'block';
+        }
+        function renderStats(filtered) {
+            const totalDistance = filtered.reduce((sum, a) => sum + (Number(a.distance) || 0), 0);
             const sublabel = isWholeYear() ? 'this year' : 'this month';
-            const cards = document.getElementById('stats-cards');
-            cards.innerHTML = [
-                '<div class="stat-card"><div class="label">Activities</div><div class="value">' + filtered.length + '</div><div class="sublabel">' + sublabel + '</div></div>',
-                '<div class="stat-card"><div class="label">Total distance</div><div class="value">' + formatDistance(totalDistance) + '</div></div>',
-                '<div class="stat-card"><div class="label">By type</div><div class="activity-types">' + (typesList || '—') + '</div></div>'
-            ].join('');
+            const topRow = document.getElementById('top-row');
+            const statActivities = document.getElementById('stat-activities');
+            const statDistance = document.getElementById('stat-distance');
+            if (statActivities) statActivities.innerHTML = '<div class="label">Activities</div><div class="value">' + filtered.length + '</div><div class="sublabel">' + sublabel + '</div>';
+            if (statDistance) statDistance.innerHTML = '<div class="label">Total distance</div><div class="value">' + formatDistance(totalDistance) + '</div>';
+            if (topRow) topRow.style.display = filtered.length > 0 ? 'grid' : 'none';
         }
         function getWeekOfMonth(dateStr) {
             if (!dateStr || dateStr.length < 10) return 0;
@@ -421,7 +518,7 @@
                 }
             }
             const maxKm = Math.max(1, ...buckets.map(b => b.value));
-            const barMaxHeight = 180;
+            const barMaxHeight = 140;
             let step = maxKm <= 5 ? 1 : maxKm <= 20 ? 5 : maxKm <= 100 ? 20 : Math.ceil(maxKm / 5 / 10) * 10;
             let yTicks = [];
             for (let k = 0; k <= maxKm; k += step) yTicks.push(k);
@@ -436,7 +533,7 @@
             section.style.display = 'block';
         }
         function renderMiniCharts(filtered) {
-            const row = document.getElementById('mini-charts-row');
+            const chartsRow = document.getElementById('charts-row');
             const countEl = document.getElementById('mini-chart-count');
             const minsEl = document.getElementById('mini-chart-mins');
             const countTitle = document.getElementById('mini-chart-count-title');
@@ -472,7 +569,7 @@
                 const minsStr = b.value >= 60 ? (b.value / 60).toFixed(1) + 'h' : Math.round(b.value) + 'm';
                 return '<div class="mini-bar-wrap"><div class="mini-bar mins" style="height: ' + heightPx + 'px"></div><span>' + minsStr + '</span><span>' + escapeHtml(b.label) + '</span></div>';
             }).join('');
-            row.style.display = 'grid';
+            if (chartsRow) chartsRow.style.display = filtered.length > 0 ? 'grid' : 'none';
         }
         function renderTable(filtered) {
             const wrap = document.getElementById('activity-table-wrap');
@@ -522,6 +619,7 @@
             document.getElementById('month-select').disabled = wholeYear;
             const filtered = filterActivities();
             renderStats(filtered);
+            renderPieChart(filtered);
             renderChart(filtered);
             renderMiniCharts(filtered);
             renderTable(filtered);
@@ -530,9 +628,14 @@
             const loading = document.getElementById('loading');
             loading.style.display = 'block';
             document.getElementById('activity-table-wrap').style.display = 'none';
-            document.getElementById('stats-cards').innerHTML = '';
-            var miniRow = document.getElementById('mini-charts-row');
-            if (miniRow) miniRow.style.display = 'none';
+            const topRow = document.getElementById('top-row');
+            const chartsRow = document.getElementById('charts-row');
+            if (topRow) topRow.style.display = 'none';
+            if (chartsRow) chartsRow.style.display = 'none';
+            const statActivities = document.getElementById('stat-activities');
+            const statDistance = document.getElementById('stat-distance');
+            if (statActivities) statActivities.innerHTML = '';
+            if (statDistance) statDistance.innerHTML = '';
             fetch('/api/exercise?limit=2000')
                 .then(r => r.json())
                 .then(data => {

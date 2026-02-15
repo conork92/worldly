@@ -435,6 +435,82 @@
             padding: 60px 20px;
             color: rgba(255,255,255,0.5);
         }
+
+        /* Books & Exercise list sections (what was done) */
+        .detail-list-section {
+            margin-top: 40px;
+        }
+        .detail-list-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #8a9ef5;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .books-list, .exercises-list {
+            display: grid;
+            gap: 12px;
+        }
+        .books-list {
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        }
+        .book-card {
+            background: rgba(255,255,255,0.04);
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .book-card:hover {
+            border-color: rgba(118, 75, 162, 0.4);
+            transform: translateY(-2px);
+        }
+        .book-card .book-title {
+            font-weight: 600;
+            color: #e8e8ec;
+            margin-bottom: 4px;
+        }
+        .book-card .book-author {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+        }
+        .book-card .book-date {
+            font-size: 12px;
+            color: rgba(102, 126, 234, 0.9);
+            margin-top: 8px;
+        }
+        .exercise-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 16px;
+            align-items: center;
+            padding: 12px 18px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 14px;
+        }
+        .exercise-row:hover {
+            border-color: rgba(79, 172, 254, 0.3);
+        }
+        .exercise-row .exercise-name { font-weight: 500; color: #e8e8ec; }
+        .exercise-row .exercise-type {
+            padding: 4px 10px;
+            background: rgba(79, 172, 254, 0.2);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #4facfe;
+        }
+        .exercise-row .exercise-date { color: rgba(255,255,255,0.6); font-size: 13px; }
+        .exercise-row .exercise-stat { color: rgba(255,255,255,0.7); font-size: 13px; }
+        @media (max-width: 768px) {
+            .exercise-row {
+                grid-template-columns: 1fr 1fr;
+            }
+            .exercise-row .exercise-date { grid-column: 1; }
+            .exercise-row .exercise-stat { grid-column: 2; }
+        }
     </style>
     <link rel="stylesheet" href="/static/css/login.css">
     <script src="/static/js/auth.js"></script>
@@ -493,8 +569,18 @@
     <div class="progress-grid" id="progress-grid"></div>
 
     <div class="albums-list-section" id="albums-list-section" style="display: none;">
-        <div class="albums-list-title">Albums Played This Month</div>
+        <div class="albums-list-title" id="albums-list-title">Albums Played This Month</div>
         <div class="albums-list" id="albums-list"></div>
+    </div>
+
+    <div class="detail-list-section" id="books-list-section" style="display: none;">
+        <div class="detail-list-title" id="books-list-title">Books Read</div>
+        <div class="books-list" id="books-list"></div>
+    </div>
+
+    <div class="detail-list-section" id="exercises-list-section" style="display: none;">
+        <div class="detail-list-title" id="exercises-list-title">Exercise Activities</div>
+        <div class="exercises-list" id="exercises-list"></div>
     </div>
 
     <script>
@@ -546,20 +632,33 @@
                 const albumsListSection = document.getElementById('albums-list-section');
                 const albumsListTitle = document.getElementById('albums-list-title');
                 
+                const periodLabel = allMonths ? 'This Year' : 'This Month';
                 if (data.albums && data.albums.length > 0) {
                     renderAlbumsList(data.albums);
-                    if (albumsListSection) {
-                        albumsListSection.style.display = 'block';
-                    }
-                    if (albumsListTitle) {
-                        albumsListTitle.textContent = allMonths 
-                            ? `Albums Played This Year (${data.albums.length} total)`
-                            : `Albums Played This Month (${data.albums.length} total)`;
-                    }
+                    if (albumsListSection) albumsListSection.style.display = 'block';
+                    if (albumsListTitle) albumsListTitle.textContent = `Albums Played ${periodLabel} (${data.albums.length} total)`;
                 } else {
-                    if (albumsListSection) {
-                        albumsListSection.style.display = 'none';
-                    }
+                    if (albumsListSection) albumsListSection.style.display = 'none';
+                }
+                if (data.books && data.books.length > 0) {
+                    renderBooksList(data.books);
+                    const booksSection = document.getElementById('books-list-section');
+                    const booksTitle = document.getElementById('books-list-title');
+                    if (booksSection) booksSection.style.display = 'block';
+                    if (booksTitle) booksTitle.textContent = `Books Read ${periodLabel} (${data.books.length} total)`;
+                } else {
+                    const booksSection = document.getElementById('books-list-section');
+                    if (booksSection) booksSection.style.display = 'none';
+                }
+                if (data.exercises && data.exercises.length > 0) {
+                    renderExercisesList(data.exercises);
+                    const exSection = document.getElementById('exercises-list-section');
+                    const exTitle = document.getElementById('exercises-list-title');
+                    if (exSection) exSection.style.display = 'block';
+                    if (exTitle) exTitle.textContent = `Exercise Activities ${periodLabel} (${data.exercises.length} total)`;
+                } else {
+                    const exSection = document.getElementById('exercises-list-section');
+                    if (exSection) exSection.style.display = 'none';
                 }
                 document.getElementById('loading').style.display = 'none';
             } catch (error) {
@@ -735,6 +834,72 @@
             } catch (e) {
                 return dateString;
             }
+        }
+
+        function formatDuration(seconds) {
+            if (seconds == null || seconds === '') return '';
+            const s = Number(seconds);
+            if (isNaN(s) || s < 0) return '';
+            const m = Math.floor(s / 60);
+            const h = Math.floor(m / 60);
+            if (h > 0) return `${h}h ${m % 60}m`;
+            return `${m} min`;
+        }
+
+        function formatDistance(meters) {
+            if (meters == null || meters === '') return '';
+            const m = Number(meters);
+            if (isNaN(m) || m < 0) return '';
+            if (m >= 1000) return `${(m / 1000).toFixed(1)} km`;
+            return `${Math.round(m)} m`;
+        }
+
+        // Render books list (what was read in the period)
+        function renderBooksList(books) {
+            const el = document.getElementById('books-list');
+            if (!el) return;
+            if (!books || books.length === 0) {
+                el.innerHTML = '<div class="empty-albums">No books read in this period</div>';
+                return;
+            }
+            el.innerHTML = books.map(book => {
+                const title = escapeHtml(book.title || book.name || 'Untitled');
+                const author = escapeHtml(book.author || book.authors || 'Unknown');
+                const dateRead = book.date_read ? formatDate(book.date_read) : '';
+                return `
+                    <div class="book-card">
+                        <div class="book-title">${title}</div>
+                        <div class="book-author">${author}</div>
+                        ${dateRead ? `<div class="book-date">${dateRead}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render exercises list (activities in the period)
+        function renderExercisesList(exercises) {
+            const el = document.getElementById('exercises-list');
+            if (!el) return;
+            if (!exercises || exercises.length === 0) {
+                el.innerHTML = '<div class="empty-albums">No activities in this period</div>';
+                return;
+            }
+            el.innerHTML = exercises.map(act => {
+                const name = escapeHtml(act.name || 'Activity');
+                const type = escapeHtml(act.type || act.sport_type || 'Workout');
+                const dateStr = act.start_date_local ? formatDate(act.start_date_local) : '';
+                const dist = formatDistance(act.distance);
+                const dur = formatDuration(act.moving_time || act.elapsed_time);
+                const stat = [dist, dur].filter(Boolean).join(' · ') || '—';
+                return `
+                    <div class="exercise-row">
+                        <span class="exercise-name">${name}</span>
+                        <span class="exercise-type">${type}</span>
+                        <span class="exercise-date">${dateStr}</span>
+                        <span class="exercise-stat">${stat}</span>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Escape HTML helper
