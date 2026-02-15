@@ -1168,9 +1168,9 @@ def get_quotes_page():
 
 @app.get("/api/books")
 def get_books():
+    """Return all read books (with date_read set). Books without country show as 'No Country' and can be assigned via Assign Country."""
     try:
-        # Use the same filter as country_items_view: only books with valid ISO codes
-        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").filter("iso_code_3", "not.is", "null").neq("iso_code_3", "").neq("iso_code_3", "N/A").execute()
+        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").order("date_read", desc=True).execute()
         return result.data if result.data else []
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch books"}
@@ -1304,18 +1304,17 @@ def create_quote(quote: QuoteCreate):
 
 @app.get("/api/books/needs-country")
 def get_books_needs_country():
-    """Get books that need country assignment (empty country or iso_code_3)"""
+    """Get books that need country assignment (no country or no valid iso_code_3)."""
     try:
-        # Use the same filter as country_items_view: only books with valid ISO codes
-        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").filter("iso_code_3", "not.is", "null").neq("iso_code_3", "").neq("iso_code_3", "N/A").execute()
-        if result.data:
-            # Filter for books with empty country or iso_code_3
-            filtered = [
-                book for book in result.data 
-                if not book.get("country") or not book.get("iso_code_3")
-            ]
-            return filtered
-        return []
+        result = supabase.table("worldly_good_reads_books").select("*").filter("date_read", "not.is", "null").order("date_read", desc=True).execute()
+        if not result.data:
+            return []
+        # Include books where country or iso_code_3 is missing/empty/N/A
+        filtered = [
+            book for book in result.data
+            if not (book.get("country") or "").strip() or not (book.get("iso_code_3") or "").strip() or (book.get("iso_code_3") or "").strip().upper() == "N/A"
+        ]
+        return filtered
     except Exception as e:
         return {"error": str(e), "message": "Failed to fetch books needing country"}
 

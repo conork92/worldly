@@ -6,11 +6,10 @@
     <title>My Books - Conor's Worldly</title>
     <link rel="stylesheet" href="/static/css/worldly.css">
     <style>
-        /* Books page */
-        .books-grid {
+        /* Books page – 4 cards per row like albums/movies */
         .books-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 20px;
             margin-bottom: 40px;
             transition: all 0.3s ease;
@@ -22,8 +21,8 @@
 
         .book-card {
             background: rgba(255,255,255,0.04);
-            padding: 24px;
-            border-radius: 16px;
+            padding: 0;
+            border-radius: 14px;
             border: 1px solid rgba(255,255,255,0.07);
             transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
             position: relative;
@@ -31,6 +30,8 @@
             opacity: 1;
             transform: scale(1);
             animation: fadeInCard 0.4s ease-out;
+            display: flex;
+            flex-direction: column;
         }
 
         @keyframes fadeInCard {
@@ -74,12 +75,11 @@
 
         .book-cover {
             width: 100%;
-            margin-bottom: 16px;
-            border-radius: 8px;
+            aspect-ratio: 2/3;
+            max-height: 180px;
+            border-radius: 14px 14px 0 0;
             overflow: hidden;
             background: rgba(0,0,0,0.2);
-            aspect-ratio: 2/3;
-            max-height: 220px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -97,41 +97,55 @@
             margin: 0;
         }
 
+        .book-card-content {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
         .book-title {
-            font-size: 1.1rem;
+            font-size: 0.95rem;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             color: #fff;
             line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .book-author {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: rgba(255,255,255,0.6);
-            margin-bottom: 14px;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .book-meta {
             display: flex;
             flex-wrap: wrap;
-            gap: 14px;
-            margin-top: 14px;
-            padding-top: 14px;
+            gap: 10px;
+            margin-top: 8px;
+            padding-top: 10px;
             border-top: 1px solid rgba(255,255,255,0.07);
         }
 
         .book-card .meta-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.8rem;
+            gap: 4px;
+            font-size: 0.72rem;
             color: rgba(255,255,255,0.55);
         }
 
         .book-card .meta-label {
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+            font-size: 0.65rem;
             color: rgba(255,255,255,0.45);
         }
 
@@ -170,36 +184,149 @@
             color: rgba(255,255,255,0.45);
         }
 
-        /* Assign Country Form */
+        .book-card-footer {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+        .assign-country-card-btn {
+            padding: 5px 10px;
+            background: rgba(88, 101, 242, 0.2);
+            border: 1px solid rgba(88, 101, 242, 0.35);
+            border-radius: 6px;
+            color: #a5b4fc;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .assign-country-card-btn:hover {
+            background: rgba(88, 101, 242, 0.3);
+            border-color: rgba(88, 101, 242, 0.5);
+        }
+
+        /* Assign country – compact bar matching filters */
+        .assign-country-section {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+        .assign-country-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 14px 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s ease;
+        }
+        .assign-country-header:hover {
+            background: rgba(255,255,255,0.02);
+        }
+        .assign-country-header .assign-country-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+        .assign-country-header .assign-country-subtitle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.45);
+            margin-top: 2px;
+        }
+        .assign-country-header .assign-country-chevron {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.4);
+            transition: transform 0.2s ease;
+        }
+        .assign-country-section.visible .assign-country-chevron {
+            transform: rotate(180deg);
+        }
         .assign-country-form {
-            background: rgba(255,255,255,0.04);
-            padding: 28px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.07);
-            margin-bottom: 32px;
+            padding: 0 20px 20px;
             max-height: 0;
             overflow: hidden;
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 0;
-            padding-top: 0;
-            padding-bottom: 0;
+            transition: max-height 0.3s ease;
         }
-
-        .assign-country-form.visible {
-            max-height: 2000px;
-            opacity: 1;
-            margin-top: 0;
-            margin-bottom: 30px;
-            padding-top: 25px;
-            padding-bottom: 25px;
+        .assign-country-section.visible .assign-country-form {
+            max-height: 280px;
         }
-
-        .assign-country-form .form-title {
-            font-size: 1rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #fff;
+        .assign-country-form .assign-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 14px;
+        }
+        .assign-country-form .assign-group {
+            flex: 1;
+            min-width: 160px;
+        }
+        .assign-country-form .assign-group label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 6px;
+        }
+        .assign-country-form .assign-group select {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.09);
+            border-radius: 10px;
+            color: #e8e8ec;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .assign-country-form .assign-group select:focus {
+            border-color: rgba(88, 101, 242, 0.5);
+        }
+        .assign-country-form .assign-btn-wrap {
+            flex-shrink: 0;
+        }
+        .assign-country-form .assign-btn {
+            padding: 10px 20px;
+            background: rgba(88, 101, 242, 0.25);
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            border-radius: 10px;
+            color: #a5b4fc;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .assign-country-form .assign-btn:hover:not(:disabled) {
+            background: rgba(88, 101, 242, 0.35);
+            border-color: rgba(88, 101, 242, 0.5);
+        }
+        .assign-country-form .assign-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .assign-country-form .form-message {
+            margin-top: 12px;
+            font-size: 0.82rem;
+            padding: 8px 12px;
+            border-radius: 8px;
+            display: none;
+        }
+        .assign-country-form .form-message.success {
+            display: block;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            color: #4ade80;
+        }
+        .assign-country-form .form-message.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #f87171;
         }
 
         .form-row {
@@ -302,28 +429,35 @@
         }
 
         .toggle-form-btn {
-            padding: 8px 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 8px;
-            color: white;
+            padding: 10px 18px;
+            background: rgba(88, 101, 242, 0.25);
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            border-radius: 10px;
+            color: #a5b4fc;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 0.85rem;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
+            transition: background 0.2s ease, border-color 0.2s ease;
             white-space: nowrap;
         }
-
         .toggle-form-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            background: rgba(88, 101, 242, 0.35);
+            border-color: rgba(88, 101, 242, 0.5);
         }
 
         .toggle-form-btn.active {
-            background: rgba(102, 126, 234, 0.3);
-            border: 1px solid rgba(102, 126, 234, 0.5);
+            background: rgba(88, 101, 242, 0.35);
+            border: 1px solid rgba(88, 101, 242, 0.5);
+        }
+        .assign-country-form .form-cancel-btn {
+            margin-top: 12px;
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.8);
+        }
+        .assign-country-form .form-cancel-btn:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.18);
         }
 
         @media (max-width: 768px) {
@@ -414,33 +548,39 @@
             <label for="search-input">Search:</label>
             <input type="text" id="search-input" placeholder="Title or author...">
         </div>
-        <div class="filter-group">
-            <button type="button" class="toggle-form-btn" id="toggle-assign-btn" onclick="toggleAssignForm()">+ Assign Country</button>
-        </div>
     </div>
 
-    <!-- Assign Country Form -->
-    <div class="assign-country-form" id="assign-country-form-container">
-        <div class="form-title">Assign Country to Book</div>
-        <form id="assign-country-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="book-select">Select Book</label>
-                    <select id="book-select" required>
-                        <option value="">Loading books...</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="country-select">Select Country</label>
-                    <select id="country-select" required>
-                        <option value="">Loading countries...</option>
-                    </select>
-                </div>
+    <!-- Assign country – compact section (same style as filters) -->
+    <div class="assign-country-section" id="assign-country-section">
+        <div class="assign-country-header" onclick="toggleAssignForm()">
+            <div>
+                <div class="assign-country-title">Assign country to a book</div>
+                <div class="assign-country-subtitle">Books need a country to appear on the globe.</div>
             </div>
-            <button type="submit" class="form-submit-btn" id="submit-btn" disabled>Submit</button>
-            <button type="button" class="form-submit-btn" id="cancel-btn" onclick="toggleAssignForm()" style="background: rgba(102, 126, 234, 0.2); margin-top: 10px;">Cancel</button>
-            <div class="form-message" id="form-message"></div>
-        </form>
+            <span class="assign-country-chevron">▼</span>
+        </div>
+        <div class="assign-country-form" id="assign-country-form-container">
+            <form id="assign-country-form">
+                <div class="assign-row">
+                    <div class="assign-group">
+                        <label for="book-select">Book</label>
+                        <select id="book-select" required>
+                            <option value="">Select book...</option>
+                        </select>
+                    </div>
+                    <div class="assign-group">
+                        <label for="country-select">Country</label>
+                        <select id="country-select" required>
+                            <option value="">Select country...</option>
+                        </select>
+                    </div>
+                    <div class="assign-btn-wrap">
+                        <button type="submit" class="assign-btn" id="submit-btn" disabled>Assign</button>
+                    </div>
+                </div>
+                <div class="form-message" id="form-message"></div>
+            </form>
+        </div>
     </div>
 
     <div class="loading" id="loading">
@@ -498,14 +638,14 @@
             document.getElementById('avg-rating').textContent = avgRating;
         }
 
-        // Populate country filter
+        // Populate country filter (clear then repopulate to avoid duplicates)
         function populateCountryFilter() {
             const countries = [...new Set(allBooks
                 .filter(b => b.country && b.iso_code_3)
                 .map(b => b.country)
                 .sort())];
-            
             const select = document.getElementById('filter-country');
+            select.innerHTML = '<option value="">All Countries</option>';
             countries.forEach(country => {
                 const option = document.createElement('option');
                 option.value = country;
@@ -514,7 +654,7 @@
             });
         }
 
-        // Populate year filter
+        // Populate year filter (clear then repopulate)
         function populateYearFilter() {
             const years = [...new Set(allBooks
                 .filter(b => b.date_read)
@@ -523,9 +663,9 @@
                     return date.getFullYear();
                 })
                 .filter(year => !isNaN(year))
-                .sort((a, b) => b - a))]; // Sort descending (newest first)
-            
+                .sort((a, b) => b - a))];
             const select = document.getElementById('filter-year');
+            select.innerHTML = '<option value="">All Years</option>';
             years.forEach(year => {
                 const option = document.createElement('option');
                 option.value = year;
@@ -560,39 +700,46 @@
             setTimeout(() => {
                 grid.innerHTML = filteredBooks.map((book, index) => {
                 const rating = book.rating ? `<span class="rating">⭐ ${book.rating}</span>` : '';
+                const needsCountry = !(book.country && book.iso_code_3);
                 const country = book.country && book.iso_code_3 
-                    ? `<span class="country-badge">${book.country}</span>`
+                    ? `<span class="country-badge">${escapeHtml(book.country)}</span>`
                     : '<span class="country-badge empty">No Country</span>';
+                const assignBtn = needsCountry 
+                    ? `<button type="button" class="assign-country-card-btn" onclick="openAssignFormForBook(${book.id}); event.stopPropagation();">Assign country</button>` 
+                    : '';
                 const isbn = (book.isbn || '').toString().replace(/\D/g, '');
                 const coverHtml = isbn
                     ? `<div class="book-cover"><img src="https://covers.openlibrary.org/b/isbn/${escapeHtml(isbn)}-M.jpg" alt="" loading="lazy" onerror="this.classList.add('broken')"></div>`
                     : '';
                     return `
-                        <div class="book-card" style="animation-delay: ${index * 0.03}s">
+                        <div class="book-card" style="animation-delay: ${index * 0.03}s" data-book-id="${book.id}">
                             ${coverHtml}
-                            <div class="book-title">${escapeHtml(book.title || 'Untitled')}</div>
-                            <div class="book-author">by ${escapeHtml(book.author || 'Unknown Author')}</div>
-                            ${rating ? `<div style="margin-bottom: 10px;">${rating}</div>` : ''}
-                            <div class="book-meta">
-                                <div class="meta-item">
-                                    <span class="meta-label">Read:</span>
-                                    <span class="meta-value">${formatDate(book.date_read)}</span>
+                            <div class="book-card-content">
+                                <div class="book-title">${escapeHtml(book.title || 'Untitled')}</div>
+                                <div class="book-author">by ${escapeHtml(book.author || 'Unknown Author')}</div>
+                                ${rating ? `<div style="margin-bottom: 8px;">${rating}</div>` : ''}
+                                <div class="book-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-label">Read:</span>
+                                        <span class="meta-value">${formatDate(book.date_read)}</span>
+                                    </div>
+                                    ${book.pages ? `
+                                        <div class="meta-item">
+                                            <span class="meta-label">Pages:</span>
+                                            <span class="meta-value">${book.pages}</span>
+                                        </div>
+                                    ` : ''}
+                                    ${book.format ? `
+                                        <div class="meta-item">
+                                            <span class="meta-label">Format:</span>
+                                            <span class="meta-value">${book.format}</span>
+                                        </div>
+                                    ` : ''}
                                 </div>
-                                ${book.pages ? `
-                                    <div class="meta-item">
-                                        <span class="meta-label">Pages:</span>
-                                        <span class="meta-value">${book.pages}</span>
-                                    </div>
-                                ` : ''}
-                                ${book.format ? `
-                                    <div class="meta-item">
-                                        <span class="meta-label">Format:</span>
-                                        <span class="meta-value">${book.format}</span>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            <div style="margin-top: 12px;">
-                                ${country}
+                                <div class="book-card-footer">
+                                    ${country}
+                                    ${assignBtn}
+                                </div>
                             </div>
                         </div>
                     `;
@@ -667,29 +814,35 @@
             searchTimeout = setTimeout(filterAndSort, 300); // Debounce search for 300ms
         });
 
-        // Toggle assign country form
+        // Open assign section, optionally with a book pre-selected (from card "Assign country" button)
+        function openAssignFormForBook(bookId) {
+            const section = document.getElementById('assign-country-section');
+            if (!section.classList.contains('visible')) {
+                section.classList.add('visible');
+                if (countriesList.length === 0) loadCountriesList();
+                loadBooksNeedingCountry().then(() => {
+                    const select = document.getElementById('book-select');
+                    if (select && bookId) {
+                        select.value = String(bookId);
+                        updateSubmitButton();
+                    }
+                });
+            } else if (bookId) {
+                const select = document.getElementById('book-select');
+                if (select) {
+                    select.value = String(bookId);
+                    updateSubmitButton();
+                }
+            }
+            setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+        }
+
         function toggleAssignForm() {
-            const formContainer = document.getElementById('assign-country-form-container');
-            const toggleBtn = document.getElementById('toggle-assign-btn');
-            
-            formContainer.classList.toggle('visible');
-            toggleBtn.classList.toggle('active');
-            
-            if (formContainer.classList.contains('visible')) {
-                toggleBtn.textContent = '− Close';
-                // Load books and countries if not already loaded
-                if (booksNeedingCountry.length === 0) {
-                    loadBooksNeedingCountry();
-                }
-                if (countriesList.length === 0) {
-                    loadCountriesList();
-                }
-                // Scroll to form smoothly
-                setTimeout(() => {
-                    formContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 100);
-            } else {
-                toggleBtn.textContent = '+ Assign Country';
+            const section = document.getElementById('assign-country-section');
+            section.classList.toggle('visible');
+            if (section.classList.contains('visible')) {
+                if (booksNeedingCountry.length === 0) loadBooksNeedingCountry();
+                if (countriesList.length === 0) loadCountriesList();
             }
         }
 
@@ -702,9 +855,9 @@
         let booksNeedingCountry = [];
         let countriesList = [];
 
-        // Load books that need country assignment
+        // Load books that need country assignment. Returns a Promise so callers can run code after load.
         function loadBooksNeedingCountry() {
-            fetch('/api/books/needs-country')
+            return fetch('/api/books/needs-country')
                 .then(res => res.json())
                 .then(data => {
                     if (data.error) {
@@ -712,7 +865,7 @@
                         return;
                     }
                     booksNeedingCountry = Array.isArray(data) ? data : [];
-                    bookSelect.innerHTML = '<option value="">Select a book...</option>';
+                    bookSelect.innerHTML = '<option value="">Select book...</option>';
                     if (booksNeedingCountry.length === 0) {
                         const option = document.createElement('option');
                         option.value = '';
@@ -723,8 +876,8 @@
                         booksNeedingCountry.forEach(book => {
                             const option = document.createElement('option');
                             option.value = book.id;
-                            const title = book.title || 'Untitled';
-                            const author = book.author || 'Unknown';
+                            const title = (book.title || 'Untitled').substring(0, 50);
+                            const author = (book.author || 'Unknown').substring(0, 30);
                             option.textContent = `${title} by ${author}`;
                             bookSelect.appendChild(option);
                         });
@@ -786,9 +939,10 @@
             }
 
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Submitting...';
+            submitBtn.textContent = 'Assigning…';
             messageDiv.className = 'form-message';
             messageDiv.textContent = '';
+            messageDiv.style.display = 'none';
 
             try {
                 const response = await authenticatedFetch(`/api/books/${bookId}`, {
@@ -806,16 +960,13 @@
                 }
 
                 messageDiv.className = 'form-message success';
-                messageDiv.textContent = `Successfully assigned ${countryName} to book!`;
+                messageDiv.textContent = `Assigned ${countryName}. You can assign another or close.`;
                 
-                // Close form and reload books
-                setTimeout(() => {
-                    toggleAssignForm();
-                    loadBooks(); // Reload all books to refresh the list
-                    bookSelect.value = '';
-                    countrySelect.value = '';
-                    updateSubmitButton();
-                }, 1500);
+                loadBooks(); // Refresh main list so the card updates
+                loadBooksNeedingCountry(); // Refresh dropdown (removes assigned book)
+                bookSelect.value = '';
+                countrySelect.value = '';
+                updateSubmitButton();
 
             } catch (error) {
                 console.error('Error updating book:', error);
@@ -823,7 +974,7 @@
                 messageDiv.textContent = `Error: ${error.message}`;
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Submit';
+                submitBtn.textContent = 'Assign';
             }
         });
 
